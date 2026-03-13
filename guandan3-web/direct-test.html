@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>直接测试修复效果</title>
+</head>
+<body>
+    <h2>直接测试手牌NULL修复</h2>
+    <div>
+        <label>房间ID: <input type="text" id="roomId" placeholder="输入房间ID"></label>
+        <button onclick="directTest()">直接测试修复</button>
+    </div>
+    <div id="result"></div>
+
+    <script>
+        async function directTest() {
+            const roomId = document.getElementById('roomId').value;
+            const resultDiv = document.getElementById('result');
+
+            if (!roomId) {
+                resultDiv.innerHTML = '❌ 请输入房间ID';
+                return;
+            }
+
+            const apiKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ6enl3bHR4bGZndWNuZ2Zpem54Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwNTM1NjksImV4cCI6MjA4NDYyOTU2OX0.Upn1XmBZPQxYPl2UAVpGOtWim3Pf3yeeGNNMQm0idtM';
+
+            try {
+                resultDiv.innerHTML = '🧪 测试中...';
+
+                // 1. 获取游戏信息
+                const gameResponse = await fetch(`https://rzzywltxlfgucngfiznx.supabase.co/rest/v1/games?room_id=eq.${roomId}&select=*`, {
+                    headers: {
+                        'apikey': apiKey,
+                        'Authorization': 'Bearer ' + apiKey
+                    }
+                });
+
+                const games = await gameResponse.json();
+
+                if (!games || games.length === 0) {
+                    resultDiv.innerHTML = '❌ 未找到游戏数据';
+                    return;
+                }
+
+                const game = games[0];
+                console.log('游戏数据:', game);
+
+                // 2. 检查游戏状态
+                const statusInfo = `
+                    <h3>游戏状态信息:</h3>
+                    <div>游戏ID: ${game.id}</div>
+                    <div>状态: ${game.status}</div>
+                    <div>当前座位: ${game.current_seat}</div>
+                    <div>轮次: ${game.turn_no}</div>
+                    <div>卡片计数: ${JSON.stringify(game.state_public?.counts)}</div>
+                    <div>排名: ${JSON.stringify(game.state_public?.rankings)}</div>
+                `;
+
+                // 3. 获取手牌数据
+                const handsResponse = await fetch(`https://rzzywltxlfgucngfiznx.supabase.co/rest/v1/game_hands?game_id=eq.${game.id}&select=*`, {
+                    headers: {
+                        'apikey': apiKey,
+                        'Authorization': 'Bearer ' + apiKey
+                    }
+                });
+
+                const hands = await handsResponse.json();
+                console.log('手牌数据:', hands);
+
+                let handsInfo = '<h3>手牌信息:</h3>';
+                hands.forEach(hand => {
+                    const handLength = hand.hand ? (Array.isArray(hand.hand) ? hand.hand.length : 'NULL') : 'NULL';
+                    handsInfo += `<div>座位 ${hand.seat_no}: ${handLength} 张牌 ${hand.hand === null ? '⚠️ NULL' : '✅ 正常'}</div>`;
+                });
+
+                // 4. 验证修复效果
+                let fixStatus = '<h3>修复状态:</h3>';
+                const hasNullHands = hands.some(h => h.hand === null);
+
+                if (hasNullHands) {
+                    fixStatus += '<div style="color: red;">❌ 检测到NULL手牌，修复可能未完全生效</div>';
+                } else {
+                    fixStatus += '<div style="color: green;">✅ 所有手牌数据正常，修复生效</div>';
+                }
+
+                if (game.state_public?.counts?.includes(null)) {
+                    fixStatus += '<div style="color: orange;">⚠️ counts数组包含NULL值</div>';
+                } else {
+                    fixStatus += '<div style="color: green;">✅ counts数组正常</div>';
+                }
+
+                resultDiv.innerHTML = statusInfo + handsInfo + fixStatus;
+
+            } catch (error) {
+                resultDiv.innerHTML = `❌ 测试失败: ${error.message}`;
+                console.error('详细错误:', error);
+            }
+        }
+    </script>
+</body>
+</html>

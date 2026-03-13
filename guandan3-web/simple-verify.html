@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>修复验证工具</title>
+</head>
+<body>
+    <h2>GuanDan3 修复验证工具</h2>
+    <div>
+        <label>房间ID: <input type="text" id="roomId" placeholder="从URL获取房间ID"></label>
+        <button onclick="testFix()">测试修复</button>
+    </div>
+    <div id="result"></div>
+
+    <script>
+        async function testFix() {
+            const roomId = document.getElementById('roomId').value;
+            const resultDiv = document.getElementById('result');
+
+            if (!roomId) {
+                resultDiv.innerHTML = '❌ 请输入房间ID';
+                return;
+            }
+
+            try {
+                resultDiv.innerHTML = '🧪 测试中...';
+
+                const response = await fetch('https://rzzywltxlfgucngfiznx.supabase.co/rest/v1/rpc/setup_test_endgame', {
+                    method: 'POST',
+                    headers: {
+                        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ6enl3bHR4bGZndWNuZ2Zpem54Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwNTM1NjksImV4cCI6MjA4NDYyOTU2OX0.Upn1XmBZPQxYPl2UAVpGOtWim3Pf3yeeGNNMQm0idtM',
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ6enl3bHR4bGZndWNuZ2Zpem54Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwNTM1NjksImV4cCI6MjA4NDYyOTU2OX0.Upn1XmBZPQxYPl2UAVpGOtWim3Pf3yeeGNNMQm0idtM',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ p_room_id: roomId })
+                });
+
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div style="color: green;">
+                            ✅ 修复测试成功！<br>
+                            现在返回游戏页面，应该能看到：<br>
+                            - 1张手牌<br>
+                            - Play按钮<br>
+                            - 点击出牌后显示排名徽章
+                        </div>
+                    `;
+                } else {
+                    const error = await response.text();
+                    resultDiv.innerHTML = `❌ 测试失败: ${error}`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `❌ 请求失败: ${error.message}`;
+            }
+        }
+
+        // 自动检测URL中的房间ID
+        window.onload = function() {
+            const urlRoomId = window.location.search.match(/roomId=([^&]+)/);
+            if (urlRoomId) {
+                document.getElementById('roomId').value = urlRoomId[1];
+            }
+        };
+    </script>
+</body>
+</html>
