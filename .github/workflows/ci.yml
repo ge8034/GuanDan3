@@ -35,7 +35,6 @@ jobs:
 
   web-e2e:
     runs-on: ubuntu-latest
-    if: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL != '' && secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY != '' }}
     defaults:
       run:
         working-directory: guandan3-web
@@ -55,7 +54,6 @@ jobs:
 
   web-perf:
     runs-on: ubuntu-latest
-    if: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL != '' && secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY != '' }}
     defaults:
       run:
         working-directory: guandan3-web
