@@ -28,6 +28,7 @@ vi.mock('@/lib/supabase/client', () => {
 
 import { supabase } from '@/lib/supabase/client'
 import { useGameStore, type Card } from '@/lib/store/game'
+import { withNodeEnv } from '@/test/utils/withNodeEnv'
 
 const makeCard = (overrides: Partial<Card> = {}): Card => ({
   suit: 'H',
@@ -36,6 +37,9 @@ const makeCard = (overrides: Partial<Card> = {}): Card => ({
   id: 1,
   ...overrides,
 })
+
+const originalFetchTurnsSince = useGameStore.getState().fetchTurnsSince
+const originalFetchLastTrickPlay = useGameStore.getState().fetchLastTrickPlay
 
 describe('useGameStore基本操作', () => {
   it('setGame会合并更新状态', () => {
@@ -168,6 +172,72 @@ describe('useGameStore.submitTurn', () => {
     expect(res.error).toBeDefined()
     expect(useGameStore.getState().myHand).toEqual([cardA, cardB])
   })
+
+  it('生产环境下未知错误会记录简要错误日志', async () => {
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    await withNodeEnv('production', async () => {
+      useGameStore.setState({
+        gameId: 'game-4',
+        status: 'playing',
+        turnNo: 0,
+        currentSeat: 0,
+        myHand: [],
+      })
+      ;(supabase.rpc as any).mockResolvedValue({
+        data: null,
+        error: { code: 'X', message: 'fail' },
+      })
+
+      await useGameStore.getState().submitTurn('pass', [])
+      expect(errSpy).toHaveBeenCalled()
+      expect((errSpy as any).mock.calls.some((c: any[]) => String(c[0]).includes('Submit turn failed:'))).toBe(true)
+      expect((errSpy as any).mock.calls.some((c: any[]) => String(c[0]).includes('Submit turn failed detailed:'))).toBe(false)
+    })
+    errSpy.mockRestore()
+  })
+
+  it('生产环境下not_your_turn不会记录错误日志', async () => {
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    await withNodeEnv('production', async () => {
+      useGameStore.setState({
+        gameId: 'game-5',
+        status: 'playing',
+        turnNo: 0,
+        currentSeat: 0,
+        myHand: [],
+      })
+      ;(supabase.rpc as any).mockResolvedValue({
+        data: null,
+        error: { code: 'P0001', message: 'not_your_turn: You are Seat 1, Current is Seat 0' },
+      })
+
+      await useGameStore.getState().submitTurn('pass', [])
+      expect(errSpy).not.toHaveBeenCalled()
+    })
+    errSpy.mockRestore()
+  })
+
+  it('开发环境下未知错误会记录详细错误日志', async () => {
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    await withNodeEnv('development', async () => {
+      useGameStore.setState({
+        gameId: 'game-6',
+        status: 'playing',
+        turnNo: 0,
+        currentSeat: 0,
+        myHand: [],
+      })
+      ;(supabase.rpc as any).mockResolvedValue({
+        data: null,
+        error: { code: 'X', message: 'fail' },
+      })
+
+      await useGameStore.getState().submitTurn('pass', [])
+      expect(errSpy).toHaveBeenCalled()
+      expect((errSpy as any).mock.calls.some((c: any[]) => String(c[0]).includes('Submit turn failed detailed:'))).toBe(true)
+    })
+    errSpy.mockRestore()
+  })
 })
 
 describe('useGameStore.fetchGame', () => {
@@ -278,6 +348,13 @@ describe('useGameStore.fetchGame', () => {
   })
 
   it('无对局时重置为deal', async () => {
+    useGameStore.setState({
+      gameId: 'g-old',
+      status: 'playing',
+      myHand: [makeCard({ id: 99 })],
+      lastAction: { type: 'play', seatNo: 1, cards: [makeCard({ id: 98 })] },
+      recentTurns: [{ turn_no: 1, seat_no: 1, payload: { type: 'play', cards: [makeCard({ id: 98 })] } }],
+    })
     const gameQuery = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
@@ -293,6 +370,9 @@ describe('useGameStore.fetchGame', () => {
 
     expect(useGameStore.getState().gameId).toBeNull()
     expect(useGameStore.getState().status).toBe('deal')
+    expect(useGameStore.getState().myHand).toEqual([])
+    expect(useGameStore.getState().lastAction).toBeNull()
+    expect(useGameStore.getState().recentTurns).toEqual([])
   })
 
   it('games查询错误时会提前返回', async () => {
@@ -349,15 +429,29 @@ describe('useGameStore.getAIHand', () => {
   })
 
   it('rpc错误返回空数组', async () => {
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     useGameStore.setState({ gameId: 'g-1' })
     ;(supabase.rpc as any).mockResolvedValue({ data: null, error: new Error('fail') })
     await expect(useGameStore.getState().getAIHand(1)).resolves.toEqual([])
+    expect(errSpy).not.toHaveBeenCalled()
+    errSpy.mockRestore()
   })
 
   it('rpc成功返回手牌数组', async () => {
     useGameStore.setState({ gameId: 'g-1' })
     ;(supabase.rpc as any).mockResolvedValue({ data: [makeCard({ id: 1 })], error: null })
     await expect(useGameStore.getState().getAIHand(1)).resolves.toEqual([makeCard({ id: 1 })])
+  })
+
+  it('开发环境下rpc错误会记录日志', async () => {
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    await withNodeEnv('development', async () => {
+      useGameStore.setState({ gameId: 'g-1' })
+      ;(supabase.rpc as any).mockResolvedValue({ data: null, error: new Error('fail') })
+      await expect(useGameStore.getState().getAIHand(1)).resolves.toEqual([])
+      expect(errSpy).toHaveBeenCalled()
+    })
+    errSpy.mockRestore()
   })
 })
 
@@ -372,7 +466,7 @@ describe('useGameStore.fetchLastTrickPlay', () => {
   })
 
   it('连续三次pass会返回null', async () => {
-    useGameStore.setState({ gameId: 'g-1', currentSeat: 0 })
+    useGameStore.setState({ gameId: 'g-1', currentSeat: 0, recentTurns: [], lastAction: null })
     const turnsQuery = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
@@ -388,6 +482,7 @@ describe('useGameStore.fetchLastTrickPlay', () => {
     ;(supabase.from as any).mockImplementationOnce(() => turnsQuery)
 
     await expect(useGameStore.getState().fetchLastTrickPlay()).resolves.toBeNull()
+    expect(useGameStore.getState().recentTurns.length).toBe(3)
   })
 
   it('最后一次play由当前座位打出时返回null', async () => {
@@ -409,7 +504,7 @@ describe('useGameStore.fetchLastTrickPlay', () => {
   })
 
   it('少于三次pass且没有play时返回null', async () => {
-    useGameStore.setState({ gameId: 'g-1', currentSeat: 0 })
+    useGameStore.setState({ gameId: 'g-1', currentSeat: 0, recentTurns: [], lastAction: null })
     const turnsQuery = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
@@ -426,7 +521,7 @@ describe('useGameStore.fetchLastTrickPlay', () => {
   })
 
   it('找到未被三pass压掉的play则返回该play', async () => {
-    useGameStore.setState({ gameId: 'g-1', currentSeat: 0 })
+    useGameStore.setState({ gameId: 'g-1', currentSeat: 0, recentTurns: [], lastAction: null })
     const turnsQuery = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
@@ -446,6 +541,7 @@ describe('useGameStore.fetchLastTrickPlay', () => {
       cards: [makeCard({ id: 5 })],
       seatNo: 3,
     })
+    expect(useGameStore.getState().recentTurns[0]?.payload?.type).toBe('pass')
   })
 })
 
@@ -469,9 +565,59 @@ describe('useGameStore.fetchTurnsSince', () => {
     ])
   })
 
+  it('同一game下增量补拉会合并recentTurns并更新lastAction', async () => {
+    useGameStore.setState({
+      gameId: 'g-1',
+      currentSeat: 0,
+      recentTurns: [{ turn_no: 2, seat_no: 3, payload: { type: 'play', cards: [makeCard({ id: 5 })] } }],
+      lastAction: { type: 'play', seatNo: 3, cards: [makeCard({ id: 5 })] },
+    })
+
+    ;(supabase.rpc as any).mockResolvedValue({
+      data: [{ turn_no: 3, seat_no: 1, payload: { type: 'pass' } }],
+      error: null,
+    })
+
+    await useGameStore.getState().fetchTurnsSince('g-1', 2)
+    expect(useGameStore.getState().recentTurns.map(t => t.turn_no)).toEqual([3, 2])
+    expect(useGameStore.getState().lastAction?.seatNo).toBe(3)
+  })
+
+
   it('其它错误时抛出异常', async () => {
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     ;(supabase.rpc as any).mockResolvedValue({ data: null, error: { code: 'X', message: 'fail' } })
     await expect(useGameStore.getState().fetchTurnsSince('g-1', 0)).rejects.toBeDefined()
+    expect(errSpy).not.toHaveBeenCalled()
+    errSpy.mockRestore()
+  })
+
+  it('增量补拉只有pass且不足三次时lastAction保持null', async () => {
+    useGameStore.setState({ gameId: 'g-1', currentSeat: 0, recentTurns: [], lastAction: null })
+    ;(supabase.rpc as any).mockResolvedValue({
+      data: [{ turn_no: 1, seat_no: 1, payload: { type: 'pass' } }],
+      error: null,
+    })
+    await useGameStore.getState().fetchTurnsSince('g-1', 0)
+    expect(useGameStore.getState().lastAction).toBeNull()
+  })
+
+  it('增量补拉累计三次pass后lastAction为null', async () => {
+    useGameStore.setState({
+      gameId: 'g-1',
+      currentSeat: 0,
+      recentTurns: [
+        { turn_no: 2, seat_no: 2, payload: { type: 'pass' } },
+        { turn_no: 1, seat_no: 3, payload: { type: 'pass' } },
+      ],
+      lastAction: { type: 'play', seatNo: 1, cards: [makeCard({ id: 5 })] },
+    })
+    ;(supabase.rpc as any).mockResolvedValue({
+      data: [{ turn_no: 3, seat_no: 1, payload: { type: 'pass' } }],
+      error: null,
+    })
+    await useGameStore.getState().fetchTurnsSince('g-1', 2)
+    expect(useGameStore.getState().lastAction).toBeNull()
   })
 })
 
@@ -479,6 +625,12 @@ describe('useGameStore.subscribeGame', () => {
   beforeEach(() => {
     ;(supabase.channel as any).mockReset()
     ;(supabase.removeChannel as any).mockReset()
+    useGameStore.setState({
+      recentTurns: [],
+      lastAction: null,
+      fetchTurnsSince: originalFetchTurnsSince as any,
+      fetchLastTrickPlay: originalFetchLastTrickPlay as any,
+    })
   })
 
   it('返回的取消订阅函数会移除channel', () => {
@@ -492,6 +644,19 @@ describe('useGameStore.subscribeGame', () => {
     unsub()
 
     expect(supabase.removeChannel).toHaveBeenCalledWith(channelObj)
+  })
+
+  it('存在gameId时会同时订阅turns并在取消时移除两个channel', () => {
+    const gamesChannel = { on: vi.fn().mockReturnThis(), subscribe: vi.fn().mockReturnThis() }
+    const turnsChannel = { on: vi.fn().mockReturnThis(), subscribe: vi.fn().mockReturnThis() }
+    ;(supabase.channel as any).mockReturnValueOnce(gamesChannel).mockReturnValueOnce(turnsChannel)
+
+    useGameStore.setState({ gameId: 'g-1' })
+    const unsub = useGameStore.getState().subscribeGame('room-1')
+    unsub()
+
+    expect(supabase.removeChannel).toHaveBeenCalledWith(gamesChannel)
+    expect(supabase.removeChannel).toHaveBeenCalledWith(turnsChannel)
   })
 
   it('games变更时会更新store并在需要时触发fetchGame', async () => {
@@ -557,6 +722,48 @@ describe('useGameStore.subscribeGame', () => {
     unsub()
   })
 
+  it('turn跳跃时增量补拉有数据则不会触发fetchLastTrickPlay兜底', async () => {
+    const gameHandlers: any[] = []
+    const gamesChannel = {
+      on: vi.fn((_type: any, _filter: any, cb: any) => {
+        gameHandlers.push(cb)
+        return gamesChannel
+      }),
+      subscribe: vi.fn().mockReturnThis(),
+    }
+    const turnsChannel = { on: vi.fn().mockReturnThis(), subscribe: vi.fn().mockReturnThis() }
+    ;(supabase.channel as any).mockReturnValueOnce(gamesChannel).mockReturnValueOnce(turnsChannel)
+
+    const fetchLastTrickPlay = vi.fn().mockResolvedValue(null)
+    useGameStore.setState({
+      gameId: 'g-1',
+      turnNo: 1,
+      currentSeat: 0,
+      recentTurns: [],
+      lastAction: null,
+      fetchLastTrickPlay: fetchLastTrickPlay as any,
+    })
+
+    ;(supabase.rpc as any).mockResolvedValue({
+      data: [{ turn_no: 2, seat_no: 3, payload: { type: 'play', cards: [makeCard({ id: 5 })] } }],
+      error: null,
+    })
+
+    const unsub = useGameStore.getState().subscribeGame('room-1')
+
+    await gameHandlers[0]({
+      eventType: 'UPDATE',
+      new: { id: 'g-1', status: 'playing', turn_no: 4, current_seat: 2, state_public: { counts: [27, 27, 27, 27], rankings: [] } },
+      old: { status: 'playing', turn_no: 1 },
+    })
+
+    expect(supabase.rpc).toHaveBeenCalled()
+    expect(fetchLastTrickPlay).not.toHaveBeenCalled()
+    expect(useGameStore.getState().lastAction).toEqual({ type: 'play', seatNo: 3, cards: [makeCard({ id: 5 })] })
+
+    unsub()
+  })
+
   it('rankings增长时会触发fetchGame强制刷新', async () => {
     const handlers: any[] = []
     const channelObj = {
@@ -584,24 +791,138 @@ describe('useGameStore.subscribeGame', () => {
   })
 
   it('turns插入事件会在当前game下刷新lastAction', async () => {
-    const handlers: any[] = []
-    const channelObj = {
+    const gameHandlers: any[] = []
+    const turnsHandlers: any[] = []
+    const gamesChannel = {
       on: vi.fn((_type: any, _filter: any, cb: any) => {
-        handlers.push(cb)
-        return channelObj
+        gameHandlers.push(cb)
+        return gamesChannel
       }),
       subscribe: vi.fn().mockReturnThis(),
     }
-    ;(supabase.channel as any).mockReturnValue(channelObj)
+    const turnsChannel = {
+      on: vi.fn((_type: any, _filter: any, cb: any) => {
+        turnsHandlers.push(cb)
+        return turnsChannel
+      }),
+      subscribe: vi.fn().mockReturnThis(),
+    }
+    ;(supabase.channel as any).mockReturnValueOnce(gamesChannel).mockReturnValueOnce(turnsChannel)
 
-    const fetchLastTrickPlay = vi.fn().mockResolvedValue({ type: 'play', seatNo: 1, cards: [makeCard({ id: 9 })] })
-    useGameStore.setState({ gameId: 'g-1', fetchLastTrickPlay: fetchLastTrickPlay as any })
+    useGameStore.setState({ gameId: 'g-1', currentSeat: 0, recentTurns: [], lastAction: null })
 
     const unsub = useGameStore.getState().subscribeGame('room-1')
 
-    await handlers[1]({ new: { game_id: 'g-1' } })
+    await turnsHandlers[0]({ new: { turn_no: 1, seat_no: 2, payload: { type: 'play', cards: [makeCard({ id: 9 })] } } })
+    expect(useGameStore.getState().lastAction).toEqual({ type: 'play', seatNo: 2, cards: [makeCard({ id: 9 })] })
+
+    unsub()
+  })
+
+  it('turns插入事件在turn_no非数字时会fallback到fetchLastTrickPlay', async () => {
+    const turnsHandlers: any[] = []
+    const gamesChannel = { on: vi.fn().mockReturnThis(), subscribe: vi.fn().mockReturnThis() }
+    const turnsChannel = {
+      on: vi.fn((_type: any, _filter: any, cb: any) => {
+        turnsHandlers.push(cb)
+        return turnsChannel
+      }),
+      subscribe: vi.fn().mockReturnThis(),
+    }
+    ;(supabase.channel as any).mockReturnValueOnce(gamesChannel).mockReturnValueOnce(turnsChannel)
+
+    const fetchLastTrickPlay = vi.fn().mockResolvedValue({ type: 'play', seatNo: 1, cards: [makeCard({ id: 7 })] })
+    useGameStore.setState({ gameId: 'g-1', currentSeat: 0, recentTurns: [], lastAction: null, fetchLastTrickPlay: fetchLastTrickPlay as any })
+
+    const unsub = useGameStore.getState().subscribeGame('room-1')
+    await turnsHandlers[0]({ new: { turn_no: '1', seat_no: 2, payload: { type: 'pass' } } })
+
     expect(fetchLastTrickPlay).toHaveBeenCalled()
-    expect(useGameStore.getState().lastAction?.type).toBe('play')
+    expect(useGameStore.getState().lastAction).toEqual({ type: 'play', seatNo: 1, cards: [makeCard({ id: 7 })] })
+
+    unsub()
+  })
+
+  it('turns插入连续三次pass后lastAction会变为null', async () => {
+    const turnsHandlers: any[] = []
+    const gamesChannel = { on: vi.fn().mockReturnThis(), subscribe: vi.fn().mockReturnThis() }
+    const turnsChannel = {
+      on: vi.fn((_type: any, _filter: any, cb: any) => {
+        turnsHandlers.push(cb)
+        return turnsChannel
+      }),
+      subscribe: vi.fn().mockReturnThis(),
+    }
+    ;(supabase.channel as any).mockReturnValueOnce(gamesChannel).mockReturnValueOnce(turnsChannel)
+
+    useGameStore.setState({
+      gameId: 'g-1',
+      currentSeat: 0,
+      recentTurns: [
+        { turn_no: 3, seat_no: 1, payload: { type: 'pass' } },
+        { turn_no: 2, seat_no: 3, payload: { type: 'pass' } },
+        { turn_no: 1, seat_no: 2, payload: { type: 'play', cards: [makeCard({ id: 5 })] } },
+      ],
+      lastAction: { type: 'play', seatNo: 2, cards: [makeCard({ id: 5 })] },
+    })
+
+    const unsub = useGameStore.getState().subscribeGame('room-1')
+    await turnsHandlers[0]({ new: { turn_no: 4, seat_no: 0, payload: { type: 'pass' } } })
+    expect(useGameStore.getState().lastAction).toBeNull()
+    unsub()
+  })
+
+  it('subscribeGame会将subscribe状态回传给onStatus', () => {
+    const onStatus = vi.fn()
+    const gamesChannel = { on: vi.fn().mockReturnThis(), subscribe: vi.fn().mockReturnThis() }
+    const turnsChannel = { on: vi.fn().mockReturnThis(), subscribe: vi.fn().mockReturnThis() }
+    ;(supabase.channel as any).mockReturnValueOnce(gamesChannel).mockReturnValueOnce(turnsChannel)
+
+    useGameStore.setState({ gameId: 'g-1' })
+    const unsub = useGameStore.getState().subscribeGame('room-1', { onStatus })
+
+    const gamesSubscribeCb = (gamesChannel.subscribe as any).mock.calls[0]?.[0]
+    const turnsSubscribeCb = (turnsChannel.subscribe as any).mock.calls[0]?.[0]
+    expect(typeof gamesSubscribeCb).toBe('function')
+    expect(typeof turnsSubscribeCb).toBe('function')
+
+    gamesSubscribeCb('SUBSCRIBED')
+    turnsSubscribeCb('SUBSCRIBED')
+    expect(onStatus).toHaveBeenCalledWith('SUBSCRIBED')
+
+    unsub()
+  })
+
+  it('gameId变化时会切换turns订阅并重置recentTurns与lastAction', async () => {
+    const gameHandlers: any[] = []
+    const gamesChannel = {
+      on: vi.fn((_type: any, _filter: any, cb: any) => {
+        gameHandlers.push(cb)
+        return gamesChannel
+      }),
+      subscribe: vi.fn().mockReturnThis(),
+    }
+    const turnsChannelA = { on: vi.fn().mockReturnThis(), subscribe: vi.fn().mockReturnThis() }
+    const turnsChannelB = { on: vi.fn().mockReturnThis(), subscribe: vi.fn().mockReturnThis() }
+    ;(supabase.channel as any).mockReturnValueOnce(gamesChannel).mockReturnValueOnce(turnsChannelA).mockReturnValueOnce(turnsChannelB)
+
+    useGameStore.setState({
+      gameId: 'g-1',
+      recentTurns: [{ turn_no: 1, seat_no: 1, payload: { type: 'play', cards: [makeCard({ id: 5 })] } }],
+      lastAction: { type: 'play', seatNo: 1, cards: [makeCard({ id: 5 })] },
+    })
+
+    const unsub = useGameStore.getState().subscribeGame('room-1')
+
+    await gameHandlers[0]({
+      eventType: 'UPDATE',
+      new: { id: 'g-2', status: 'playing', turn_no: 0, current_seat: 0, state_public: { counts: [27, 27, 27, 27], rankings: [] } },
+      old: { status: 'playing', turn_no: 10 },
+    })
+
+    expect(supabase.removeChannel).toHaveBeenCalledWith(turnsChannelA)
+    expect(useGameStore.getState().recentTurns).toEqual([])
+    expect(useGameStore.getState().lastAction).toBeNull()
 
     unsub()
   })

@@ -1,0 +1,10 @@
+* @your-org/guandan-maintainers
+
+guandan3-web/src/app/ @your-org/guandan-frontend
+guandan3-web/src/lib/store/ @your-org/guandan-frontend @your-org/guandan-backend
+guandan3-web/src/lib/game/ @your-org/guandan-game-rules
+guandan3-web/tests/e2e/ @your-org/guandan-qa
+guandan3-web/supabase/migrations/ @your-org/guandan-backend
+guandan3-web/supabase/tests/ @your-org/guandan-backend
+guandan3-web/playwright.config.ts @your-org/guandan-qa
+.github/workflows/ @your-org/guandan-devops

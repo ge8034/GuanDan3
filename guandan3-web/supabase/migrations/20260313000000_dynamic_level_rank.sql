@@ -1,5 +1,5 @@
--- 20240312000008_start_game_rematch_guard.sql
--- Update start_game to support safe rematch and prevent double-playing games
+-- 20260313000000_dynamic_level_rank.sql
+-- Make levelRank advance per finished game in the same room (2..14 cycle)
 
 create or replace function public.start_game(
   p_room_id uuid
@@ -18,6 +18,8 @@ declare
   v_member_count int;
   v_ready_count int;
   v_is_rematch boolean;
+  v_finished_count int;
+  v_level_rank int;
   v_deck jsonb[] := array[]::jsonb[];
   v_shuffled_deck jsonb[];
   v_hands jsonb[] := array['[]'::jsonb, '[]'::jsonb, '[]'::jsonb, '[]'::jsonb];
@@ -74,6 +76,13 @@ begin
     end if;
   end if;
 
+  select count(*)
+    into v_finished_count
+  from public.games
+  where room_id = p_room_id and status = 'finished';
+
+  v_level_rank := 2 + (v_finished_count % 13);
+
   for d in 0..1 loop
     foreach v_suit in array v_suits loop
       for r in 1..13 loop
@@ -107,7 +116,7 @@ begin
     'playing',
     0,
     0,
-    jsonb_build_object('counts', array[27, 27, 27, 27], 'rankings', '[]'::jsonb, 'levelRank', 2)
+    jsonb_build_object('counts', array[27, 27, 27, 27], 'rankings', '[]'::jsonb, 'levelRank', v_level_rank)
   )
   returning id into v_game_id;
 
@@ -126,3 +135,4 @@ begin
   update public.rooms set status = 'playing' where id = p_room_id;
 end;
 $$;
+

@@ -11,8 +11,8 @@ test.describe('大厅核心功能', () => {
     let created = false;
     for (let attempt = 0; attempt < 2; attempt++) {
       roomName = `LobbyCore-${Date.now()}-${attempt}`;
-      await page.getByPlaceholder('房间名称').fill(roomName);
-      await page.getByText('创建房间').click();
+      await page.getByTestId('lobby-create-name').fill(roomName);
+      await page.getByTestId('lobby-create').click();
       try {
         await page.waitForURL(/\/room\//, { timeout: 90000 });
         created = true;
@@ -30,8 +30,8 @@ test.describe('大厅核心功能', () => {
     const cardTitle = page.locator('h3').filter({ hasText: roomName });
     await expect(cardTitle).toBeVisible({ timeout: 30000 });
 
-    const onlyJoinable = page.locator('label:has-text("仅显示可加入") input');
-    const onlyHasOnline = page.locator('label:has-text("仅显示有人在线") input');
+    const onlyJoinable = page.getByTestId('lobby-filter-joinable');
+    const onlyHasOnline = page.getByTestId('lobby-filter-online');
     await onlyJoinable.check();
     await onlyHasOnline.check();
     await expect(cardTitle).toBeVisible({ timeout: 30000 });

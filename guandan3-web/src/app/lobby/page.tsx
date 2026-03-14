@@ -5,18 +5,19 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { supabase } from '@/lib/supabase/client'
 import { useRoomStore } from '@/lib/store/room'
-import { useAuthStore } from '@/lib/store/auth'
 import { useToast } from '@/lib/hooks/useToast'
 import { modeLabel, typeLabel, sortRooms } from '@/lib/utils/lobby'
 import { mapSupabaseErrorToMessage } from '@/lib/utils/supabaseErrors'
+import { ensureAuthed } from '@/lib/utils/ensureAuthed'
+import { throttle } from '@/lib/utils/throttle'
 import QRCode from 'qrcode'
 
 export default function LobbyPage() {
   const router = useRouter()
   const { createRoom, joinRoom } = useRoomStore()
-  const { setUser } = useAuthStore()
   const [rooms, setRooms] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [realtimeStatus, setRealtimeStatus] = useState<string>('')
   const [isCreating, setIsCreating] = useState(false)
   const [newRoomName, setNewRoomName] = useState('')
   const [onlyJoinable, setOnlyJoinable] = useState(true)
@@ -32,39 +33,6 @@ export default function LobbyPage() {
     setQrVisible(false)
     setQrDataUrl(null)
   }, [detailRoom?.id])
-
-  const ensureAuthed = useCallback(async (): Promise<boolean> => {
-    const storeUser = useAuthStore.getState().user
-    if (storeUser) return true
-
-    try {
-      const { data: sessionData } = await supabase.auth.getSession()
-      const sessionUser = sessionData.session?.user ?? null
-      if (sessionUser) {
-        setUser(sessionUser)
-        return true
-      }
-
-      for (let attempt = 0; attempt < 3; attempt++) {
-        try {
-          const { data, error } = await supabase.auth.signInAnonymously()
-          if (error) throw error
-          if (data.user) {
-            setUser(data.user)
-            return true
-          }
-        } catch (e) {
-          if (attempt >= 2) throw e
-          await new Promise(resolve => setTimeout(resolve, 300 * (attempt + 1)))
-        }
-      }
-    } catch (e: any) {
-      showToast({ message: '登录失败: ' + (e?.message || String(e)), kind: 'error' })
-      return false
-    }
-
-    return false
-  }, [setUser, showToast])
 
   const fetchRooms = useCallback(async () => {
     const { data, error } = await supabase
@@ -124,9 +92,16 @@ export default function LobbyPage() {
   useEffect(() => {
     let active = true
     let channel: any = null
+    const fetchRoomsThrottled = throttle(() => {
+      fetchRooms().catch(() => {})
+    }, 400)
 
     ;(async () => {
-      await ensureAuthed()
+      const { ok } = await ensureAuthed({ onError: msg => showToast({ message: msg, kind: 'error' }) })
+      if (!ok) {
+        if (active) setIsLoading(false)
+        return
+      }
       if (!active) return
       await fetchRooms()
       if (!active) return
@@ -134,27 +109,32 @@ export default function LobbyPage() {
       channel = supabase
         .channel('lobby_updates')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms', filter: 'status=eq.open' }, () => {
-          fetchRooms()
+          fetchRoomsThrottled()
         })
         .on('postgres_changes', { event: '*', schema: 'public', table: 'room_members' }, () => {
-          fetchRooms()
+          fetchRoomsThrottled()
         })
-        .subscribe()
+        .subscribe((status: any) => {
+          if (!active) return
+          setRealtimeStatus(String(status))
+        })
     })().catch(() => {
       if (active) setIsLoading(false)
     })
 
     return () => {
       active = false
+      fetchRoomsThrottled.cancel()
+      setRealtimeStatus('')
       if (channel) supabase.removeChannel(channel)
     }
-  }, [ensureAuthed, fetchRooms])
+  }, [fetchRooms, showToast])
 
   const handleCreate = async () => {
     if (!newRoomName.trim()) return
     setIsCreating(true)
     try {
-       const ok = await ensureAuthed()
+       const { ok } = await ensureAuthed({ onError: msg => showToast({ message: msg, kind: 'error' }) })
        if (!ok) return
        // Default to pvp4 classic public
        const result = await createRoom(newRoomName, 'classic', 'pvp4', 'public')
@@ -170,7 +150,7 @@ export default function LobbyPage() {
 
   const handleJoin = async (roomId: string) => {
     try {
-      const ok = await ensureAuthed()
+      const { ok } = await ensureAuthed({ onError: msg => showToast({ message: msg, kind: 'error' }) })
       if (!ok) return
       setJoiningId(roomId)
       const { data: roomDetail, error: roomErr } = await supabase
@@ -208,6 +188,11 @@ export default function LobbyPage() {
   return (
     <div className="min-h-screen p-8 bg-gray-50 text-black">
       {toastView}
+      {realtimeStatus && realtimeStatus !== 'SUBSCRIBED' && (
+        <div data-testid="lobby-realtime-banner" className="mb-4 max-w-6xl mx-auto bg-yellow-100 border border-yellow-300 text-yellow-900 px-4 py-2 rounded">
+          实时连接状态：{realtimeStatus}
+        </div>
+      )}
 
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col gap-4 mb-8">
@@ -228,6 +213,7 @@ export default function LobbyPage() {
                   }
                 }}
                 disabled={isLoading || Date.now() - lastRefreshAt < 1000}
+                data-testid="lobby-refresh"
                 className="border border-gray-300 bg-white text-gray-700 px-4 py-2 rounded hover:bg-gray-50 disabled:opacity-50 transition shadow-sm"
               >
                 刷新
@@ -245,6 +231,7 @@ export default function LobbyPage() {
                   type="checkbox"
                   checked={onlyJoinable}
                   onChange={e => setOnlyJoinable(e.target.checked)}
+                  data-testid="lobby-filter-joinable"
                 />
                 仅显示可加入
               </label>
@@ -253,6 +240,7 @@ export default function LobbyPage() {
                   type="checkbox"
                   checked={onlyHasOnline}
                   onChange={e => setOnlyHasOnline(e.target.checked)}
+                  data-testid="lobby-filter-online"
                 />
                 仅显示有人在线
               </label>
@@ -262,6 +250,7 @@ export default function LobbyPage() {
              <input 
                type="text" 
                placeholder="房间名称" 
+               data-testid="lobby-create-name"
                className="border p-2 rounded w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                value={newRoomName}
                onChange={e => setNewRoomName(e.target.value)}
@@ -269,6 +258,7 @@ export default function LobbyPage() {
              <button 
                onClick={handleCreate}
                disabled={isCreating || !newRoomName.trim()}
+               data-testid="lobby-create"
                className="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700 disabled:opacity-50 transition shadow-sm"
              >
                {isCreating ? '创建中...' : '创建房间'}

@@ -3,6 +3,7 @@ name: CI
 on:
   workflow_dispatch:
   pull_request:
+  merge_group:
   push:
     branches:
       - main
@@ -11,6 +12,9 @@ on:
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   web-checks:
@@ -31,8 +35,29 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run test:coverage
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: web-coverage
+          path: guandan3-web/coverage
+          if-no-files-found: warn
+          retention-days: 7
 
   web-e2e:
+    if: >-
+      ${{
+        (
+          github.event_name == 'push' ||
+          github.event_name == 'workflow_dispatch' ||
+          (
+            github.event_name == 'pull_request' &&
+            github.event.pull_request.head.repo.full_name == github.repository &&
+            contains(github.event.pull_request.labels.*.name, 'run-e2e')
+          )
+        )
+        && secrets.NEXT_PUBLIC_SUPABASE_URL
+        && secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -51,8 +76,31 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: playwright-report-e2e
+          path: |
+            guandan3-web/playwright-report
+            guandan3-web/test-results
+          if-no-files-found: warn
+          retention-days: 7
 
   web-perf:
+    if: >-
+      ${{
+        (
+          github.event_name == 'push' ||
+          github.event_name == 'workflow_dispatch' ||
+          (
+            github.event_name == 'pull_request' &&
+            github.event.pull_request.head.repo.full_name == github.repository &&
+            contains(github.event.pull_request.labels.*.name, 'run-perf')
+          )
+        )
+        && secrets.NEXT_PUBLIC_SUPABASE_URL
+        && secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -71,3 +119,12 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run test:perf
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: playwright-report-perf
+          path: |
+            guandan3-web/playwright-report
+            guandan3-web/test-results
+          if-no-files-found: warn
+          retention-days: 7

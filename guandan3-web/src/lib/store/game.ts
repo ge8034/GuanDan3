@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 import { supabase } from '@/lib/supabase/client'
+import { throttle } from '@/lib/utils/throttle'
+import { devError, devLog, devWarn, isDev } from '@/lib/utils/devLog'
 
 export interface Card {
   suit: 'H' | 'D' | 'C' | 'S' | 'J'
@@ -8,31 +10,57 @@ export interface Card {
   id: number
 }
 
+type TurnRow = { turn_no: number; seat_no: number; payload: any }
+type LastAction = { seatNo: number; type: 'play' | 'pass'; cards?: Card[] } | null
+
+const normalizeRecentTurns = (turns: TurnRow[]) => {
+  const dedup = new Map<number, TurnRow>()
+  for (const t of turns) {
+    if (typeof t.turn_no !== 'number') continue
+    if (!dedup.has(t.turn_no)) dedup.set(t.turn_no, t)
+  }
+  return Array.from(dedup.values()).sort((a, b) => b.turn_no - a.turn_no).slice(0, 4)
+}
+
+const computeLastActionFromRecentTurns = (recentTurns: TurnRow[], currentSeat: number): LastAction => {
+  let consecutivePasses = 0
+  for (const t of recentTurns) {
+    if (t.payload?.type === 'pass') {
+      consecutivePasses++
+      continue
+    }
+    if (t.payload?.type === 'play') {
+      if (consecutivePasses >= 3 || t.seat_no === currentSeat) return null
+      return { type: 'play', cards: t.payload.cards, seatNo: t.seat_no }
+    }
+  }
+  return null
+}
+
 interface GameState {
   gameId: string | null
   status: 'deal' | 'playing' | 'finished'
   turnNo: number
   currentSeat: number
+  levelRank: number
+  recentTurns: TurnRow[]
   myHand: Card[]
-  lastAction: {
-    seatNo: number
-    type: 'play' | 'pass'
-    cards?: Card[]
-  } | null
+  lastAction: LastAction
   scores: Record<string, number>
   counts: number[] // Remaining cards per seat
   rankings: number[] // Finishing order [seatNo, seatNo, ...]
   
   setGame: (data: Partial<GameState>) => void
+  resetGame: () => void
   updateHand: (cards: Card[]) => void
   playTurn: (cards: Card[]) => Promise<void>
   fetchGame: (roomId: string) => Promise<void>
-  subscribeGame: (roomId: string) => () => void
+  subscribeGame: (roomId: string, options?: { onStatus?: (status: string) => void }) => () => void
   startGame: (roomId: string) => Promise<void>
   submitTurn: (type: 'play' | 'pass', cards?: Card[]) => Promise<any>
   getAIHand: (seatNo: number) => Promise<Card[]>
   fetchLastTrickPlay: () => Promise<{ type: 'play' | 'pass', cards?: Card[], seatNo: number } | null>
-  fetchTurnsSince: (gameId: string, fromTurnNo: number) => Promise<Array<{ turn_no: number, seat_no: number, payload: any }>>
+  fetchTurnsSince: (gameId: string, fromTurnNo: number) => Promise<TurnRow[]>
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -40,6 +68,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   status: 'deal',
   turnNo: 0,
   currentSeat: 0,
+  levelRank: 2,
+  recentTurns: [],
   myHand: [],
   lastAction: null,
   scores: {},
@@ -47,6 +77,20 @@ export const useGameStore = create<GameState>((set, get) => ({
   rankings: [],
 
   setGame: (data) => set((state) => ({ ...state, ...data })),
+  resetGame: () =>
+    set({
+      gameId: null,
+      status: 'deal',
+      turnNo: 0,
+      currentSeat: 0,
+      levelRank: 2,
+      recentTurns: [],
+      myHand: [],
+      lastAction: null,
+      scores: {},
+      counts: [27, 27, 27, 27],
+      rankings: [],
+    }),
   updateHand: (cards) => set({ myHand: cards }),
   
   getAIHand: async (seatNo) => {
@@ -57,7 +101,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       p_seat_no: seatNo
     })
     if (error) {
-      console.error('getAIHand error:', error)
+      devError('getAIHand error:', error)
       return []
     }
     // Cast JSONB to Card[]
@@ -76,32 +120,14 @@ export const useGameStore = create<GameState>((set, get) => ({
       .order('turn_no', { ascending: false })
       .limit(4)
 
-    if (!turns || turns.length === 0) return null
-
-    // Check consecutive passes
-    let consecutivePasses = 0
-    for (const turn of turns) {
-      if (turn.payload.type === 'pass') {
-        consecutivePasses++
-      } else {
-        // Found a play
-        // If 3 passes followed this play, then this play is "beaten" by passes.
-        // Also if the last play was made by the current player (me), it means everyone else passed.
-        const { currentSeat } = get()
-        if (consecutivePasses >= 3 || turn.seat_no === currentSeat) {
-          return null
-        }
-        return { 
-          type: turn.payload.type, 
-          cards: turn.payload.cards, 
-          seatNo: turn.seat_no 
-        }
-      }
-    }
-    // All fetched turns are passes
-    if (consecutivePasses >= 3) return null
-    
-    return null 
+    const normalized = ((turns as any[]) || []).map(t => ({
+      turn_no: t.turn_no,
+      seat_no: t.seat_no,
+      payload: t.payload,
+    })) as TurnRow[]
+    const nextRecent = normalizeRecentTurns(normalized)
+    set({ recentTurns: nextRecent })
+    return computeLastActionFromRecentTurns(nextRecent, get().currentSeat)
   },
 
   fetchTurnsSince: async (gameId, fromTurnNo) => {
@@ -111,10 +137,16 @@ export const useGameStore = create<GameState>((set, get) => ({
     })
     if (error) {
       if ((error as any)?.code === 'PGRST202') return []
-      console.error('Fetch turns since error:', error)
+      devError('Fetch turns since error:', error)
       throw error
     }
-    return (data as any[]) || []
+    const turns = (data as any[]) || []
+    if (turns.length > 0 && get().gameId === gameId) {
+      const current = get().recentTurns || []
+      const nextRecent = normalizeRecentTurns([...(turns as TurnRow[]), ...current])
+      set({ recentTurns: nextRecent, lastAction: computeLastActionFromRecentTurns(nextRecent, get().currentSeat) })
+    }
+    return turns
   },
 
   playTurn: async (cards) => {
@@ -130,9 +162,16 @@ export const useGameStore = create<GameState>((set, get) => ({
     const previousHand = state.myHand
 
     // Optimistic update for self
-    if (state.currentSeat === 0 && type === 'play') { 
-       set((s) => ({
-        myHand: s.myHand.filter(c => !cards.some(pc => pc.suit === c.suit && pc.rank === c.rank)),
+    // Only update if it is a 'play' action with cards
+    const shouldOptimisticUpdate =
+      type === 'play' &&
+      cards.length > 0 &&
+      state.myHand.length > 0 &&
+      cards.every(pc => state.myHand.some(c => c.id === pc.id))
+      
+    if (shouldOptimisticUpdate) {
+      set((s) => ({
+        myHand: s.myHand.filter(c => !cards.some(pc => pc.id === c.id)),
       }))
     }
 
@@ -144,16 +183,22 @@ export const useGameStore = create<GameState>((set, get) => ({
     })
 
     if (error) {
-      console.error('Submit turn failed detailed:', JSON.stringify(error, null, 2))
-      // Rollback optimistic update
-      if (state.currentSeat === 0 && type === 'play') {
+      // Rollback optimistic update FIRST
+      if (shouldOptimisticUpdate) {
         set({ myHand: previousHand })
+      }
+
+      const isTurnNoMismatch = error.code === 'P0001' && error.message.includes('turn_no_mismatch')
+      const isNotYourTurn = error.code === 'P0001' && error.message.includes('not_your_turn')
+      devError('Submit turn failed detailed:', JSON.stringify(error, null, 2))
+      if (!isDev() && !isTurnNoMismatch && !isNotYourTurn) {
+        console.error('Submit turn failed:', error)
       }
       
       // If error is turn_no_mismatch, it means our local state is stale.
       // We should NOT retry blindly, but refresh state.
-      if (error.code === 'P0001' && error.message.includes('turn_no_mismatch')) {
-         console.warn('Turn mismatch detected! Fetching fresh game state...')
+      if (isTurnNoMismatch) {
+         devWarn('Turn mismatch detected! Fetching fresh game state...')
          const { data: freshGame } = await supabase
           .from('games')
           .select('*')
@@ -161,7 +206,7 @@ export const useGameStore = create<GameState>((set, get) => ({
           .single()
         
         if (freshGame) {
-          console.log('State refreshed:', freshGame.turn_no, freshGame.current_seat)
+          devLog('State refreshed:', freshGame.turn_no, freshGame.current_seat)
           set({
             turnNo: freshGame.turn_no,
             currentSeat: freshGame.current_seat,
@@ -199,22 +244,24 @@ export const useGameStore = create<GameState>((set, get) => ({
       .maybeSingle()
     
     if (gameError) {
-      console.error('Fetch game error:', gameError)
+      devError('Fetch game error:', gameError)
       return
     }
     
     if (!game) {
-      set({ status: 'deal', gameId: null })
+      get().resetGame()
       return
     }
 
     const counts = (game.state_public as any)?.counts || [27, 27, 27, 27]
     const rankings = (game.state_public as any)?.rankings || []
+    const levelRank = (game.state_public as any)?.levelRank || 2
     set({ 
       gameId: game.id,
       status: game.status as any,
       turnNo: game.turn_no,
       currentSeat: game.current_seat,
+      levelRank,
       counts,
       rankings
     })
@@ -226,7 +273,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       .eq('game_id', game.id)
     
     if (handsError) {
-      console.error('Fetch hands error:', handsError)
+      devError('Fetch hands error:', handsError)
     } else if (hands && hands.length > 0) {
       // Cast JSONB to Card[]
       const myHand = hands[0].hand as unknown as Card[]
@@ -243,7 +290,44 @@ export const useGameStore = create<GameState>((set, get) => ({
     set({ lastAction })
   },
 
-  subscribeGame: (roomId) => {
+  subscribeGame: (roomId, options) => {
+    const fetchGameThrottled = throttle(() => {
+      get().fetchGame(roomId).catch(() => {})
+    }, 350)
+    let turnsChannel: any = null
+    let turnsGameId: string | null = null
+
+    const ensureTurnsChannel = (nextGameId: string | null) => {
+      if (!nextGameId) return
+      if (turnsGameId === nextGameId && turnsChannel) return
+      if (turnsChannel) {
+        supabase.removeChannel(turnsChannel)
+        turnsChannel = null
+        turnsGameId = null
+      }
+
+      turnsGameId = nextGameId
+      turnsChannel = supabase
+        .channel(`turns-game:${nextGameId}`)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'turns', filter: `game_id=eq.${nextGameId}` }, async (payload) => {
+          const newTurn = payload.new as any
+          const incoming = {
+            turn_no: newTurn.turn_no as number,
+            seat_no: newTurn.seat_no as number,
+            payload: newTurn.payload,
+          }
+          if (typeof incoming.turn_no === 'number') {
+            const current = get().recentTurns || []
+            const nextRecent = normalizeRecentTurns([incoming, ...current])
+            set({ recentTurns: nextRecent, lastAction: computeLastActionFromRecentTurns(nextRecent, get().currentSeat) })
+          } else {
+            const lastAction = await get().fetchLastTrickPlay()
+            set({ lastAction })
+          }
+        })
+        .subscribe((status: any) => options?.onStatus?.(String(status)))
+    }
+
     // Subscribe to games table for turn updates
     const gameChannel = supabase
       .channel(`game-room:${roomId}`)
@@ -251,12 +335,13 @@ export const useGameStore = create<GameState>((set, get) => ({
         'postgres_changes',
         { event: '*', schema: 'public', table: 'games', filter: `room_id=eq.${roomId}` },
         async (payload) => {
-          console.log('[Store] Game Update Payload:', payload) // Add this log
+          devLog('[Store] Game Update Payload:', payload)
           const newGame = payload.new as any
           const counts = newGame.state_public?.counts || [27, 27, 27, 27]
           const rankings = newGame.state_public?.rankings || []
+          const levelRank = newGame.state_public?.levelRank || 2
 
-          console.log('[Store] Game Update:', newGame.status, rankings)
+          devLog('[Store] Game Update:', newGame.status, rankings)
 
           const previousTurnNo = get().turnNo
           const previousGameId = get().gameId
@@ -267,62 +352,55 @@ export const useGameStore = create<GameState>((set, get) => ({
             status: newGame.status,
             turnNo: newGame.turn_no,
             currentSeat: newGame.current_seat,
+            levelRank,
             counts,
             rankings
           }))
+          if (newGame.id && previousGameId !== newGame.id) {
+            set({ recentTurns: [], lastAction: null })
+          }
+          ensureTurnsChannel(newGame.id || null)
           // Also refetch hand if game just started
           if (payload.eventType === 'INSERT' || (payload.eventType === 'UPDATE' && (payload.old as any)?.status !== 'playing')) {
-             get().fetchGame(roomId)
+             fetchGameThrottled()
           }
 
           // If rankings changed (someone finished), we might want to refresh state more aggressively or just trust the payload
           if (rankings.length > previousRankingsLen) {
-             console.log('[Store] Rankings updated, forcing refresh')
-             get().fetchGame(roomId)
+             devLog('[Store] Rankings updated, forcing refresh')
+             fetchGameThrottled()
           }
 
           if (newGame.id && (previousGameId === newGame.id) && typeof previousTurnNo === 'number') {
             const gap = (newGame.turn_no as number) - previousTurnNo
             if (gap > 1) {
               try {
-                await get().fetchTurnsSince(newGame.id, previousTurnNo)
+                const turns = await get().fetchTurnsSince(newGame.id, previousTurnNo)
+                if (!turns || turns.length === 0) {
+                  const lastAction = await get().fetchLastTrickPlay()
+                  set({ lastAction })
+                }
               } catch {
               }
             }
           }
+        }
+      )
+      .subscribe((status: any) => options?.onStatus?.(String(status)))
 
-          if (newGame.id && payload.eventType === 'UPDATE' && (newGame.turn_no as number) !== previousTurnNo) {
-            const lastAction = await get().fetchLastTrickPlay()
-            set({ lastAction })
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'turns' },
-        async (payload) => {
-           // When a new turn is inserted, update last action
-           // We need to verify if this turn belongs to current game
-           const newTurn = payload.new as any
-           const { gameId } = get()
-           if (newTurn.game_id === gameId) {
-              // Refresh last action
-              const lastAction = await get().fetchLastTrickPlay()
-              set({ lastAction })
-           }
-        }
-      )
-      .subscribe()
+    ensureTurnsChannel(get().gameId)
 
     return () => {
+      fetchGameThrottled.cancel()
       supabase.removeChannel(gameChannel)
+      if (turnsChannel) supabase.removeChannel(turnsChannel)
     }
   },
 
   startGame: async (roomId) => {
     const { error } = await supabase.rpc('start_game', { p_room_id: roomId })
     if (error) {
-      console.error('Start game failed:', error)
+      devError('Start game failed:', error)
       throw error
     }
     // Optimistic update or wait for subscription

@@ -20,8 +20,8 @@ test.describe('房间覆盖层', () => {
     let created = false
     for (let attempt = 0; attempt < 2; attempt++) {
       const roomName = `RoomFull-${Date.now()}-${attempt}`
-      await page.getByPlaceholder('房间名称').fill(roomName)
-      await page.getByText('创建房间').click()
+      await page.getByTestId('lobby-create-name').fill(roomName)
+      await page.getByTestId('lobby-create').click()
       try {
         await page.waitForURL(/\/room\//, { timeout: 120000 })
         created = true

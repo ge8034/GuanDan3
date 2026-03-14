@@ -16,6 +16,9 @@ vi.mock('@/lib/supabase/client', () => {
     })),
     channel: vi.fn(() => channelObj),
     removeChannel: vi.fn(),
+    auth: {
+      getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }),
+    },
   }
 
   return { supabase }
@@ -23,6 +26,8 @@ vi.mock('@/lib/supabase/client', () => {
 
 import { supabase } from '@/lib/supabase/client'
 import { useRoomStore } from '@/lib/store/room'
+import { useGameStore } from '@/lib/store/game'
+import { withNodeEnv } from '@/test/utils/withNodeEnv'
 
 const originalFetchRoom = useRoomStore.getState().fetchRoom
 
@@ -78,6 +83,7 @@ describe('useRoomStore', () => {
     const fetchRoom = vi.fn().mockResolvedValue(undefined)
     useRoomStore.setState({ fetchRoom: fetchRoom as any })
 
+    ;(supabase.auth.getUser as any).mockResolvedValue({ data: { user: { id: 'user-1' } } })
     ;(supabase.rpc as any).mockResolvedValue({ error: null })
     await useRoomStore.getState().toggleReady('room-1', true)
 
@@ -86,12 +92,14 @@ describe('useRoomStore', () => {
 
   it('toggleReady失败时会抛出异常', async () => {
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    ;(supabase.auth.getUser as any).mockResolvedValue({ data: { user: { id: 'user-1' } } })
     ;(supabase.rpc as any).mockResolvedValue({ error: new Error('fail') })
     await expect(useRoomStore.getState().toggleReady('room-1', true)).rejects.toBeDefined()
     errSpy.mockRestore()
   })
 
   it('leaveRoom会清空本地room与members', async () => {
+    useGameStore.setState({ gameId: 'g-1', status: 'playing', myHand: [{ id: 1, suit: 'H', rank: '2', val: 2 } as any] })
     useRoomStore.setState({ currentRoom: { id: 'room-1' } as any, members: [{ seat_no: 0 } as any] })
     ;(supabase.rpc as any).mockResolvedValue({ error: null })
 
@@ -99,6 +107,9 @@ describe('useRoomStore', () => {
 
     expect(useRoomStore.getState().currentRoom).toBeNull()
     expect(useRoomStore.getState().members).toEqual([])
+    expect(useGameStore.getState().gameId).toBeNull()
+    expect(useGameStore.getState().status).toBe('deal')
+    expect(useGameStore.getState().myHand).toEqual([])
   })
 
   it('leaveRoom失败时会抛出异常', async () => {
@@ -124,6 +135,16 @@ describe('useRoomStore', () => {
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     ;(supabase.rpc as any).mockResolvedValue({ error: { code: 'X', message: 'fail' } })
     await expect(useRoomStore.getState().heartbeatRoomMember('room-1')).rejects.toBeDefined()
+    errSpy.mockRestore()
+  })
+
+  it('开发环境下heartbeatRoomMember遇到其它错误会记录日志', async () => {
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    await withNodeEnv('development', async () => {
+      ;(supabase.rpc as any).mockResolvedValue({ error: { code: 'X', message: 'fail' } })
+      await expect(useRoomStore.getState().heartbeatRoomMember('room-1')).rejects.toBeDefined()
+      expect(errSpy).toHaveBeenCalled()
+    })
     errSpy.mockRestore()
   })
 
@@ -156,6 +177,26 @@ describe('useRoomStore', () => {
 
     expect(supabase.removeChannel).toHaveBeenCalledWith(channelA)
     expect(supabase.removeChannel).toHaveBeenCalledWith(channelB)
+  })
+
+  it('subscribeRoom会将subscribe状态回传给onStatus', async () => {
+    const onStatus = vi.fn()
+    const channelA = { on: vi.fn().mockReturnThis(), subscribe: vi.fn().mockReturnThis() }
+    const channelB = { on: vi.fn().mockReturnThis(), subscribe: vi.fn().mockReturnThis() }
+    ;(supabase.channel as any).mockReturnValueOnce(channelA).mockReturnValueOnce(channelB)
+
+    const unsub = useRoomStore.getState().subscribeRoom('room-1', { onStatus })
+    const subA = (channelA.subscribe as any).mock.calls[0]?.[0]
+    const subB = (channelB.subscribe as any).mock.calls[0]?.[0]
+    expect(typeof subA).toBe('function')
+    expect(typeof subB).toBe('function')
+
+    subA('SUBSCRIBED')
+    subB('SUBSCRIBED')
+    expect(onStatus).toHaveBeenCalledWith({ name: 'room', status: 'SUBSCRIBED' })
+    expect(onStatus).toHaveBeenCalledWith({ name: 'members', status: 'SUBSCRIBED' })
+
+    unsub()
   })
 
   it('fetchRoom会同步room与members', async () => {

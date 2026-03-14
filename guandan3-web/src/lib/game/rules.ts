@@ -1,7 +1,7 @@
 
 import { Card } from '@/lib/store/game'
 
-export type HandType = 'single' | 'pair' | 'triple' | 'bomb' | 'pass'
+export type HandType = 'single' | 'pair' | 'triple' | 'straight' | 'sequencePairs' | 'fullhouse' | 'bomb' | 'pass'
 
 export interface Move {
   type: HandType
@@ -41,6 +41,10 @@ export function analyzeMove(cards: Card[], levelRank: number): Move | null {
 
   const values = cards.map(c => getCardValue(c, levelRank)).sort((a, b) => a - b)
   const uniqueValues = Array.from(new Set(values))
+  const rawVals = cards.map(c => c.val).sort((a, b) => a - b)
+  const uniqueRawVals = Array.from(new Set(rawVals))
+  const hasJoker = cards.some(c => c.suit === 'J')
+  const hasLevel = cards.some(c => c.val === levelRank)
 
   // Single
   if (cards.length === 1) {
@@ -65,7 +69,50 @@ export function analyzeMove(cards: Card[], levelRank: number): Move | null {
     return { type: 'bomb', cards, primaryValue: 1000 * cards.length + values[0] }
   }
 
-  // TODO: Straight, Full House, Plate, etc.
+  if (!hasJoker && !hasLevel) {
+    if (cards.length === 5 && uniqueRawVals.length === 2) {
+      const countsByVal = uniqueRawVals
+        .map(v => ({ v, c: rawVals.filter(x => x === v).length }))
+        .sort((a, b) => b.c - a.c)
+      if (countsByVal[0].c === 3 && countsByVal[1].c === 2) {
+        return { type: 'fullhouse', cards, primaryValue: countsByVal[0].v }
+      }
+    }
+
+    if (cards.length >= 5 && uniqueRawVals.length === cards.length) {
+      let isStraight = true
+      for (let i = 1; i < rawVals.length; i++) {
+        if (rawVals[i] !== rawVals[i - 1] + 1) {
+          isStraight = false
+          break
+        }
+      }
+      if (isStraight) {
+        return { type: 'straight', cards, primaryValue: rawVals[rawVals.length - 1] }
+      }
+    }
+
+    if (cards.length >= 4 && cards.length % 2 === 0) {
+      const counts: Record<number, number> = {}
+      for (const v of rawVals) counts[v] = (counts[v] || 0) + 1
+      if (Object.values(counts).every(c => c === 2)) {
+        const pairVals = Object.keys(counts)
+          .map(v => Number(v))
+          .sort((a, b) => a - b)
+        let isSeq = true
+        for (let i = 1; i < pairVals.length; i++) {
+          if (pairVals[i] !== pairVals[i - 1] + 1) {
+            isSeq = false
+            break
+          }
+        }
+        if (isSeq) {
+          return { type: 'sequencePairs', cards, primaryValue: pairVals[pairVals.length - 1] }
+        }
+      }
+    }
+  }
+
   return null
 }
 
