@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Noto_Serif_SC } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/lib/theme/theme-context'
@@ -12,25 +12,26 @@ const notoSerifSC = Noto_Serif_SC({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-noto-serif-sc',
-  preload: true,
+  preload: false,
 })
 
 export const metadata: Metadata = {
   title: '掼蛋 3',
   description: '在线掼蛋对战',
   manifest: '/manifest.json',
-  themeColor: '#6BA539',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
     title: '掼蛋 3',
   },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#6BA539',
 }
 
 export default function RootLayout({

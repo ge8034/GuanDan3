@@ -5,7 +5,14 @@ import { networkOptimizer, NetworkMetrics } from '../performance/network-optimiz
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-const baseClient = createSupabaseClient(supabaseUrl, supabaseAnonKey)
+let baseClient: SupabaseClient | null = null
+
+function getBaseClient(): SupabaseClient {
+  if (!baseClient) {
+    baseClient = createSupabaseClient(supabaseUrl, supabaseAnonKey)
+  }
+  return baseClient
+}
 
 interface OptimizedSupabaseClient {
   from: (table: string) => any
@@ -26,7 +33,7 @@ interface OptimizedSupabaseClient {
 function createOptimizedClient(): OptimizedSupabaseClient {
   const client: OptimizedSupabaseClient = {
     from: (table: string) => {
-      const queryBuilder = baseClient.from(table)
+      const queryBuilder = getBaseClient().from(table)
 
       const originalSelect = queryBuilder.select.bind(queryBuilder)
       const originalInsert = queryBuilder.insert.bind(queryBuilder)
@@ -193,7 +200,7 @@ function createOptimizedClient(): OptimizedSupabaseClient {
         return cached
       }
 
-      const result = baseClient.rpc(fn, params, options)
+      const result = getBaseClient().rpc(fn, params, options)
 
       Promise.resolve(result).then((data: any) => {
         const duration = performance.now() - startTime
