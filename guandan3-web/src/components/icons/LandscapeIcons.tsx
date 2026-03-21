@@ -618,11 +618,11 @@ export const BookIcon: React.FC<IconProps> = ({ size = 'md', className = '' }) =
     strokeLinecap="round"
     strokeLinejoin="round"
   >
-    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 0 1 4 19.5v-15A2.5 2.5 0 0 0 1 6.5 2z" />
-    <path d="M12 6h7" />
-    <path d="M12 10h7" />
-    <path d="M12 14h7" />
+    <path d="M2 3h6v18H2z" />
+    <path d="M8 3h6v18H8z" />
+    <path d="M14 3h6v18h-6z" />
+    <path d="M2 8h18" />
+    <path d="M2 13h18" />
   </svg>
 )
 
