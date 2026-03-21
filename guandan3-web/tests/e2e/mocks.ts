@@ -301,17 +301,38 @@ export async function setupGameMocks(page: Page, userId: string = 'mock-user-id'
   });
 
   await page.route('**/rest/v1/rpc/submit_turn', async route => {
-    console.log('Mocking Submit Turn');
-    
+    const request = route.request();
+    const postData = request.postDataJSON();
+    console.log('Mocking Submit Turn with payload:', JSON.stringify(postData));
+
+    // Get current hand cards from global state
+    const currentHandCards = (global as any).mockHandCards || handCards;
+
+    // Extract cards from payload
+    const payload = postData?.p_payload || {};
+    const playedCards = payload.cards || [];
+
+    console.log(`Played ${playedCards.length} cards, current hand size: ${currentHandCards.length}`);
+
+    // Remove played cards from hand
+    playedCards.forEach((playedCard: any) => {
+      const index = currentHandCards.findIndex(c => c.id === playedCard.id);
+      if (index !== -1) {
+        const removedCard = currentHandCards.splice(index, 1)[0];
+        console.log(`Removed card: ${removedCard.rank}${removedCard.suit}, remaining: ${currentHandCards.length}`);
+      }
+    });
+
+    // If no specific cards were played (fallback), remove first card
+    if (playedCards.length === 0 && currentHandCards.length > 0) {
+      const removedCard = currentHandCards.shift();
+      console.log(`Fallback - Removed first card: ${removedCard.rank}${removedCard.suit}, remaining: ${currentHandCards.length}`);
+    }
+
     // Update game state
     turnNo++;
     currentSeat = (currentSeat + 1) % 4;
-    
-    // Remove first card from hand (simulate playing a card)
-    if (handCards.length > 0) {
-      handCards.shift();
-    }
-    
+
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -321,18 +342,18 @@ export async function setupGameMocks(page: Page, userId: string = 'mock-user-id'
         status: 'playing',
         last_play: {
           seat: (currentSeat + 3) % 4, // Previous seat
-          cards: [{ suit: 'S', rank: 'A', val: 14 }]
+          cards: playedCards.length > 0 ? playedCards : [{ suit: 'S', rank: 'A', val: 14 }]
         }
       }])
     });
-    
-    // Also update the games mock to reflect the new turn
-    // This will trigger a re-render of the game state
-    setTimeout(() => {
-      page.evaluate(() => {
+
+    // Trigger game state update to refresh the UI
+    setTimeout(async () => {
+      await page.evaluate(() => {
         window.dispatchEvent(new CustomEvent('game-state-update'));
+        window.dispatchEvent(new Event('storage'));
       });
-    }, 100);
+    }, 50);
   });
 
   await page.route('**/rest/v1/rpc/get_ai_hand', async route => {
@@ -420,6 +441,9 @@ export async function setupGameMocks(page: Page, userId: string = 'mock-user-id'
     { id: 27, suit: 'D', rank: 'A', val: 14 }
   ];
 
+  // Store handCards in global for cross-function access
+  (global as any).mockHandCards = handCards;
+
   await page.route('**/rest/v1/game_hands*', async route => {
     const url = route.request().url();
     if (route.request().method() === 'GET') {
@@ -428,14 +452,18 @@ export async function setupGameMocks(page: Page, userId: string = 'mock-user-id'
         const gameId = url.split('game_id=eq.')[1]?.split('&')[0];
         // Use stored game ID if available
         const actualGameId = (global as any).mockGameId || gameId;
-        
+
+        // Get current hand cards from global state
+        const currentHandCards = (global as any).mockHandCards || handCards;
+        console.log(`Current hand cards count: ${currentHandCards.length}`);
+
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
           body: JSON.stringify([{
             id: 'hand-1',
             game_id: actualGameId,
-            hand: handCards
+            hand: currentHandCards
           }])
         });
       } else {

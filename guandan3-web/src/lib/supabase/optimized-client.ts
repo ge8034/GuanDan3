@@ -17,7 +17,7 @@ function getBaseClient(): SupabaseClient {
 interface OptimizedSupabaseClient {
   from: (table: string) => any
   rpc: (fn: string, params?: any, options?: { count?: 'exact' | 'planned' | 'estimated' }) => any
-  channel: (name: string, config?: { config?: { broadcast?: { self?: boolean }; presence?: { key?: string } }) => any
+  channel: (name: string, config?: any) => any
   removeChannel: (channel: any) => void
   auth: any
   getDatabaseMetrics: () => DatabaseMetrics

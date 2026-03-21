@@ -44,14 +44,22 @@ export default function VoiceCallPanel({ roomId }: VoiceCallPanelProps) {
 
   const localAudioRef = useRef<HTMLAudioElement>(null)
   const remoteAudioRefs = useRef<Map<string, HTMLAudioElement>>(new Map())
+  const processedStreamsRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
     remoteStreams.forEach((stream, index) => {
+      const streamId = `${index}-${stream.id}`
+      // 避免重复处理同一个流
+      if (processedStreamsRef.current.has(streamId)) {
+        return
+      }
+
       const audioElement = document.createElement('audio')
       audioElement.srcObject = stream
       audioElement.autoplay = true
       audioElement.muted = false
-      remoteAudioRefs.current.set(index.toString(), audioElement)
+      remoteAudioRefs.current.set(streamId, audioElement)
+      processedStreamsRef.current.add(streamId)
     })
 
     return () => {
@@ -61,8 +69,9 @@ export default function VoiceCallPanel({ roomId }: VoiceCallPanelProps) {
         audio.srcObject = null
       })
       currentRefs.clear()
+      processedStreamsRef.current.clear()
     }
-  }, [remoteStreams])
+  }, [remoteStreams.length]) // 只依赖流数量，而不是整个数组
 
   return (
     <div className="flex items-center gap-4">

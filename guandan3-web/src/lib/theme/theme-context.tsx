@@ -64,11 +64,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [gameTheme])
 
   const currentTheme = useMemo(() => {
+    if (!mounted) {
+      return themeConfigs.classic
+    }
     if (gameTheme.startsWith('custom_')) {
       return customThemes[gameTheme] || themeConfigs.classic
     }
     return themeConfigs[gameTheme] || themeConfigs.classic
-  }, [gameTheme, customThemes])
+  }, [gameTheme, customThemes, mounted])
 
   return (
     <ThemeContext.Provider

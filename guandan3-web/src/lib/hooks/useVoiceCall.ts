@@ -45,6 +45,7 @@ export function useVoiceCall({
   const peerConnectionsRef = useRef<Map<string, RTCPeerConnection>>(new Map())
   const remoteStreamsRef = useRef<Map<string, MediaStream>>(new Map())
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
+  const isCallActiveRef = useRef(false) // 用于防止重复调用
 
   const updateState = useCallback((updates: Partial<VoiceCallState>) => {
     setState(prev => ({ ...prev, ...updates }))
@@ -165,6 +166,7 @@ export function useVoiceCall({
 
   const startCall = useCallback(async () => {
     try {
+      isCallActiveRef.current = true
       updateState({ isCalling: true, error: null })
       await getLocalStream()
 
@@ -180,11 +182,25 @@ export function useVoiceCall({
         })
     } catch (error) {
       devError('开始通话失败:', error)
+      isCallActiveRef.current = false
       updateState({ isCalling: false, error: error instanceof Error ? error.message : '开始通话失败' })
     }
   }, [roomId, getLocalStream, createPeerConnection, handleOffer, handleAnswer, handleIceCandidate, updateState])
 
+  // 使用 ref 来避免 onCallEnded 依赖变化导致 useCallback 重新创建
+  const onCallEndedRef = useRef(onCallEnded)
+  useEffect(() => {
+    onCallEndedRef.current = onCallEnded
+  }, [onCallEnded])
+
   const endCall = useCallback(() => {
+    // 防止重复调用
+    if (!isCallActiveRef.current) {
+      return
+    }
+
+    isCallActiveRef.current = false
+
     localStreamRef.current?.getTracks().forEach(track => track.stop())
     localStreamRef.current = null
 
@@ -200,11 +216,14 @@ export function useVoiceCall({
       isInCall: false,
       isCalling: false,
       participants: [],
+      localStream: null,
+      remoteStreams: [],
       error: null
     })
 
-    onCallEnded?.()
-  }, [onCallEnded, updateState])
+    // 使用 ref 而不是直接调用，避免依赖问题
+    onCallEndedRef.current?.()
+  }, [updateState])
 
   const toggleMute = useCallback(() => {
     if (localStreamRef.current) {
