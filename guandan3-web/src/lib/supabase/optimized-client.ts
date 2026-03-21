@@ -17,6 +17,9 @@ function getBaseClient(): SupabaseClient {
 interface OptimizedSupabaseClient {
   from: (table: string) => any
   rpc: (fn: string, params?: any, options?: { count?: 'exact' | 'planned' | 'estimated' }) => any
+  channel: (name: string, config?: { config?: { broadcast?: { self?: boolean }; presence?: { key?: string } }) => any
+  removeChannel: (channel: any) => void
+  auth: any
   getDatabaseMetrics: () => DatabaseMetrics
   getDatabasePerformanceReport: () => ReturnType<typeof import('../performance/database-optimizer').getDatabasePerformanceReport>
   clearDatabaseCache: (pattern?: string) => void
@@ -226,6 +229,16 @@ function createOptimizedClient(): OptimizedSupabaseClient {
 
       return result
     },
+
+    channel: (name: string, config?: any) => {
+      return getBaseClient().channel(name, config)
+    },
+
+    removeChannel: (channel: any) => {
+      getBaseClient().removeChannel(channel)
+    },
+
+    auth: getBaseClient().auth,
 
     getDatabaseMetrics: () => databaseOptimizer.getMetrics(),
 
