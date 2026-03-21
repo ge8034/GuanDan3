@@ -255,4 +255,5 @@ function createOptimizedClient(): OptimizedSupabaseClient {
 }
 
 export const supabase = createOptimizedClient()
+export { createOptimizedClient }
 export type { OptimizedSupabaseClient }
