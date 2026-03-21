@@ -1,18 +1,77 @@
 import { WorkerAgent } from '../core/WorkerAgent';
-import { AgentConfig, Task, AgentStatus } from '../core/types';
-import { decideMove } from '@/lib/game/ai';
+import { AgentConfig, Task, AgentStatus, Message } from '../core/types';
+import { decideMove, AIDifficulty } from '@/lib/game/ai';
 import { Card } from '@/lib/store/game';
+import { CardCounter } from '@/lib/game/cardCounter';
 
 interface GuanDanTaskPayload {
   hand: Card[];
   lastAction: { type: 'play' | 'pass'; cards?: Card[]; seatNo?: number } | null;
   levelRank: number;
   seatNo: number;
+  playersCardCounts?: number[]; // Added optional counts from system
 }
 
 export class GuanDanAgent extends WorkerAgent {
+  private cardCounter: CardCounter | null = null;
+  private currentLevel: number = 2;
+  private playersCardCounts: number[] = [27, 27, 27, 27];
+  private difficulty: AIDifficulty = 'medium';
+
   constructor(config: AgentConfig) {
     super(config);
+    // Set difficulty from config if provided
+    if (config.difficulty && ['easy', 'medium', 'hard'].includes(config.difficulty)) {
+      this.difficulty = config.difficulty as AIDifficulty;
+    }
+  }
+
+  // Override to handle game events for card counting
+  public async receive(message: Message): Promise<void> {
+    await super.receive(message);
+    
+    // Listen for game events (e.g., played cards)
+    if (message.type === 'GAME_ACTION') {
+       const { action, levelRank } = message.payload;
+       
+       // Update level if changed
+       if (levelRank && levelRank !== this.currentLevel) {
+         this.currentLevel = levelRank;
+         // Reset counter on level change (new game usually)
+         this.cardCounter = new CardCounter(this.currentLevel);
+         // Reset card counts
+         this.playersCardCounts = [27, 27, 27, 27];
+       }
+
+       // Initialize counter if needed
+       if (!this.cardCounter) {
+         this.cardCounter = new CardCounter(this.currentLevel);
+       }
+
+       // Record played cards and update counts
+       if (action && action.type === 'play' && action.cards) {
+         this.cardCounter.recordPlayedCards(action.cards);
+         
+         // Update card count for the player who played
+         if (typeof action.seatNo === 'number' && action.seatNo >= 0 && action.seatNo < 4) {
+           this.playersCardCounts[action.seatNo] = Math.max(0, this.playersCardCounts[action.seatNo] - action.cards.length);
+         }
+       }
+    } else if (message.type === 'GAME_START') {
+       const { levelRank } = message.payload;
+       this.currentLevel = levelRank || 2;
+       this.cardCounter = new CardCounter(this.currentLevel);
+       this.playersCardCounts = [27, 27, 27, 27];
+    }
+  }
+
+  // Helper to broadcast thinking logs
+  private async logThinking(message: string): Promise<void> {
+    await this.sendMessage('BROADCAST', 'AGENT_LOG', {
+      agentId: this.id,
+      message,
+      timestamp: Date.now()
+    });
   }
 
   protected async processTask(task: Task): Promise<void> {
@@ -25,14 +84,40 @@ export class GuanDanAgent extends WorkerAgent {
 
     const payload = task.payload as GuanDanTaskPayload;
     
+    // Update internal card counts if provided in payload (source of truth)
+    if (payload.playersCardCounts && payload.playersCardCounts.length === 4) {
+      this.playersCardCounts = [...payload.playersCardCounts];
+    }
+    
+    await this.logThinking(`收到任务: 思考出牌 (手牌: ${payload.hand.length}, 剩余: ${this.playersCardCounts.join(',')})`);
+
+    // Ensure counter is initialized (fallback)
+    if (!this.cardCounter) {
+      this.cardCounter = new CardCounter(payload.levelRank);
+    }
+    
     // Simulate thinking time (random between 500ms and 1500ms)
     const thinkingTime = Math.floor(Math.random() * 1000) + 500;
     await new Promise(resolve => setTimeout(resolve, thinkingTime));
 
     try {
-      // Execute existing AI logic
-      const move = decideMove(payload.hand, payload.lastAction, payload.levelRank);
+      await this.logThinking(`正在分析局势... 上家动作: ${payload.lastAction?.type || '无'}`);
       
+      // Execute existing AI logic with CardCounter and PlayerCardCounts
+      const lastPlayCards = payload.lastAction?.type === 'play' ? payload.lastAction.cards || null : null;
+      const isLeading = !payload.lastAction || payload.lastAction.type === 'pass';
+
+      const move = decideMove(
+        payload.hand,
+        lastPlayCards,
+        payload.levelRank,
+        this.difficulty,
+        isLeading
+        // Note: teammateCards and teammateSituation are optional and not used in current implementation
+      );
+      
+      await this.logThinking(`决策完成: ${move.type === 'pass' ? '过牌' : `出牌 (${move.cards?.length}张)`}`);
+
       const result = {
         taskId: task.id,
         output: {
@@ -46,6 +131,7 @@ export class GuanDanAgent extends WorkerAgent {
       await this.sendMessage('SYSTEM', 'TASK_RESULT', result);
     } catch (error) {
       console.error('GuanDanAgent error:', error);
+      await this.logThinking(`发生错误: ${String(error)}`);
       await this.sendMessage('SYSTEM', 'TASK_RESULT', {
         taskId: task.id,
         error: String(error),

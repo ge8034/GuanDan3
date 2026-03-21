@@ -6,7 +6,14 @@ export async function GET() {
     const { data: rooms, error } = await supabase
       .from('rooms')
       .select(`
-        *,
+        id,
+        name,
+        mode,
+        type,
+        status,
+        visibility,
+        owner_uid,
+        created_at,
         room_members (
           id,
           user_id,

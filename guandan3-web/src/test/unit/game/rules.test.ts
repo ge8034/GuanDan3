@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { analyzeMove, canBeat, getCardValue } from '@/lib/game/rules'
+import { analyze, analyzeMove, canBeat, getCardValue } from '@/lib/game/rules'
 import type { Card } from '@/lib/store/game'
 
 const c = (card: Partial<Card>): Card => ({
@@ -69,6 +69,69 @@ describe('rules', () => {
     expect(invalid).toBeNull()
   })
 
+  it('analyzeMove：王炸/四带二/飞机/飞机带翅膀', () => {
+    const jokerBomb = analyzeMove([c({ id: 1, suit: 'J', rank: 'hr', val: 0 }), c({ id: 2, suit: 'J', rank: 'sb', val: 0 })], 2)
+    expect(jokerBomb?.type).toBe('bomb')
+
+    const quadWithTwo = analyzeMove(
+      [
+        c({ id: 10, suit: 'S', rank: '7', val: 7 }),
+        c({ id: 11, suit: 'D', rank: '7', val: 7 }),
+        c({ id: 12, suit: 'C', rank: '7', val: 7 }),
+        c({ id: 13, suit: 'H', rank: '7', val: 7 }),
+        c({ id: 14, suit: 'S', rank: '9', val: 9 }),
+        c({ id: 15, suit: 'D', rank: '10', val: 10 }),
+      ],
+      2
+    )
+    expect(quadWithTwo?.type).toBe('bomb')
+
+    const airplane = analyzeMove(
+      [
+        c({ id: 20, suit: 'S', rank: '3', val: 3 }),
+        c({ id: 21, suit: 'D', rank: '3', val: 3 }),
+        c({ id: 22, suit: 'C', rank: '3', val: 3 }),
+        c({ id: 23, suit: 'S', rank: '4', val: 4 }),
+        c({ id: 24, suit: 'D', rank: '4', val: 4 }),
+        c({ id: 25, suit: 'C', rank: '4', val: 4 }),
+      ],
+      2
+    )
+    expect(airplane?.type).toBe('sequenceTriples')
+
+    const airplaneWithWings = analyzeMove(
+      [
+        c({ id: 30, suit: 'S', rank: '3', val: 3 }),
+        c({ id: 31, suit: 'D', rank: '3', val: 3 }),
+        c({ id: 32, suit: 'C', rank: '3', val: 3 }),
+        c({ id: 33, suit: 'S', rank: '4', val: 4 }),
+        c({ id: 34, suit: 'D', rank: '4', val: 4 }),
+        c({ id: 35, suit: 'C', rank: '4', val: 4 }),
+        c({ id: 36, suit: 'S', rank: '7', val: 7 }),
+        c({ id: 37, suit: 'D', rank: '8', val: 8 }),
+      ],
+      2
+    )
+    expect(airplaneWithWings?.type).toBe('sequenceTriplesWithWings')
+
+    const airplaneWithPairWings = analyzeMove(
+      [
+        c({ id: 50, suit: 'S', rank: '3', val: 3 }),
+        c({ id: 51, suit: 'D', rank: '3', val: 3 }),
+        c({ id: 52, suit: 'C', rank: '3', val: 3 }),
+        c({ id: 53, suit: 'S', rank: '4', val: 4 }),
+        c({ id: 54, suit: 'D', rank: '4', val: 4 }),
+        c({ id: 55, suit: 'C', rank: '4', val: 4 }),
+        c({ id: 56, suit: 'S', rank: '5', val: 5 }),
+        c({ id: 57, suit: 'D', rank: '5', val: 5 }),
+        c({ id: 58, suit: 'S', rank: '6', val: 6 }),
+        c({ id: 59, suit: 'D', rank: '6', val: 6 }),
+      ],
+      2
+    )
+    expect(airplaneWithPairWings?.type).toBe('sequenceTriplesWithWings')
+  })
+
   it('canBeat：同型比较与炸弹规则', () => {
     const aSingle = analyzeMove([c({ suit: 'S', rank: '6', val: 6, id: 1 })], 2)!
     const bSingle = analyzeMove([c({ suit: 'D', rank: '5', val: 5, id: 2 })], 2)!
@@ -91,5 +154,21 @@ describe('rules', () => {
       2
     )!
     expect(canBeat(straight9, straight8)).toBe(true)
+  })
+
+  it('canBeat：pass 与不同张数', () => {
+    const pass = analyzeMove([], 2)!
+    const single = analyzeMove([c({ suit: 'S', rank: '6', val: 6, id: 1 })], 2)!
+    expect(canBeat(single, pass)).toBe(true)
+    expect(canBeat(pass, single)).toBe(false)
+
+    const pair = analyzeMove([c({ id: 2, suit: 'S', rank: '7', val: 7 }), c({ id: 3, suit: 'D', rank: '7', val: 7 })], 2)!
+    const triple = analyzeMove([c({ id: 4, suit: 'S', rank: '7', val: 7 }), c({ id: 5, suit: 'D', rank: '7', val: 7 }), c({ id: 6, suit: 'C', rank: '7', val: 7 })], 2)!
+    expect(canBeat(pair, triple)).toBe(false)
+  })
+
+  it('analyze 与 analyzeMove 一致', () => {
+    const cards = [c({ id: 1, suit: 'S', rank: 'A', val: 14 })]
+    expect(analyze(cards, 2)).toEqual(analyzeMove(cards, 2))
   })
 })

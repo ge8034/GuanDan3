@@ -43,4 +43,9 @@ export class TeamManager {
   public getAgent(agentId: AgentId): WorkerAgent | undefined {
     return this.agents.get(agentId);
   }
+
+  public async broadcastToTeam(teamId: TeamId, message: any): Promise<void> {
+    const agents = this.getAgentsInTeam(teamId);
+    await Promise.all(agents.map(agent => agent.receive(message)));
+  }
 }

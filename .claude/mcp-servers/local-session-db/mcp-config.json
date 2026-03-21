@@ -1,0 +1,6 @@
+{
+  "local-session-db": {
+    "command": "node",
+    "args": [".claude/mcp-servers/local-session-db/index.js"]
+  }
+}

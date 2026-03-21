@@ -1,0 +1,130 @@
+name: Deploy to PM2
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to Production Server
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linter
+        run: npm run lint
+
+      - name: Run type check
+        run: npm run typecheck
+
+      - name: Run tests
+        run: npm test -- --run
+
+      - name: Run security audit
+        run: npm audit --audit-level=moderate
+
+      - name: Build application
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v9
+        with:
+          urls: |
+            https://guandan3.com
+            https://guandan3.com/lobby
+            https://guandan3.com/room
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+      - name: Deploy to server
+        uses: easingthemes/ssh-deploy@v4
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          TARGET: /var/www/guandan3-web
+          SOURCE: "./"
+          EXCLUDE: "/node_modules/, /.git/, /.next/, /logs/, /.env.local"
+
+      - name: Install dependencies on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/guandan3-web
+            npm ci --production=false
+
+      - name: Build on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/guandan3-web
+            npm run build
+
+      - name: Restart PM2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/guandan3-web
+            pm2 reload ecosystem.config.js --env production
+
+      - name: Health check
+        uses: jtalk/url-health-check-action@v3
+        with:
+          url: https://guandan3.com/health
+          max-attempts: 5
+          retry-delay: 10s
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.run_number }}
+          release_name: Release v${{ github.run_number }}
+          body: |
+            ## Changes in this Release
+            - Production deployment to PM2
+            - All tests passed
+            - Security audit passed
+            - Lighthouse CI passed
+          draft: false
+          prerelease: false
+
+      - name: Notify deployment success
+        uses: 8398a7/action-slack@v3
+        if: success()
+        with:
+          status: ${{ job.status }}
+          text: '✅ Production deployment successful! Version v${{ github.run_number }} is now live on PM2.'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Notify deployment failure
+        uses: 8398a7/action-slack@v3
+        if: failure()
+        with:
+          status: ${{ job.status }}
+          text: '❌ Production deployment failed! Please check logs.'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}

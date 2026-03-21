@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find C:/Users/Administrator/.trae -maxdepth 3 -name *.json -path */extension/* -exec grep -l agent {})",
+      "Bash(2)",
+      "Bash(find C:/Users/Administrator/AppData/Roaming/Trae/ahanet -name *agent*)",
+      "Bash(npm install:*)",
+      "Bash(timeout 2 node index.js)"
+    ]
+  }
+"hooks": {
+"onEdit": "npx pyright --quiet"
+}
+"env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}

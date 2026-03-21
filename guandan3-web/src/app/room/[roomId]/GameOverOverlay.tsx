@@ -1,5 +1,7 @@
 'use client'
 
+import RippleEffect from '@/components/effects/RippleEffect'
+
 export type GameOverOverlayProps = {
   visible: boolean
   rankings: number[]
@@ -13,7 +15,7 @@ export const GameOverOverlay = ({ visible, rankings, mySeat, isOwner, onRestart 
 
   return (
     <div className="fixed inset-0 z-[10000] bg-black/80 flex items-center justify-center backdrop-blur-md">
-      <div className="bg-gradient-to-br from-yellow-900 to-black border-2 border-yellow-500 rounded-2xl p-8 max-w-md w-full shadow-2xl text-center animate-in fade-in zoom-in duration-300">
+      <div className="bg-gradient-to-br from-yellow-900 to-black border-2 border-yellow-500 rounded-xl p-8 max-w-md w-full shadow-2xl text-center animate-in fade-in zoom-in duration-300">
         <h2 className="text-4xl font-bold text-yellow-400 mb-6 drop-shadow-md">游戏结束</h2>
         <div className="space-y-4">
           {rankings.map((seat, index) => (
@@ -30,12 +32,14 @@ export const GameOverOverlay = ({ visible, rankings, mySeat, isOwner, onRestart 
         </div>
         <div className="mt-8 flex justify-center gap-4">
           {isOwner ? (
-            <button
-              onClick={onRestart}
-              className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-3 px-8 rounded-full shadow-lg transition transform hover:scale-105"
-            >
-              再来一局
-            </button>
+            <RippleEffect className="relative inline-block">
+              <button
+                onClick={onRestart}
+                className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-3 px-8 rounded-full shadow-lg transition transform hover:scale-105"
+              >
+                再来一局
+              </button>
+            </RippleEffect>
           ) : (
             <div className="text-white/60">等待房主开始新游戏...</div>
           )}

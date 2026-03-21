@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useChat, ChatMessage } from '@/lib/hooks/useChat';
+import RippleEffect from '@/components/effects/RippleEffect';
 
 interface ChatBoxProps {
   roomId: string;
@@ -40,17 +41,19 @@ export const ChatBox = ({ roomId, userId, userName }: ChatBoxProps) => {
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="w-80 h-96 bg-black/80 backdrop-blur-md rounded-2xl border border-white/10 shadow-2xl flex flex-col overflow-hidden"
+            className="w-80 h-96 bg-black/80 backdrop-blur-md rounded-xl border border-white/10 shadow-2xl flex flex-col overflow-hidden"
           >
             {/* Header */}
             <div className="p-3 border-b border-white/10 flex justify-between items-center bg-white/5">
               <span className="text-white font-bold text-sm">💬 聊天室</span>
-              <button 
-                onClick={() => setIsOpen(false)}
-                className="text-white/50 hover:text-white transition-colors"
-              >
-                ✕
-              </button>
+              <RippleEffect className="relative inline-block">
+                <button 
+                  onClick={() => setIsOpen(false)}
+                  className="text-white/50 hover:text-white transition-colors"
+                >
+                  ✕
+                </button>
+              </RippleEffect>
             </div>
 
             {/* Messages */}
@@ -95,13 +98,14 @@ export const ChatBox = ({ roomId, userId, userName }: ChatBoxProps) => {
               {/* Emoji Bar */}
               <div className="flex gap-1 overflow-x-auto pb-2 scrollbar-hide">
                 {EMOJIS.map(emoji => (
-                  <button
-                    key={emoji}
-                    onClick={() => handleEmoji(emoji)}
-                    className="text-lg hover:scale-125 transition-transform p-1"
-                  >
-                    {emoji}
-                  </button>
+                  <RippleEffect key={emoji} className="relative inline-block">
+                    <button
+                      onClick={() => handleEmoji(emoji)}
+                      className="text-lg hover:scale-125 transition-transform p-1"
+                    >
+                      {emoji}
+                    </button>
+                  </RippleEffect>
                 ))}
               </div>
               
@@ -115,30 +119,34 @@ export const ChatBox = ({ roomId, userId, userName }: ChatBoxProps) => {
                   data-testid="chat-input"
                   className="flex-1 bg-black/30 border border-white/10 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:border-blue-500/50"
                 />
-                <button
-                  onClick={handleSend}
-                  disabled={!inputValue.trim()}
-                  data-testid="chat-send"
-                  className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-1.5 rounded-lg text-sm font-bold transition-colors"
-                >
-                  发送
-                </button>
+                <RippleEffect className="relative inline-block">
+                  <button
+                    onClick={handleSend}
+                    disabled={!inputValue.trim()}
+                    data-testid="chat-send"
+                    className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-1.5 rounded-lg text-sm font-bold transition-colors"
+                  >
+                    发送
+                  </button>
+                </RippleEffect>
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <button
-        onClick={() => {
-            console.log('Chat toggle clicked, isOpen:', isOpen);
-            setIsOpen(!isOpen);
-        }}
-        data-testid="chat-toggle"
-        className="w-12 h-12 rounded-full bg-blue-600 text-white shadow-lg flex items-center justify-center text-xl hover:bg-blue-500 transition-colors border-2 border-white/20 transform active:scale-95 hover:scale-105 transition-transform"
-      >
-        {isOpen ? '✕' : '💬'}
-      </button>
+      <RippleEffect className="relative inline-block">
+        <button
+          onClick={() => {
+              console.log('Chat toggle clicked, isOpen:', isOpen);
+              setIsOpen(!isOpen);
+          }}
+          data-testid="chat-toggle"
+          className="w-12 h-12 rounded-full bg-blue-600 text-white shadow-lg flex items-center justify-center text-xl hover:bg-blue-500 transition-colors border-2 border-white/20 transform active:scale-95 hover:scale-105 transition-transform"
+        >
+          {isOpen ? '✕' : '💬'}
+        </button>
+      </RippleEffect>
     </div>
   );
 };

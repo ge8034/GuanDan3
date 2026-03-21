@@ -355,98 +355,7 @@ Authorization: Bearer <token>
 }
 ```
 
-### 战绩相关
 
-#### 获取战绩列表
-
-获取玩家的历史战绩。
-
-**请求**:
-```http
-GET /api/history?page=1&limit=20
-Authorization: Bearer <token>
-```
-
-**参数**:
-- `page` (number, 可选): 页码，默认 1
-- `limit` (number, 可选): 每页数量，默认 20
-
-**响应**:
-```json
-{
-  "games": [
-    {
-      "id": "uuid",
-      "mode": "pvp4",
-      "status": "finished",
-      "result": "win",
-      "score": 100,
-      "played_at": "2026-03-14T10:00:00Z"
-    }
-  ],
-  "total": 50,
-  "page": 1,
-  "limit": 20
-}
-```
-
-#### 获取战绩详情
-
-获取指定游戏的详细战绩。
-
-**请求**:
-```http
-GET /api/history/{game_id}
-Authorization: Bearer <token>
-```
-
-**响应**:
-```json
-{
-  "id": "uuid",
-  "mode": "pvp4",
-  "status": "finished",
-  "result": "win",
-  "score": 100,
-  "turns": 20,
-  "duration": 1800,
-  "players": [
-    {
-      "uid": "uuid",
-      "nickname": "玩家1",
-      "seat_no": 0,
-      "score": 100
-    }
-  ],
-  "played_at": "2026-03-14T10:00:00Z"
-}
-```
-
-### 统计相关
-
-#### 获取玩家统计
-
-获取玩家的统计数据。
-
-**请求**:
-```http
-GET /api/stats
-Authorization: Bearer <token>
-```
-
-**响应**:
-```json
-{
-  "total_games": 100,
-  "wins": 60,
-  "losses": 40,
-  "win_rate": 0.6,
-  "total_score": 5000,
-  "avg_score": 50,
-  "best_score": 200,
-  "play_time": 36000
-}
-```
 
 ## 错误处理
 
@@ -669,12 +578,11 @@ API 使用语义化版本控制：
 
 ## 变更日志
 
-### v1.0.0 (2026-03-14)
+### v1.0.0 (2026-03-18)
 - 初始版本发布
 - 用户管理 API
 - 房间管理 API
 - 游戏管理 API
-- 战绩查询 API
 - WebSocket 实时更新
 
 ## 支持

@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
+    },
+    "github": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/",
+      "headers": {
+        "Authorization": "Bearer ${GITHUB_PERSONAL_ACCESS_TOKEN}"
+      }
+    },
+    "local-session-db": {
+      "command": "node",
+      "args": ["D:/Claude-Skills/.claude/mcp-servers/local-session-db/index.js"]
+    }
+  }
+}

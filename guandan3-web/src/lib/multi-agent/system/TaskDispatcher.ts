@@ -89,7 +89,7 @@ export class TaskDispatcher {
   }
 
   // Helper to subscribe to specific task completion
-  public waitForTaskResult(taskId: TaskId, timeoutMs = 10000): Promise<any> {
+  public waitForTaskResult(taskId: TaskId, timeoutMs = 30000): Promise<any> {
     return new Promise((resolve, reject) => {
       const check = () => {
         const res = this.completedTasks.get(taskId);
@@ -97,28 +97,17 @@ export class TaskDispatcher {
         else return false;
         return true;
       }
-      
+
       if (check()) return;
 
       const timer = setTimeout(() => {
-        // this.messageBus.unsubscribe('SYSTEM_WAIT', handler);
+        clearInterval(interval);
         reject(new Error('Task timeout'));
       }, timeoutMs);
 
-      // const handler = (msg: Message) => {
-      //   if (msg.type === 'TASK_RESULT' && msg.payload.taskId === taskId) {
-      //     clearTimeout(timer);
-      //     this.messageBus.unsubscribe('SYSTEM_WAIT', handler); // Ideally use a unique ID
-      //     resolve(msg.payload);
-      //   }
-      // }
-      
-      // Hacky way to listen, better to have specific channel or use existing subscription
-      // Re-using the message bus logic is tricky without polluting global listeners.
-      // But since we already subscribe 'SYSTEM' in constructor, we can just hook into completedTasks updates?
-      // Actually, let's just poll or use an event emitter.
-      // For now, let's use a simple polling for simplicity as MessageBus is singleton.
-      
+      // Use a more efficient polling interval or event emitter
+      // For now, increasing timeout default and polling interval is a quick fix
+      // Ideally, MessageBus should support once('taskId') or similar
       const interval = setInterval(() => {
         const res = this.completedTasks.get(taskId);
         if (res) {
@@ -126,7 +115,7 @@ export class TaskDispatcher {
           clearTimeout(timer);
           resolve(res);
         }
-      }, 50);
+      }, 100);
     });
   }
 }

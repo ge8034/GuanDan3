@@ -1,0 +1,177 @@
+# GameCanvas 特定监控告警配置
+# 针对讨论问题中提到的GameCanvas相关问题
+
+version: "1.0"
+
+# GameCanvas 特定告警规则
+rules:
+  # 1. 无限循环检测 - 针对 setupEventListeners 递归调用问题
+  - name: "gamecanvas_event_listener_recursion"
+    description: "GameCanvas事件监听器递归调用检测"
+    condition: "rate(gamecanvas_event_listener_calls_total[1m]) > 100"
+    duration: "30s"
+    severity: "critical"
+    channels:
+      - "slack-production"
+      - "pagerduty"
+    annotations:
+      summary: "GameCanvas事件监听器可能陷入无限循环"
+      description: "事件监听器调用频率过高，可能由于setupEventListeners递归调用导致"
+      runbook: "https://docs.guandan3.com/runbooks/gamecanvas-infinite-loop"
+
+  # 2. 异步依赖超时 - 针对 initGame 异步但无await问题
+  - name: "gamecanvas_async_dependency_timeout"
+    description: "GameCanvas异步依赖初始化超时"
+    condition: "gamecanvas_initialization_duration_seconds > 10"
+    duration: "1m"
+    severity: "warning"
+    channels:
+      - "slack-production"
+    annotations:
+      summary: "GameCanvas初始化超时"
+      description: "GameCanvas异步依赖初始化时间超过10秒，可能由于initGame缺少await"
+      runbook: "https://docs.guandan3.com/runbooks/gamecanvas-init-timeout"
+
+  # 3. Phaser场景初始化失败 - 针对 MainGameScene 初始化问题
+  - name: "gamecanvas_phaser_scene_init_failure"
+    description: "GameCanvas Phaser场景初始化失败"
+    condition: "gamecanvas_phaser_scene_init_errors_total > 0"
+    duration: "5m"
+    severity: "critical"
+    channels:
+      - "slack-production"
+      - "pagerduty"
+    annotations:
+      summary: "Phaser场景初始化失败"
+      description: "MainGameScene初始化失败，可能由于创建普通对象而非Phaser Scene"
+      runbook: "https://docs.guandan3.com/runbooks/phaser-scene-init-failure"
+
+  # 4. 内存泄漏检测 - 针对 25+个useEffect 和内存泄漏风险
+  - name: "gamecanvas_memory_leak_detected"
+    description: "GameCanvas内存泄漏检测"
+    condition: "increase(gamecanvas_memory_usage_bytes[1h]) > 1GB"
+    duration: "30m"
+    severity: "warning"
+    channels:
+      - "slack-production"
+    annotations:
+      summary: "检测到GameCanvas内存泄漏"
+      description: "GameCanvas内存使用在1小时内增加超过1GB，可能由于useEffect未正确清理"
+      runbook: "https://docs.guandan3.com/runbooks/gamecanvas-memory-leak"
+
+  # 5. CPU使用率异常 - 针对复杂异步逻辑导致的CPU飙升
+  - name: "gamecanvas_cpu_spike"
+    description: "GameCanvas CPU使用率异常"
+    condition: "rate(gamecanvas_process_cpu_seconds_total[5m]) > 0.8"
+    duration: "2m"
+    severity: "critical"
+    channels:
+      - "slack-production"
+      - "pagerduty"
+    annotations:
+      summary: "GameCanvas CPU使用率异常"
+      description: "GameCanvas CPU使用率超过80%，可能由于复杂异步逻辑或无限循环"
+      runbook: "https://docs.guandan3.com/runbooks/gamecanvas-cpu-spike"
+
+  # 6. 容器引用变更检测 - 针对 gameRef.current 可变性问题
+  - name: "gamecanvas_container_reference_changed"
+    description: "GameCanvas容器引用变更检测"
+    condition: "gamecanvas_container_changes_total > 3"
+    duration: "5m"
+    severity: "warning"
+    channels:
+      - "slack-production"
+    annotations:
+      summary: "GameCanvas容器引用频繁变更"
+      description: "gameRef.current在短时间内多次变更，可能导致Phaser挂载到失效容器"
+      runbook: "https://docs.guandan3.com/runbooks/gamecanvas-container-ref"
+
+  # 7. 事件桥接失败 - 针对 EventBridge 初始化问题
+  - name: "gamecanvas_event_bridge_failure"
+    description: "GameCanvas事件桥接失败"
+    condition: "gamecanvas_event_bridge_errors_total > 0"
+    duration: "5m"
+    severity: "critical"
+    channels:
+      - "slack-production"
+      - "pagerduty"
+    annotations:
+      summary: "GameCanvas事件桥接失败"
+      description: "EventBridge初始化或通信失败，可能由于this.sys过早使用"
+      runbook: "https://docs.guandan3.com/runbooks/gamecanvas-event-bridge"
+
+# 指标定义说明
+# 需要在应用中收集以下指标：
+#
+# gamecanvas_event_listener_calls_total - 事件监听器调用次数
+# gamecanvas_initialization_duration_seconds - 初始化持续时间
+# gamecanvas_phaser_scene_init_errors_total - Phaser场景初始化错误数
+# gamecanvas_memory_usage_bytes - 内存使用量
+# gamecanvas_process_cpu_seconds_total - CPU使用时间
+# gamecanvas_container_changes_total - 容器引用变更次数
+# gamecanvas_event_bridge_errors_total - 事件桥接错误数
+
+# 告警抑制规则
+inhibit_rules:
+  # 当有critical告警时，抑制同源的warning告警
+  - source_match:
+      severity: "critical"
+    target_match:
+      severity: "warning"
+    equal: ["service", "instance"]
+
+# 静默规则（维护窗口）
+silence_rules:
+  - name: "gamecanvas_maintenance_window"
+    matchers:
+      - name: "alertname"
+        value: "gamecanvas_.*"
+    starts_at: "2024-01-01T02:00:00Z"
+    ends_at: "2024-01-01T04:00:00Z"
+    comment: "GameCanvas计划维护窗口"
+
+# 路由配置
+route:
+  group_by: ["alertname", "instance"]
+  group_wait: "30s"
+  group_interval: "5m"
+  repeat_interval: "4h"
+
+  routes:
+    # GameCanvas特定告警路由
+    - match:
+        alertname: "gamecanvas_.*"
+      receiver: "gamecanvas-receiver"
+      group_wait: "10s"
+      group_interval: "2m"
+      repeat_interval: "1h"
+
+    # 严重告警路由
+    - match:
+        severity: "critical"
+      receiver: "critical-receiver"
+      group_wait: "0s"
+
+# 接收器配置
+receivers:
+  - name: "gamecanvas-receiver"
+    slack_configs:
+      - channel: "#gamecanvas-alerts"
+        send_resolved: true
+        title: "GameCanvas告警: {{ .GroupLabels.alertname }}"
+        text: "{{ range .Alerts }}{{ .Annotations.summary }}\n{{ .Annotations.description }}\n{{ end }}"
+
+  - name: "critical-receiver"
+    slack_configs:
+      - channel: "#critical-alerts"
+        send_resolved: true
+    pagerduty_configs:
+      - service_key: "${PAGERDUTY_SERVICE_KEY}"
+        severity: "critical"
+
+# 部署说明
+# 1. 将此文件合并到主告警配置中
+# 2. 在应用中实现指标收集
+# 3. 配置Prometheus抓取规则
+# 4. 测试告警规则
+# 5. 更新运行手册链接

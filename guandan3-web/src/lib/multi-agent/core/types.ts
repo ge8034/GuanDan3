@@ -22,6 +22,7 @@ export interface AgentConfig {
   role: string;
   capabilities: Capability[];
   maxLoad: number;
+  difficulty?: 'easy' | 'medium' | 'hard'; // AI difficulty level
 }
 
 export interface Task {
@@ -41,7 +42,7 @@ export interface Message {
   id: MessageId;
   from: AgentId | 'SYSTEM';
   to: AgentId | 'BROADCAST' | TeamId;
-  type: 'TASK_ASSIGN' | 'TASK_RESULT' | 'STATUS_UPDATE' | 'Handover' | 'INFO';
+  type: 'TASK_ASSIGN' | 'TASK_RESULT' | 'STATUS_UPDATE' | 'Handover' | 'INFO' | 'AGENT_LOG' | 'GAME_ACTION' | 'GAME_START';
   payload: any;
   timestamp: number;
 }
@@ -52,7 +53,7 @@ export interface IAgent {
   config: AgentConfig;
   
   receive(message: Message): Promise<void>;
-  sendMessage(to: AgentId | TeamId, type: Message['type'], payload: any): Promise<void>;
+  sendMessage(to: AgentId | TeamId | 'BROADCAST', type: Message['type'], payload: any): Promise<void>;
   updateStatus(status: AgentStatus): void;
 }
 

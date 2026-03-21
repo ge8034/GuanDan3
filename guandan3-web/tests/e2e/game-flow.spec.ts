@@ -1,6 +1,11 @@
 import { test, expect } from '@playwright/test';
+import { setupGameMocks } from './mocks';
 
 test.describe('GuanDan Game Flow', () => {
+  test.beforeEach(async ({ page }) => {
+    await setupGameMocks(page);
+  });
+
   test('should create room, start game, and play a turn', async ({ page }) => {
     // Increase timeout for this specific test
     test.setTimeout(120000);
@@ -15,7 +20,7 @@ test.describe('GuanDan Game Flow', () => {
     await expect(page).toHaveTitle(/掼蛋 3/i);
     
     // 2. Click "Practice Room" (1v3 AI)
-    const practiceBtn = page.getByRole('button', { name: /练习房/i });
+    const practiceBtn = page.getByRole('button', { name: /练习/i });
     await expect(practiceBtn).toBeVisible();
     await practiceBtn.click();
     
@@ -26,23 +31,17 @@ test.describe('GuanDan Game Flow', () => {
       throw new Error(`进入练习房超时${lastDialogMessage ? `（弹窗：${lastDialogMessage}）` : ''}`)
     }
     
-    // 4. Verify Room Elements
-    // Should see "Start Game" button since I am the owner
-    const startBtn = page.getByRole('button', { name: /开始游戏/i });
-    await expect(startBtn).toBeVisible({ timeout: 30000 });
+    // 4. Wait for Game to Start (Practice mode auto-starts)
+    // Look for "Seat:" indicator
+    await expect(page.getByText(/座位：/i)).toBeVisible({ timeout: 30000 });
     
-    // 5. Start Game
-    await startBtn.click();
-    
-    // 6. Wait for Game to Start (Status changes to 'playing')
-    // Look for "Turn: Seat" indicator
-    await expect(page.getByText(/回合：座位/i)).toBeVisible({ timeout: 30000 });
-    
-    // 7. Verify My Hand is Dealt
-    const handArea = page.locator('.col-span-3.row-start-3');
+    // 5. Verify My Hand is Dealt
+    const handArea = page.locator('[data-testid="room-hand"]');
     await expect(handArea).toBeVisible();
     
-    await expect(page.locator('.cursor-pointer.transition-transform').first()).toBeVisible({ timeout: 30000 });
+    // Look for any card element (more flexible selector)
+    const cards = handArea.locator('[class*="bg-white"][class*="border"]');
+    await expect(cards.first()).toBeVisible({ timeout: 30000 });
     
     console.log('Game started successfully!');
   });

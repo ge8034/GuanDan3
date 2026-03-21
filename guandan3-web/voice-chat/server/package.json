@@ -1,0 +1,20 @@
+{
+  "name": "guandan3-voice-chat-server",
+  "version": "1.0.0",
+  "description": "WebRTC语音通话信令服务器",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "ws": "^8.14.2",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

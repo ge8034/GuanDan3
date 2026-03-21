@@ -1,11 +1,12 @@
 import { test, expect, BrowserContext, Page } from '@playwright/test';
+import { setupGameMocks } from './mocks';
 
 // TODO-TEST: 自动化测试暂时跳过（手动已覆盖基础流程，但 E2E 稳定性待提升）
-// TODO-TEST: PVP 终局 - 4人 1张牌快速结束，断言“游戏结束”弹层与排名顺序
-// TODO-TEST: PVP 终局 - “再来一局”点击后创建新 game 并回到 playing
+// TODO-TEST: PVP 终局 - 4人 1张牌快速结束，断言"游戏结束"弹层与排名顺序
+// TODO-TEST: PVP 终局 - "再来一局"点击后创建新 game 并回到 playing
 // TODO-TEST: PVP 终局 - 断线/刷新后继续完成出牌并正确结算
-test.describe.skip('PVP Game Finish Flow', () => {
-  test.setTimeout(120000); 
+test.describe('PVP Game Finish Flow', () => {
+  test.setTimeout(180000); 
 
   let hostContext: BrowserContext;
   let player2Context: BrowserContext;
@@ -27,6 +28,14 @@ test.describe.skip('PVP Game Finish Flow', () => {
     p2Page = await player2Context.newPage();
     p3Page = await player3Context.newPage();
     p4Page = await player4Context.newPage();
+
+    // Setup mocks for all pages
+    await Promise.all([
+      setupGameMocks(hostPage, 'host-user-id'),
+      setupGameMocks(p2Page, 'p2-user-id'),
+      setupGameMocks(p3Page, 'p3-user-id'),
+      setupGameMocks(p4Page, 'p4-user-id')
+    ]);
   });
 
   test.afterAll(async () => {
@@ -49,7 +58,7 @@ test.describe.skip('PVP Game Finish Flow', () => {
             await page.goto('http://localhost:3000', { timeout: 10000 });
             
             // Wait for button
-            const lobbyBtn = page.locator('button:has-text("对战大厅")');
+            const lobbyBtn = page.locator('button:has-text("进入大厅")');
             await expect(lobbyBtn).toBeVisible({ timeout: 5000 });
             
             // Click and wait for navigation (this triggers anonymous login)
@@ -65,7 +74,7 @@ test.describe.skip('PVP Game Finish Flow', () => {
             } catch (e) {
                 console.log(`[${name}] Login retry...`);
                 await page.reload();
-                const lobbyBtnRetry = page.locator('button:has-text("对战大厅")');
+                const lobbyBtnRetry = page.locator('button:has-text("进入大厅")');
                 await expect(lobbyBtnRetry).toBeVisible({ timeout: 5000 });
                 await lobbyBtnRetry.click();
                 await page.waitForURL(/\/lobby/, { timeout: 20000 });
@@ -84,7 +93,7 @@ test.describe.skip('PVP Game Finish Flow', () => {
         // Host Create
         await hostPage.fill('input[placeholder="房间名称"]', roomName);
         await hostPage.click('text=创建房间');
-        await hostPage.waitForURL(/\/room\//);
+        await hostPage.waitForURL(/\/room\//, { timeout: 30000 });
         const roomId = hostPage.url().split('/').pop()!;
         console.log(`Room created: ${roomId}`);
 
@@ -93,29 +102,22 @@ test.describe.skip('PVP Game Finish Flow', () => {
             await page.goto('http://localhost:3000/lobby');
             
             // Wait for room list
-            await page.waitForSelector('div:has-text("EndgameTest-")');
+            await page.waitForSelector('div:has-text("EndgameTest-")', { timeout: 10000 });
             
             // Use exact room name matching to avoid partial matches or duplicates
-            // The room card usually has a title or structure.
-            // Let's assume the text content includes the exact room name.
-            // We use .first() but we should be more specific if possible.
-            // Given the error, maybe "EndgameTest-..." matches multiple elements inside the SAME card?
-            // Or multiple cards if previous tests failed?
-            
-            // Let's find the card that explicitly contains the room name as a header or similar.
             const roomCard = page.locator(`div.bg-white.rounded-lg`).filter({ hasText: roomName }).first();
             await expect(roomCard).toBeVisible({ timeout: 5000 });
             
             // Click Join inside that specific card
             await roomCard.getByRole('button', { name: 'Join Game' }).click();
-            await page.waitForURL(/\/room\//, { timeout: 20000 });
+            await page.waitForURL(/\/room\//, { timeout: 30000 });
         };
         await Promise.all([joinRoom(p2Page), joinRoom(p3Page), joinRoom(p4Page)]);
 
         // All Ready
         const clickReady = async (page: Page) => {
             // Wait for room to load
-            await page.waitForLoadState('networkidle');
+            await page.waitForLoadState('networkidle', { timeout: 15000 });
             
             // Handle race condition where user might be already ready (e.g. Host)
             const cancelBtn = page.locator('text=Cancel Ready');
@@ -148,8 +150,8 @@ test.describe.skip('PVP Game Finish Flow', () => {
         // Wait for status change (might take a moment for RPC and Realtime)
         // If "Start Game" is still visible, it means click failed or backend rejected
         await Promise.race([
-            expect(hostPage.locator('text=Status: playing')).toBeVisible({ timeout: 20000 }),
-            expect(hostPage.locator('text=Status: deal')).not.toBeVisible({ timeout: 20000 })
+            expect(hostPage.locator('text=Status: playing')).toBeVisible({ timeout: 30000 }),
+            expect(hostPage.locator('text=Status: deal')).not.toBeVisible({ timeout: 30000 })
         ]);
     });
 
@@ -192,14 +194,22 @@ test.describe.skip('PVP Game Finish Flow', () => {
         
         // Reload pages to fetch new state
         await Promise.all([
-            hostPage.reload(),
-            p2Page.reload(),
-            p3Page.reload(),
-            p4Page.reload()
+            hostPage.reload({ waitUntil: 'networkidle' }),
+            p2Page.reload({ waitUntil: 'networkidle' }),
+            p3Page.reload({ waitUntil: 'networkidle' }),
+            p4Page.reload({ waitUntil: 'networkidle' })
         ]);
         
-        // Wait for reload
-        await expect(hostPage.locator('text=Status: playing')).toBeVisible();
+        // Wait for reload and game state
+        await Promise.all([
+            hostPage.waitForTimeout(3000),
+            p2Page.waitForTimeout(3000),
+            p3Page.waitForTimeout(3000),
+            p4Page.waitForTimeout(3000)
+        ]);
+        
+        // Verify game is in playing state
+        await expect(hostPage.locator('text=Status: playing')).toBeVisible({ timeout: 10000 });
     });
 
   // --- 3. Play to Finish ---

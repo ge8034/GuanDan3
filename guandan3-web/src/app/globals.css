@@ -3,25 +3,114 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
+  /* Design Tokens - Default Theme (Classic) */
+  --color-primary: #6BA539;
+  --color-secondary: #A8C8A8;
+  --color-accent: #F59E0B;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+  --color-border: #E5E7EB;
+  --color-card: #FFFFFF;
+  --color-card-hover: #F9FAFB;
+  
+  --bg-primary: #FEF3C7;
+  --bg-secondary: #FFFFFF;
+  
+  --text-primary: #1F2937;
+  --text-secondary: #6B7280;
+  
+  --gradient-primary: linear-gradient(135deg, #6BA539 0%, #A8C8A8 100%);
+  --gradient-secondary: linear-gradient(135deg, #A8C8A8 0%, #6BA539 100%);
+  --gradient-background: linear-gradient(180deg, #FEF3C7 0%, #FDE68A 100%);
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+  /* Legacy Variables (Keep for backward compatibility) */
+  --foreground-rgb: 26, 74, 10;
+  --background-start-rgb: 245, 249, 240;
+  --background-end-rgb: 245, 245, 220;
+  --font-family-serif: var(--font-noto-serif-sc), 'Noto Serif SC', 'Source Han Serif SC', '思源宋体', 'SimSun', serif;
+  
+  --theme-green: #6BA539;
+  --theme-light-green: #A8C8A8;
+  --theme-beige: #F5F5DC;
+  --theme-light-gray: #D3D3D3;
+  --theme-dark-green: #1A4A0A;
+  --theme-medium-green: #2D5A1D;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background: rgb(var(--background-start-rgb));
+  font-family: var(--font-noto-serif-sc), 'Noto Serif SC', 'Source Han Serif SC', '思源宋体', 'SimSun', serif;
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  font-family: var(--font-noto-serif-sc), 'Noto Serif SC', 'Source Han Serif SC', '思源宋体', 'SimSun', serif;
+}
+
+p, span, div, button, input, textarea, select {
+  font-family: var(--font-noto-serif-sc), 'Noto Serif SC', 'Source Han Serif SC', '思源宋体', 'SimSun', serif;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+@keyframes cloudMountain {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* 浏览器兼容性修复 */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 确保在所有浏览器中正确渲染 */
+input,
+textarea,
+button {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* 修复iOS Safari上的输入框样式 */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+textarea {
+  -webkit-border-radius: 8px;
+  border-radius: 8px;
+}
+
+/* 修复微信内核上的滚动问题 */
+body {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
 }

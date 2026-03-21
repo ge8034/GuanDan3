@@ -1,0 +1,305 @@
+{
+  "title": "Guandan3 监控概览",
+  "description": "游戏应用整体监控仪表板",
+  "tags": ["guandan3", "production", "overview"],
+  "style": "dark",
+  "timezone": "browser",
+  "editable": true,
+  "refresh": "1m",
+  "schemaVersion": 38,
+  "version": 1,
+  "links": [
+    {
+      "title": "性能详情",
+      "url": "/d/performance-details",
+      "type": "dashboards"
+    },
+    {
+      "title": "错误分析",
+      "url": "/d/error-analysis",
+      "type": "dashboards"
+    },
+    {
+      "title": "业务指标",
+      "url": "/d/business-metrics",
+      "type": "dashboards"
+    }
+  ],
+  "panels": [
+    {
+      "id": 1,
+      "title": "服务状态",
+      "type": "stat",
+      "description": "应用服务运行状态",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "up{job=\"guandan3-web\"}",
+          "legendFormat": "{{instance}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [
+            { "from": "1", "to": "运行中", "color": "green" },
+            { "from": "0", "to": "停止", "color": "red" }
+          ],
+          "thresholds": { "steps": [{ "color": "red", "value": 0 }, { "color": "green", "value": 1 }] },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "id": 2,
+      "title": "API响应时间 (P95)",
+      "type": "timeseries",
+      "description": "API 95百分位响应时间",
+      "gridPos": { "h": 8, "w": 12, "x": 6, "y": 0 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, handler))",
+          "legendFormat": "{{handler}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 3,
+          "color": { "mode": "palette-classic" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }, { "color": "yellow", "value": 1 }, { "color": "red", "value": 3 }] }
+        }
+      },
+      "options": {
+        "tooltip": { "mode": "single" },
+        "legend": { "showLegend": true, "placement": "bottom" }
+      }
+    },
+    {
+      "id": 3,
+      "title": "错误率",
+      "type": "timeseries",
+      "description": "HTTP 5xx错误率",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{status=~\"5..\"}[5m])) by (handler) / sum(rate(http_requests_total[5m])) by (handler)",
+          "legendFormat": "{{handler}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 2,
+          "color": { "mode": "palette-classic" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }, { "color": "yellow", "value": 0.01 }, { "color": "red", "value": 0.05 }] }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "请求量",
+      "type": "timeseries",
+      "description": "每分钟请求量",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total[1m])) by (handler)",
+          "legendFormat": "{{handler}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "color": { "mode": "palette-classic" }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "活跃用户",
+      "type": "stat",
+      "description": "当前活跃用户数",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "targets": [
+        {
+          "expr": "active_users",
+          "legendFormat": "活跃用户",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "continuous-BlYlRd" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }, { "color": "yellow", "value": 10 }, { "color": "red", "value": 50 }] },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "title": "CPU使用率",
+      "type": "gauge",
+      "description": "应用CPU使用率",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 12 },
+      "targets": [
+        {
+          "expr": "rate(process_cpu_seconds_total[5m]) * 100",
+          "legendFormat": "CPU使用率",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }, { "color": "yellow", "value": 70 }, { "color": "red", "value": 90 }] }
+        }
+      }
+    },
+    {
+      "id": 7,
+      "title": "内存使用",
+      "type": "gauge",
+      "description": "应用内存使用",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 12 },
+      "targets": [
+        {
+          "expr": "process_resident_memory_bytes / 1024 / 1024",
+          "legendFormat": "内存使用 (MB)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }, { "color": "yellow", "value": 512000000 }, { "color": "red", "value": 1024000000 }] }
+        }
+      }
+    },
+    {
+      "id": 8,
+      "title": "数据库连接数",
+      "type": "timeseries",
+      "description": "数据库活动连接数",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "targets": [
+        {
+          "expr": "pg_stat_database_numbackends",
+          "legendFormat": "连接数",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }, { "color": "yellow", "value": 30 }, { "color": "red", "value": 50 }] }
+        }
+      }
+    },
+    {
+      "id": 9,
+      "title": "游戏操作统计",
+      "type": "table",
+      "description": "游戏操作类型统计",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 18 },
+      "targets": [
+        {
+          "expr": "sum by (action_type) (rate(game_actions_total[5m]))",
+          "instant": true,
+          "legendFormat": "{{action_type}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "color": { "mode": "continuous-GrYlRd" }
+        }
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": ["desc"]
+      }
+    },
+    {
+      "id": 10,
+      "title": "最近错误",
+      "type": "table",
+      "description": "最近发生的错误",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 18 },
+      "targets": [
+        {
+          "expr": "topk(10, error_logs_total)",
+          "instant": true,
+          "legendFormat": "{{error_type}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }, { "color": "yellow", "value": 1 }, { "color": "red", "value": 5 }] }
+        }
+      }
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "environment",
+        "label": "环境",
+        "type": "query",
+        "query": "label_values(up, environment)",
+        "refresh": 1,
+        "current": { "text": "production", "value": "production" }
+      },
+      {
+        "name": "instance",
+        "label": "实例",
+        "type": "query",
+        "query": "label_values(up{environment=\"$environment\"}, instance)",
+        "refresh": 1,
+        "multi": true,
+        "includeAll": true
+      }
+    ]
+  },
+  "annotations": {
+    "list": [
+      {
+        "name": "部署事件",
+        "datasource": "Prometheus",
+        "enable": true,
+        "expr": "deployment_event",
+        "title": "部署",
+        "tags": "deployment",
+        "iconColor": "purple"
+      },
+      {
+        "name": "告警事件",
+        "datasource": "Prometheus",
+        "enable": true,
+        "expr": "ALERTS{alertstate=\"firing\"}",
+        "title": "告警",
+        "tags": "alert",
+        "iconColor": "red"
+      }
+    ]
+  }
+}

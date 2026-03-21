@@ -28,11 +28,14 @@ export const useRoomGameDerived = () => {
 
   const getRankTitleForSeat = useCallback((seatNo: number) => getRankTitle(rankings, seatNo), [rankings])
   const getMemberForSeat = useCallback((seatNo: number) => getMemberBySeat(members, seatNo), [members])
-  const isOnline = useCallback((seatNo: number) => getMemberOnline(getMemberBySeat(members, seatNo)), [members])
+  const isOnline = useCallback((seatNo: number) => {
+    const member = getMemberBySeat(members, seatNo)
+    return member ? getMemberOnline(member) : false
+  }, [members])
 
   const currentPlayerType = useMemo(
-    () => getMemberForSeat(currentSeat)?.member_type ?? '未知',
-    [currentSeat, getMemberForSeat]
+    () => getMemberBySeat(members, currentSeat)?.member_type ?? '未知',
+    [members, currentSeat]
   )
 
   return {

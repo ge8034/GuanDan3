@@ -1,6 +1,40 @@
 import { defineConfig, devices } from '@playwright/test';
+import fs from 'fs';
+import path from 'path';
 
-const hasSupabaseEnv = !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// Load .env.local manually if not in CI
+if (!process.env.CI) {
+  try {
+    // use process.cwd() instead of __dirname
+    const envPath = path.resolve(process.cwd(), '.env.local');
+    if (fs.existsSync(envPath)) {
+      console.log('Loading env from:', envPath);
+      const envConfig = fs.readFileSync(envPath, 'utf8');
+      envConfig.split('\n').forEach(line => {
+        const match = line.match(/^([^=]+)=(.*)$/);
+        if (match) {
+          const key = match[1].trim();
+          const value = match[2].trim();
+          if (!process.env[key]) {
+            process.env[key] = value;
+          }
+        }
+      });
+    }
+  } catch (e) {
+    console.warn('Failed to load .env.local', e);
+  }
+}
+
+// Force true for local testing since we know env is loaded by Next.js
+const hasSupabaseEnv = true; // !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+console.log('Playwright Config: hasSupabaseEnv (Forced) =', hasSupabaseEnv);
+if (!hasSupabaseEnv) {
+  console.log('Missing env vars:', {
+    url: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+    key: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  });
+}
 
 export default defineConfig({
   testDir: './tests/e2e',

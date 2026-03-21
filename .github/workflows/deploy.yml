@@ -1,0 +1,158 @@
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'guandan3-web/**'
+      - '.github/workflows/deploy.yml'
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  deployments: write
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+jobs:
+  # 前置检查：确保CI通过
+  pre-deploy-check:
+    runs-on: ubuntu-latest
+    outputs:
+      can_deploy: ${{ steps.check-ci.outputs.can_deploy }}
+    steps:
+      - name: Check CI status
+        id: check-ci
+        run: |
+          # 检查最近一次CI运行状态
+          # 这里可以添加更复杂的逻辑来验证CI通过
+          echo "can_deploy=true" >> $GITHUB_OUTPUT
+
+  # 部署到Vercel
+  deploy-vercel:
+    needs: pre-deploy-check
+    if: needs.pre-deploy-check.outputs.can_deploy == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+    defaults:
+      run:
+        working-directory: guandan3-web
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: guandan3-web/package-lock.json
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project Artifacts
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy to Vercel
+        id: deploy
+        run: |
+          DEPLOYMENT_URL=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          echo "deployment_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+          echo "Deployed to: $DEPLOYMENT_URL"
+
+      - name: Create Deployment Status
+        uses: bobheadxi/deployments@v1
+        with:
+          step: deploy
+          token: ${{ secrets.GITHUB_TOKEN }}
+          env: production
+          desc: "Deployed to Vercel"
+          ref: ${{ github.ref }}
+
+      - name: Run Post-Deployment Tests
+        run: |
+          # 等待部署完成
+          sleep 30
+
+          # 运行健康检查
+          if [ -n "${{ steps.deploy.outputs.deployment_url }}" ]; then
+            curl -f "${{ steps.deploy.outputs.deployment_url }}/api/health" || exit 1
+          fi
+
+  # 数据库迁移（如果需要）
+  run-migrations:
+    needs: pre-deploy-check
+    if: needs.pre-deploy-check.outputs.can_deploy == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+    defaults:
+      run:
+        working-directory: guandan3-web
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: guandan3-web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for pending migrations
+        id: check-migrations
+        run: |
+          # 检查是否有待执行的迁移
+          # 这里可以添加逻辑来检查supabase/migrations目录中的新文件
+          echo "has_migrations=false" >> $GITHUB_OUTPUT
+
+      - name: Execute migrations
+        if: steps.check-migrations.outputs.has_migrations == 'true'
+        run: |
+          # 执行数据库迁移
+          node scripts/execute-migrations.js
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+  # 部署后验证
+  post-deploy-verification:
+    needs: [deploy-vercel, run-migrations]
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Run Smoke Tests
+        run: |
+          # 运行基本的冒烟测试
+          echo "Running smoke tests..."
+          # 这里可以添加具体的冒烟测试命令
+
+      - name: Notify Deployment Success
+        if: success()
+        run: |
+          echo "Deployment completed successfully!"
+          # 这里可以添加通知逻辑（Slack、Teams等）
+
+      - name: Notify Deployment Failure
+        if: failure()
+        run: |
+          echo "Deployment failed!"
+          # 这里可以添加失败通知逻辑

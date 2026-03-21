@@ -1,0 +1,217 @@
+name: Canary Deployment
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      canary_percent:
+        description: 'Initial canary traffic percentage'
+        required: false
+        default: '10'
+        type: choice
+        options:
+          - '5'
+          - '10'
+          - '20'
+          - '50'
+
+env:
+  NODE_VERSION: '18'
+  BASE_URL: 'https://guandan3.com'
+  HEALTH_CHECK_URL: 'https://guandan3.com/health'
+
+jobs:
+  canary-deploy:
+    name: Canary Deployment
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linter
+        run: npm run lint
+
+      - name: Run type check
+        run: npm run typecheck
+
+      - name: Run unit tests
+        run: npm test -- --run
+
+      - name: Build application
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Run security audit
+        run: npm audit --audit-level=moderate
+
+      - name: Deploy to canary environment
+        uses: easingthemes/ssh-deploy@v4
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          TARGET: /var/www/guandan3-web-canary
+          SOURCE: "./"
+          EXCLUDE: "/node_modules/, /.git/, /.next/, /logs/, /.env.local"
+
+      - name: Install dependencies on canary server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/guandan3-web-canary
+            npm ci --production=false
+
+      - name: Build on canary server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/guandan3-web-canary
+            npm run build
+
+      - name: Start canary with PM2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/guandan3-web-canary
+            pm2 start ecosystem.config.js --env canary --update-env || pm2 reload ecosystem.config.js --env canary
+
+      - name: Wait for canary to be ready
+        run: |
+          echo "⏳ 等待灰度环境启动..."
+          sleep 30
+
+      - name: Canary health check
+        uses: jtalk/url-health-check-action@v3
+        with:
+          url: https://canary.guandan3.com/health
+          max-attempts: 10
+          retry-delay: 10s
+
+      - name: Configure traffic routing
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # 更新Nginx配置，设置灰度流量
+            CANARY_PERCENT=${{ github.event.inputs.canary_percent || '10' }}
+            
+            # 备份当前Nginx配置
+            sudo cp /etc/nginx/sites-available/guandan3.com /etc/nginx/sites-available/guandan3.com.backup
+            
+            # 更新split_clients配置
+            sudo sed -i "s/canary_percent [0-9]*/canary_percent $CANARY_PERCENT/" /etc/nginx/sites-available/guandan3.com
+            
+            # 测试Nginx配置
+            sudo nginx -t
+            
+            # 重载Nginx
+            sudo systemctl reload nginx
+
+      - name: Monitor canary performance
+        run: |
+          echo "📈 监控灰度环境性能..."
+          
+          # 监控5分钟
+          for i in {1..30}; do
+            # 检查健康状态
+            HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://canary.guandan3.com/health)
+            
+            # 检查响应时间
+            RESPONSE_TIME=$(curl -o /dev/null -s -w "%{time_total}" https://canary.guandan3.com/)
+            
+            echo "检查 $i/30: HTTP=$HEALTH_STATUS, 响应时间=${RESPONSE_TIME}s"
+            
+            # 如果健康检查失败，停止部署
+            if [ "$HEALTH_STATUS" != "200" ]; then
+              echo "❌ 灰度环境健康检查失败"
+              exit 1
+            fi
+            
+            # 如果响应时间过长，发出警告
+            if (( $(echo "$RESPONSE_TIME > 3.0" | bc -l) )); then
+              echo "⚠️  响应时间过长: ${RESPONSE_TIME}s"
+            fi
+            
+            sleep 10
+          done
+          
+          echo "✅ 灰度环境监控完成"
+
+      - name: Create canary release
+        uses: actions/create-release@v1
+        if: success()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: canary-${{ github.sha }}
+          release_name: Canary Release ${{ github.sha }}
+          body: |
+            ## Canary Deployment
+            
+            - Deployed to canary environment
+            - Traffic: ${{ github.event.inputs.canary_percent || '10' }}%
+            - All health checks passed
+            - Performance monitoring completed
+          draft: false
+          prerelease: true
+
+      - name: Notify canary deployment success
+        uses: 8398a7/action-slack@v3
+        if: success()
+        with:
+          status: ${{ job.status }}
+          text: '✅ Canary deployment successful! Version ${{ github.sha }} is now live on canary environment with ${{ github.event.inputs.canary_percent || '10' }}% traffic.'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Notify canary deployment failure
+        uses: 8398a7/action-slack@v3
+        if: failure()
+        with:
+          status: ${{ job.status }}
+          text: '❌ Canary deployment failed! Please check logs and rollback if necessary.'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Rollback on failure
+        if: failure()
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            echo "🔄 执行回滚操作..."
+            
+            # 恢复Nginx配置
+            sudo cp /etc/nginx/sites-available/guandan3.com.backup /etc/nginx/sites-available/guandan3.com
+            sudo nginx -t
+            sudo systemctl reload nginx
+            
+            # 停止灰度环境
+            cd /var/www/guandan3-web-canary
+            pm2 stop ecosystem.config.js --env canary
+            
+            echo "✅ 回滚完成"

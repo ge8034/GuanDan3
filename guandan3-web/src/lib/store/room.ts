@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase/client'
 import { throttle } from '@/lib/utils/throttle'
 import { useGameStore } from '@/lib/store/game'
 import { devError } from '@/lib/utils/devLog'
+import { realtimeOptimizer, createOptimizedSubscription } from '@/lib/performance/realtime-optimizer'
 
 export interface Room {
   id: string
@@ -21,6 +22,7 @@ export interface RoomMember {
   last_seen_at?: string
   member_type: 'human' | 'ai'
   ai_key?: string
+  difficulty?: 'easy' | 'medium' | 'hard'
 }
 
 interface RoomState {
@@ -34,7 +36,9 @@ interface RoomState {
     options?: { onStatus?: (info: { name: 'room' | 'members'; status: string }) => void }
   ) => () => void
   createRoom: (name: string, type: string, mode: string, visibility: string) => Promise<{ id: string } | null>
+  createPracticeRoom: (visibility?: string) => Promise<{ id: string } | null>
   joinRoom: (roomId: string, seatNo?: number) => Promise<boolean>
+  addAI: (roomId: string, difficulty?: 'easy' | 'medium' | 'hard') => Promise<void>
   toggleReady: (roomId: string, ready: boolean) => Promise<void>
   leaveRoom: (roomId: string) => Promise<void>
   heartbeatRoomMember: (roomId: string) => Promise<void>
@@ -131,6 +135,22 @@ export const useRoomStore = create<RoomState>((set, get) => ({
     return data ? { id: data } : null
   },
 
+  createPracticeRoom: async (visibility = 'private') => {
+    const { data, error } = await supabase.rpc('create_practice_room', {
+      p_visibility: visibility
+    })
+    
+    if (error) {
+      devError('Create practice room error:', error)
+      throw error
+    }
+    // data is array of objects? signature returns table(room_id uuid)
+    // RPC returns data as array usually?
+    // Let's check type. It might return [{ room_id: ... }]
+    const roomId = (data as any)?.[0]?.room_id || (data as any)?.room_id
+    return roomId ? { id: roomId } : null
+  },
+
   joinRoom: async (roomId, seatNo) => {
     const { data, error } = await supabase.rpc('join_room', {
       p_room_id: roomId,
@@ -145,12 +165,47 @@ export const useRoomStore = create<RoomState>((set, get) => ({
     await get().fetchRoom(roomId)
     return !!data
   },
+
+  addAI: async (roomId: string, difficulty: 'easy' | 'medium' | 'hard' = 'medium') => {
+    // 1. Get current members to find available seat
+    const members = get().members
+    const usedSeats = members.map(m => m.seat_no)
+    let seatNo = 0
+    while (usedSeats.includes(seatNo) && seatNo < 4) {
+      seatNo++
+    }
+    
+    if (seatNo >= 4) {
+      throw new Error('Room is full')
+    }
+
+    // 2. Insert AI member
+    const { error } = await supabase
+      .from('room_members')
+      .insert({
+        room_id: roomId,
+        seat_no: seatNo,
+        member_type: 'ai',
+        ready: true,
+        uid: null, // AI has no user uid
+        ai_key: `ai-${Date.now()}-${seatNo}`, // Unique key for AI
+        difficulty // AI difficulty level
+      })
+
+    if (error) {
+      devError('Add AI error:', error)
+      throw error
+    }
+    
+    // 3. Refresh
+    await get().fetchRoom(roomId)
+  },
   
   fetchRoom: async (roomId) => {
     // 1. Fetch Room
     const { data: room, error: roomError } = await supabase
       .from('rooms')
-      .select('*')
+      .select('id,name,mode,type,status,visibility,owner_uid,created_at')
       .eq('id', roomId)
       .single()
     
@@ -163,7 +218,7 @@ export const useRoomStore = create<RoomState>((set, get) => ({
     // 2. Fetch Members
     const { data: members, error: membersError } = await supabase
       .from('room_members')
-      .select('*')
+      .select('id,room_id,uid,seat_no,ready,online,member_type,created_at')
       .eq('room_id', roomId)
       .order('seat_no')
     
@@ -178,6 +233,10 @@ export const useRoomStore = create<RoomState>((set, get) => ({
     const fetchRoomThrottled = throttle(() => {
       get().fetchRoom(roomId).catch(() => {})
     }, 200)
+    
+    const roomConnectionId = `room:${roomId}`
+    const membersConnectionId = `members:${roomId}`
+    
     // Subscribe to Room changes
     const roomChannel = supabase
       .channel(`room:${roomId}`)
@@ -188,7 +247,15 @@ export const useRoomStore = create<RoomState>((set, get) => ({
           set({ currentRoom: payload.new as Room })
         }
       )
-      .subscribe((status: any) => options?.onStatus?.({ name: 'room', status: String(status) }))
+      .subscribe((status: any) => {
+        const statusStr = String(status)
+        if (statusStr === 'SUBSCRIBED') {
+          realtimeOptimizer.updateConnectionStatus(roomConnectionId, 'connected')
+        } else if (statusStr === 'CLOSED' || statusStr === 'CHANNEL_ERROR') {
+          realtimeOptimizer.updateConnectionStatus(roomConnectionId, statusStr.toLowerCase() as any)
+        }
+        options?.onStatus?.({ name: 'room', status: statusStr })
+      })
 
     // Subscribe to Member changes
     const memberChannel = supabase
@@ -201,12 +268,26 @@ export const useRoomStore = create<RoomState>((set, get) => ({
           fetchRoomThrottled()
         }
       )
-      .subscribe((status: any) => options?.onStatus?.({ name: 'members', status: String(status) }))
+      .subscribe((status: any) => {
+        const statusStr = String(status)
+        if (statusStr === 'SUBSCRIBED') {
+          realtimeOptimizer.updateConnectionStatus(membersConnectionId, 'connected')
+        } else if (statusStr === 'CLOSED' || statusStr === 'CHANNEL_ERROR') {
+          realtimeOptimizer.updateConnectionStatus(membersConnectionId, statusStr.toLowerCase() as any)
+        }
+        options?.onStatus?.({ name: 'members', status: statusStr })
+      })
+
+    // Register connections with optimizer
+    realtimeOptimizer.registerConnection(roomConnectionId, `room:${roomId}`)
+    realtimeOptimizer.registerConnection(membersConnectionId, `members:${roomId}`)
 
     return () => {
       fetchRoomThrottled.cancel()
       supabase.removeChannel(roomChannel)
       supabase.removeChannel(memberChannel)
+      realtimeOptimizer.updateConnectionStatus(roomConnectionId, 'disconnected')
+      realtimeOptimizer.updateConnectionStatus(membersConnectionId, 'disconnected')
     }
   }
 }))

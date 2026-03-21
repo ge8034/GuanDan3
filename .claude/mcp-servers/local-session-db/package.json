@@ -1,0 +1,22 @@
+{
+  "name": "local-session-db-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for local session storage",
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "local-session-db": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

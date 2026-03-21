@@ -10,12 +10,14 @@ test.describe('房间覆盖层', () => {
     await expect(page.getByTestId('toast-item').first()).toBeVisible({ timeout: 30000 })
 
     await page.getByTestId('room-overlay-back-lobby').evaluate(el => (el as HTMLElement).click())
-    await expect(page.getByRole('heading', { name: '对战大厅' })).toBeVisible({ timeout: 60000 })
+    const lobbyHeading = page.locator('h1').filter({ hasText: '对战大厅' }).first();
+    await expect(lobbyHeading).toBeVisible({ timeout: 60000 })
   })
 
   test('房间满员时显示满员覆盖层', async ({ page }) => {
     await page.goto('http://localhost:3000/lobby', { timeout: 30000 })
-    await expect(page.getByRole('heading', { name: '对战大厅' })).toBeVisible({ timeout: 60000 })
+    const lobbyHeading = page.locator('h1').filter({ hasText: '对战大厅' }).first();
+    await expect(lobbyHeading).toBeVisible({ timeout: 60000 })
 
     let created = false
     for (let attempt = 0; attempt < 2; attempt++) {
@@ -28,7 +30,8 @@ test.describe('房间覆盖层', () => {
         break
       } catch {
         await page.goto('http://localhost:3000/lobby', { timeout: 30000 })
-        await expect(page.getByRole('heading', { name: '对战大厅' })).toBeVisible({ timeout: 60000 })
+        const lobbyHeading = page.locator('h1').filter({ hasText: '对战大厅' }).first();
+        await expect(lobbyHeading).toBeVisible({ timeout: 60000 })
       }
     }
     expect(created).toBe(true)

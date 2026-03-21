@@ -1,9 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import { mapSupabaseErrorToMessage } from '@/lib/utils/supabaseErrors'
+import { Button } from '@/components/ui/Button'
+import Card, { CardBody } from '@/components/ui/Card'
+import Badge from '@/components/ui/Badge'
+import CloudMountainBackground from '@/components/backgrounds/CloudMountainBackground'
 
 type GameRecord = {
   id: string
@@ -64,62 +68,88 @@ export default function HistoryPage() {
     fetchHistory()
   }, [router])
 
+  const renderRecordCard = useCallback((record: GameRecord) => (
+    <Card 
+      key={record.id}
+      hover
+      className="bg-[#F5F5DC]/80 backdrop-blur-sm border-[#D3D3D3] shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+    >
+      <CardBody className="p-4 flex justify-between items-center">
+        <div className="flex-1 min-w-0">
+          <div className="font-bold text-lg text-gray-900 mb-1 flex items-center gap-2 flex-wrap">
+            {record.game.room.name || '未知房间'}
+            <Badge
+              variant={record.game.room.mode === 'pve1v3' ? 'info' : 'primary'}
+              size="sm"
+            >
+              {record.game.room.mode === 'pve1v3' ? '练习' : '对战'}
+            </Badge>
+          </div>
+          <div className="text-sm text-gray-700">
+            {new Date(record.created_at).toLocaleString('zh-CN')}
+          </div>
+        </div>
+        <div className="text-right ml-4">
+          <div className={`text-2xl font-bold ${
+            record.delta > 0 ? 'text-green-700' : 
+            record.delta < 0 ? 'text-red-700' : 'text-gray-700'
+          }`}>
+            {record.delta > 0 ? '+' : ''}{record.delta}
+          </div>
+          <div className="text-xs text-gray-700">
+            当前积分: {record.total_after}
+          </div>
+        </div>
+      </CardBody>
+    </Card>
+  ), [])
+
   return (
-    <div className="min-h-screen bg-green-800 text-white p-4">
-      <header className="flex justify-between items-center mb-8 max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold flex items-center gap-2">
-          <span className="text-4xl">📜</span> 战绩记录
-        </h1>
-        <button
-          onClick={() => router.push('/lobby')}
-          className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition"
-        >
-          返回大厅
-        </button>
+    <CloudMountainBackground>
+      <header className="bg-[#F5F5DC]/90 backdrop-blur-sm border-b border-[#D3D3D3] sticky top-0 z-10 relative">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
+          <h1 className="text-2xl md:text-3xl font-semibold text-[#1A4A0A] flex items-center gap-2">
+            <span className="text-3xl md:text-4xl">📜</span>
+            战绩记录
+          </h1>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push('/lobby')}
+          >
+            返回大厅
+          </Button>
+        </div>
       </header>
 
-      <main className="max-w-4xl mx-auto">
+      <main className="max-w-4xl mx-auto px-4 py-6 md:py-8 relative z-10">
         {loading ? (
-          <div className="text-center py-12">加载中...</div>
-        ) : error ? (
-          <div className="bg-red-500/50 p-4 rounded text-center">{error}</div>
-        ) : records.length === 0 ? (
-          <div className="text-center py-12 bg-black/20 rounded-xl">
-            <div className="text-6xl mb-4">📭</div>
-            <div className="text-xl opacity-70">暂无战绩</div>
-            <p className="mt-2 text-sm opacity-50">快去完成一局游戏吧！</p>
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#6BA539] border-t-transparent"></div>
+            <p className="mt-4 text-gray-700">加载中...</p>
           </div>
+        ) : error ? (
+          <Card className="bg-[#F5F5DC]/80 backdrop-blur-sm border-[#D3D3D3]">
+            <CardBody>
+              <div className="text-center text-red-700">{error}</div>
+            </CardBody>
+          </Card>
+        ) : records.length === 0 ? (
+          <Card className="bg-[#F5F5DC]/80 backdrop-blur-sm border-[#D3D3D3]">
+            <CardBody>
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">📭</div>
+                <div className="text-xl text-gray-800">暂无战绩</div>
+                <p className="mt-2 text-sm text-gray-700">快去完成一局游戏吧！</p>
+              </div>
+            </CardBody>
+          </Card>
         ) : (
           <div className="grid gap-4">
-            {records.map(record => (
-              <div 
-                key={record.id}
-                className="bg-black/20 hover:bg-black/30 transition p-4 rounded-xl flex justify-between items-center"
-              >
-                <div>
-                  <div className="font-bold text-lg mb-1">
-                    {record.game.room.name || '未知房间'} 
-                    <span className="text-xs bg-black/30 px-2 py-0.5 rounded ml-2 font-normal opacity-70">
-                      {record.game.room.mode === 'pve1v3' ? '练习' : '对战'}
-                    </span>
-                  </div>
-                  <div className="text-sm opacity-60">
-                    {new Date(record.created_at).toLocaleString('zh-CN')}
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className={`text-2xl font-bold ${record.delta > 0 ? 'text-yellow-400' : record.delta < 0 ? 'text-gray-400' : 'text-white'}`}>
-                    {record.delta > 0 ? '+' : ''}{record.delta}
-                  </div>
-                  <div className="text-xs opacity-50">
-                    当前积分: {record.total_after}
-                  </div>
-                </div>
-              </div>
-            ))}
+            {records.map(renderRecordCard)}
           </div>
         )}
       </main>
-    </div>
+    </CloudMountainBackground>
   )
 }

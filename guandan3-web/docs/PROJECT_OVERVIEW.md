@@ -39,7 +39,6 @@ guandan3-web/
 │   │   ├── api/               # API 路由
 │   │   ├── components/        # React 组件
 │   │   ├── game/              # 游戏页面
-│   │   ├── history/           # 战绩页面
 │   │   └── layout.tsx         # 根布局
 │   ├── lib/
 │   │   ├── store/            # Zustand 状态管理
@@ -73,12 +72,7 @@ guandan3-web/
 - AI 对手
 - 快速开始
 
-### 4. 战绩系统
-- 历史对局记录
-- 统计数据展示
-- 详细对局回放
-
-### 5. 聊天系统
+### 4. 聊天系统
 - 实时聊天
 - 表情支持
 - 消息历史
@@ -118,10 +112,6 @@ guandan3-web/
 ### 用户相关
 - `GET /api/user/profile` - 获取用户信息
 - `PUT /api/user/profile` - 更新用户信息
-
-### 战绩相关
-- `GET /api/history` - 获取历史战绩
-- `GET /api/history/[id]` - 获取对局详情
 
 ## 状态管理
 

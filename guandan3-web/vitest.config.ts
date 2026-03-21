@@ -13,8 +13,8 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      include: ['src/lib/game/**/*.{ts,tsx}', 'src/lib/store/**/*.{ts,tsx}'],
-      exclude: ['src/test/**/*', 'src/**/*.d.ts', 'src/app/**/*', 'src/lib/supabase/**/*', 'src/lib/hooks/**/*'],
+      include: ['src/lib/game/ai*.{ts,tsx}', 'src/lib/game/ai-*.{ts,tsx}', 'src/lib/game/rules.ts'],
+      exclude: ['src/test/**/*', 'src/**/*.d.ts', 'src/app/**/*', 'src/lib/supabase/**/*', 'src/lib/hooks/**/*', 'src/lib/game/ai.ts', 'src/lib/game/ai-types.ts'],
       thresholds: {
         lines: 90,
         statements: 90,

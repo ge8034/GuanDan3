@@ -11,15 +11,28 @@ import { mapSupabaseErrorToMessage } from '@/lib/utils/supabaseErrors'
 import { ensureAuthed } from '@/lib/utils/ensureAuthed'
 import { throttle } from '@/lib/utils/throttle'
 import QRCode from 'qrcode'
+import { Button } from '@/components/ui/Button'
+import Card, { CardHeader, CardBody, CardFooter } from '@/components/ui/Card'
+import Input from '@/components/ui/Input'
+import Badge from '@/components/ui/Badge'
+import Avatar from '@/components/ui/Avatar'
+import Modal from '@/components/ui/Modal'
+import FadeIn from '@/components/ui/FadeIn'
+import { RippleEffect } from '@/components/effects/RippleEffect.lazy'
+import ScaleIn from '@/components/ui/ScaleIn'
+import { StaggerContainer } from '@/components/ui/StaggerContainer.lazy'
+import CloudMountainBackground from '@/components/backgrounds/CloudMountainBackground'
+import { BuildingIcon, RefreshIcon, UserGroupIcon, OnlineIcon, CheckCircleIcon, DocumentIcon } from '@/components/icons/LandscapeIcons'
 
 export default function LobbyPage() {
   const router = useRouter()
-  const { createRoom, joinRoom } = useRoomStore()
+  const { createRoom, createPracticeRoom, joinRoom } = useRoomStore()
   const [rooms, setRooms] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [realtimeStatus, setRealtimeStatus] = useState<string>('')
   const [isCreating, setIsCreating] = useState(false)
   const [newRoomName, setNewRoomName] = useState('')
+  const [isPractice, setIsPractice] = useState(false)
   const [onlyJoinable, setOnlyJoinable] = useState(true)
   const [onlyHasOnline, setOnlyHasOnline] = useState(false)
   const [joiningId, setJoiningId] = useState<string | null>(null)
@@ -38,7 +51,14 @@ export default function LobbyPage() {
     const { data, error } = await supabase
       .from('rooms')
       .select(`
-        *,
+        id,
+        name,
+        mode,
+        type,
+        status,
+        visibility,
+        owner_uid,
+        created_at,
         room_members (
           id,
           online,
@@ -131,13 +151,22 @@ export default function LobbyPage() {
   }, [fetchRooms, showToast])
 
   const handleCreate = async () => {
-    if (!newRoomName.trim()) return
+    // if (!newRoomName.trim()) return // Practice room auto-names?
+    if (!isPractice && !newRoomName.trim()) return
+    
     setIsCreating(true)
     try {
        const { ok } = await ensureAuthed({ onError: msg => showToast({ message: msg, kind: 'error' }) })
        if (!ok) return
-       // Default to pvp4 classic public
-       const result = await createRoom(newRoomName, 'classic', 'pvp4', 'public')
+       
+       let result;
+       if (isPractice) {
+          result = await createPracticeRoom('public')
+       } else {
+          // Default to pvp4 classic public
+          result = await createRoom(newRoomName, 'classic', 'pvp4', 'public')
+       }
+
        if (result?.id) {
          router.push(`/room/${result.id}`)
        }
@@ -186,20 +215,45 @@ export default function LobbyPage() {
   }
 
   return (
-    <div className="min-h-screen p-8 bg-gray-50 text-black">
-      {toastView}
-      {realtimeStatus && realtimeStatus !== 'SUBSCRIBED' && (
-        <div data-testid="lobby-realtime-banner" className="mb-4 max-w-6xl mx-auto bg-yellow-100 border border-yellow-300 text-yellow-900 px-4 py-2 rounded">
-          实时连接状态：{realtimeStatus}
-        </div>
-      )}
+    <CloudMountainBackground>
+      <div className="min-h-screen p-4 md:p-8 text-black">
+        {toastView}
+        {realtimeStatus && realtimeStatus !== 'SUBSCRIBED' && (
+          <div data-testid="lobby-realtime-banner" className="mb-4 max-w-6xl mx-auto bg-yellow-100/90 backdrop-blur-sm border border-yellow-300 text-yellow-900 px-4 py-2 rounded-lg shadow-sm">
+            实时连接状态：{realtimeStatus}
+          </div>
+        )}
 
       <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col gap-4 mb-8">
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-gray-800">对战大厅</h1>
-            <div className="flex gap-3 items-center">
-              <button
+        <FadeIn delay={0.1}>
+          <div className="flex flex-col gap-4 md:gap-6 mb-8">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-[#6BA539] to-[#A8C8A8] rounded-xl flex items-center justify-center shadow-lg">
+                  <BuildingIcon size="md" className="text-white" />
+                </div>
+                <h1 className="text-3xl md:text-4xl font-semibold bg-gradient-to-r from-[#6BA539] to-[#A8C8A8] bg-clip-text text-transparent">对战大厅</h1>
+              </div>
+            <div className="flex flex-wrap gap-3 items-center">
+              <Button
+                onClick={() => router.push('/friends')}
+                variant="outline"
+                size="sm"
+                className="border-[#D3D3D3] text-[#6BA539] hover:bg-[#F5F5DC]/50"
+              >
+                <UserGroupIcon size="sm" className="mr-1" />
+                好友
+              </Button>
+              <Button
+                onClick={() => router.push('/history')}
+                variant="outline"
+                size="sm"
+                className="border-[#D3D3D3] text-[#6BA539] hover:bg-[#F5F5DC]/50"
+              >
+                <DocumentIcon size="sm" className="mr-1" />
+                战绩
+              </Button>
+              <Button
                 onClick={async () => {
                   const now = Date.now()
                   if (now - lastRefreshAt < 1000) return
@@ -213,265 +267,321 @@ export default function LobbyPage() {
                   }
                 }}
                 disabled={isLoading || Date.now() - lastRefreshAt < 1000}
+                variant="outline"
+                size="sm"
                 data-testid="lobby-refresh"
-                className="border border-gray-300 bg-white text-gray-700 px-4 py-2 rounded hover:bg-gray-50 disabled:opacity-50 transition shadow-sm"
+                className="border-[#D3D3D3] text-[#6BA539] hover:bg-[#F5F5DC]/50"
               >
+                <RefreshIcon size="sm" className="mr-1" />
                 刷新
-              </button>
-              <div className="text-sm text-gray-500">
-                显示 {sortedRooms.length}/{rooms.length}
+              </Button>
+              <div className="text-sm text-gray-700 bg-white/60 backdrop-blur-sm px-3 py-1.5 rounded-full border border-[#D3D3D3]">
+                显示 <span className="font-semibold text-[#6BA539]">{sortedRooms.length}</span>/{rooms.length}
               </div>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex gap-4 items-center">
-              <label className="flex items-center gap-2 text-sm text-gray-700 select-none">
-                <input
-                  type="checkbox"
-                  checked={onlyJoinable}
-                  onChange={e => setOnlyJoinable(e.target.checked)}
-                  data-testid="lobby-filter-joinable"
-                />
-                仅显示可加入
-              </label>
-              <label className="flex items-center gap-2 text-sm text-gray-700 select-none">
-                <input
-                  type="checkbox"
-                  checked={onlyHasOnline}
-                  onChange={e => setOnlyHasOnline(e.target.checked)}
-                  data-testid="lobby-filter-online"
-                />
-                仅显示有人在线
-              </label>
-            </div>
-
-            <div className="flex gap-4">
-             <input 
-               type="text" 
-               placeholder="房间名称" 
-               data-testid="lobby-create-name"
-               className="border p-2 rounded w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-               value={newRoomName}
-               onChange={e => setNewRoomName(e.target.value)}
-             />
-             <button 
-               onClick={handleCreate}
-               disabled={isCreating || !newRoomName.trim()}
-               data-testid="lobby-create"
-               className="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700 disabled:opacity-50 transition shadow-sm"
-             >
-               {isCreating ? '创建中...' : '创建房间'}
-             </button>
             </div>
           </div>
         </div>
+        </FadeIn>
+
+          <FadeIn delay={0.2}>
+            <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
+              <div className="flex flex-wrap gap-4 items-center">
+                <label className="flex items-center gap-2 text-sm text-gray-700 select-none bg-white/60 backdrop-blur-sm px-3 py-2 rounded-lg border border-[#D3D3D3] hover:border-[#6BA539] transition-colors cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={onlyJoinable}
+                    onChange={e => setOnlyJoinable(e.target.checked)}
+                    data-testid="lobby-filter-joinable"
+                    className="w-4 h-4 text-[#6BA539] rounded focus:ring-[#6BA539]"
+                  />
+                  仅显示可加入
+                </label>
+                <label className="flex items-center gap-2 text-sm text-gray-700 select-none bg-white/60 backdrop-blur-sm px-3 py-2 rounded-lg border border-[#D3D3D3] hover:border-[#6BA539] transition-colors cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={onlyHasOnline}
+                    onChange={e => setOnlyHasOnline(e.target.checked)}
+                    data-testid="lobby-filter-online"
+                    className="w-4 h-4 text-[#6BA539] rounded focus:ring-[#6BA539]"
+                  />
+                  仅显示有人在线
+                </label>
+              </div>
+
+              <div className="flex flex-wrap gap-4 items-center">
+                <label className="flex items-center gap-2 text-sm text-gray-700 select-none bg-white/60 backdrop-blur-sm px-3 py-2 rounded-lg border border-[#D3D3D3] hover:border-[#6BA539] transition-colors cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isPractice}
+                    onChange={e => setIsPractice(e.target.checked)}
+                    data-testid="lobby-create-practice"
+                    className="w-4 h-4 text-[#6BA539] rounded focus:ring-[#6BA539]"
+                  />
+                  练习模式 (AI对战)
+                </label>
+                {!isPractice && (
+                  <Input 
+                    placeholder="房间名称" 
+                    data-testid="lobby-create-name"
+                    value={newRoomName}
+                    onChange={e => setNewRoomName(e.target.value)}
+                    className="w-48 md:w-64"
+                  />
+                )}
+                <Button 
+                  onClick={handleCreate}
+                  disabled={isCreating || (!isPractice && !newRoomName.trim())}
+                  isLoading={isCreating}
+                  data-testid="lobby-create"
+                  className="bg-gradient-to-r from-[#6BA539] to-[#A8C8A8] hover:from-[#5a9430] hover:to-[#8fb890] shadow-md hover:shadow-lg transition-all duration-300"
+                >
+                  {isPractice ? '创建练习房间' : '创建房间'}
+                </Button>
+              </div>
+            </div>
+          </FadeIn>
+        </div>
 
         {isLoading ? (
-          <div className="text-center py-12 text-gray-500">加载房间列表...</div>
+          <div className="text-center py-12 text-gray-700">加载房间列表...</div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sortedRooms.map(room => (
-              (() => {
-                const members = (room?.room_members || []) as Array<{ online?: boolean }>
-                const memberCount = members.length
-                const onlineCount = members.filter(m => m?.online === true).length
-                const joinable = memberCount < 4
-                return (
-              <div key={room.id} data-room-id={room.id} className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition border border-gray-100 flex flex-col justify-between h-48">
-                <div>
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-bold text-xl text-gray-900 truncate pr-2" title={room.name}>{room.name || '未命名房间'}</h3>
-                    <div className="flex gap-2">
-                      <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full whitespace-nowrap">
-                        {typeLabel(room.type)}
-                      </span>
-                      <span className="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full whitespace-nowrap">
-                        {modeLabel(room.mode)}
-                      </span>
-                    </div>
+          <StaggerContainer staggerDelay={0.1}>
+            {sortedRooms.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                {sortedRooms.map((room, index) => (
+                (() => {
+                  const members = (room?.room_members || []) as Array<{ online?: boolean }>
+                  const memberCount = members.length
+                  const onlineCount = members.filter(m => m?.online === true).length
+                  const joinable = memberCount < 4
+                  return (
+                  <ScaleIn key={room.id} delay={index * 0.1}>
+                    <Card data-room-id={room.id} hover className="bg-white/80 backdrop-blur-sm border-[#D3D3D3] shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                    <CardHeader>
+                      <div className="flex justify-between items-start gap-2">
+                        <h3 className="font-bold text-lg md:text-xl text-gray-900 truncate pr-2" title={room.name}>{room.name || '未命名房间'}</h3>
+                        <div className="flex gap-1.5 md:gap-2 flex-shrink-0">
+                          <Badge variant="secondary" size="sm" className="text-xs">
+                            {typeLabel(room.type)}
+                          </Badge>
+                          <Badge variant="primary" size="sm" className="text-xs">
+                            {modeLabel(room.mode)}
+                          </Badge>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardBody>
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className={`w-2 h-2 rounded-full ${joinable ? 'bg-[#6BA539]' : 'bg-red-500'}`}></div>
+                        <span className="text-gray-700 text-sm font-medium">
+                          {joinable ? '可加入' : '已满'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-4 text-sm">
+                        <div className="flex items-center gap-1.5">
+                          <UserGroupIcon size="sm" className="text-[#6BA539]" />
+                          <span className="text-gray-700">玩家：</span>
+                          <span className="font-bold text-[#6BA539]">{memberCount}/4</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <OnlineIcon size="sm" className="text-[#6BA539]" />
+                          <span className="text-gray-700">在线：</span>
+                          <span className="font-bold text-[#6BA539]">
+                            {onlineCount}/{memberCount}
+                          </span>
+                        </div>
+                      </div>
+                    </CardBody>
+                    <CardFooter>
+                      <div className="flex flex-col gap-2 w-full">
+                        <Button
+                          onClick={() => handleJoin(room.id)}
+                          disabled={!joinable || joiningId === room.id}
+                          isLoading={joiningId === room.id}
+                          fullWidth
+                          data-testid="lobby-join"
+                          className={joinable 
+                            ? "bg-gradient-to-r from-[#6BA539] to-[#A8C8A8] hover:from-[#5a9430] hover:to-[#8fb890] shadow-md hover:shadow-lg transition-all duration-300"
+                            : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                          }
+                        >
+                          {joinable ? '加入对局' : '已满'}
+                        </Button>
+                        <Button
+                          onClick={() => setDetailRoom(room)}
+                          variant="outline"
+                          fullWidth
+                          size="sm"
+                          data-testid="lobby-detail"
+                          className="border-[#D3D3D3] text-[#6BA539] hover:bg-[#F5F5DC]/50"
+                        >
+                          房间详情
+                        </Button>
+                      </div>
+                    </CardFooter>
+                    </Card>
+                  </ScaleIn>
+                    )
+                })()
+              ))}
+              </div>
+            ) : (
+              <FadeIn delay={0.3}>
+                <div className="col-span-full text-center py-12 bg-white/60 backdrop-blur-sm rounded-xl border-2 border-dashed border-[#D3D3D3]">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-[#F5F5DC] rounded-full flex items-center justify-center">
+                    <CheckCircleIcon size="lg" className="text-[#6BA539]" />
                   </div>
-                  <div className="text-gray-500 text-sm">
-                   房间状态：{joinable ? '可加入' : '已满'}
-                  </div>
-                  <div className="text-gray-500 text-sm mt-1">
-                   玩家：<span className="font-bold text-indigo-600">{memberCount}/4</span>
-                   {'  '}
-                   在线：
-                   <span className="font-bold text-emerald-600">
-                     {onlineCount}/{memberCount}
-                   </span>
-                  </div>
+                  <p className="text-gray-700 mb-2 font-medium">没有符合条件的房间</p>
+                  <p className="text-sm text-gray-600">可以尝试取消筛选或创建新房间。</p>
                 </div>
-                
-                <button
-                  onClick={() => handleJoin(room.id)}
-                  disabled={!joinable || joiningId === room.id}
-                  data-testid="lobby-join"
-                  className="w-full bg-indigo-50 text-indigo-600 border border-indigo-200 py-2 rounded hover:bg-indigo-100 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition"
-                >
-                  {joiningId === room.id ? '加入中...' : (joinable ? '加入对局' : '已满')}
-                </button>
-                <button
-                  onClick={() => setDetailRoom(room)}
-                  data-testid="lobby-detail"
-                  className="w-full mt-2 border border-gray-200 text-gray-700 py-2 rounded hover:bg-gray-50 transition"
-                >
-                  房间详情
-                </button>
-              </div>
-                )
-              })()
-            ))}
-            {sortedRooms.length === 0 && (
-              <div className="col-span-full text-center py-12 bg-white rounded-lg border border-dashed border-gray-300">
-                <p className="text-gray-400 mb-4">没有符合条件的房间</p>
-                <p className="text-sm text-gray-400">可以尝试取消筛选或创建新房间。</p>
-              </div>
+              </FadeIn>
             )}
-          </div>
+          </StaggerContainer>
         )}
       </div>
 
-      {detailRoom && (
-        <div
-          className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
-          onClick={() => setDetailRoom(null)}
-          onKeyDown={e => {
-            if (e.key === 'Escape') setDetailRoom(null)
-          }}
-          tabIndex={-1}
-        >
-          <div
-            data-testid="lobby-detail-modal"
-            className="bg-white w-full max-w-xl rounded-2xl p-6 text-black shadow-2xl max-h-[90vh] overflow-y-auto"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <div className="text-lg font-bold truncate max-w-[16rem]" title={detailRoom.name}>
-                  {detailRoom.name || '未命名房间'}
-                </div>
-                <div className="text-xs text-gray-500 mt-1">
-                  模式：{modeLabel(detailRoom.mode)} · 类型：{typeLabel(detailRoom.type)}
-                </div>
-              </div>
-              <button
-                onClick={() => setDetailRoom(null)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                关闭
-              </button>
+      <Modal
+        isOpen={!!detailRoom}
+        onClose={() => setDetailRoom(null)}
+        title={detailRoom?.name || '未命名房间'}
+        size="lg"
+      >
+        {detailRoom && (
+          <>
+            <div className="flex flex-wrap gap-2 mb-4">
+              <Badge variant="primary" size="sm">
+                {modeLabel(detailRoom.mode)}
+              </Badge>
+              <Badge variant="secondary" size="sm">
+                {typeLabel(detailRoom.type)}
+              </Badge>
             </div>
 
-            <div className="flex items-center justify-between mb-3">
-              <div className="text-sm text-gray-600">
-                在线：
-                <span className="font-semibold text-emerald-600">
+            <div className="flex items-center gap-4 mb-6 bg-[#F5F5DC]/50 rounded-lg p-3">
+              <div className="flex items-center gap-2">
+                <OnlineIcon size="sm" className="text-[#6BA539]" />
+                <span className="text-sm text-gray-700">在线：</span>
+                <span className="font-semibold text-[#6BA539]">
                   {(detailRoom.room_members || []).filter((m: any) => m?.online).length}
                 </span>
-                /
-                <span className="font-semibold">
+                <span className="text-gray-400">/</span>
+                <span className="font-semibold text-gray-700">
                   {(detailRoom.room_members || []).length}
                 </span>
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-              <div className="flex gap-2">
-                <button
-                  onClick={async () => {
-                    const roomId = String(detailRoom.id)
-                    const roomMembers = (detailRoom.room_members || []) as Array<{ id: string }>
-                    const joinable = roomMembers.length < 4
-                    if (!joinable) return
-                    await handleJoin(roomId)
-                  }}
-                  disabled={joiningId === String(detailRoom.id) || (detailRoom.room_members || []).length >= 4}
-                  data-testid="lobby-detail-join"
-                  className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50 transition"
-                >
-                  {joiningId === String(detailRoom.id) ? '加入中...' : '直接加入'}
-                </button>
-                <button
-                  onClick={async () => {
-                    const url = `${window.location.origin}/room/${detailRoom.id}`
-                    try {
-                      await navigator.clipboard.writeText(url)
-                      showToast({ message: '房间链接已复制', kind: 'success' })
-                    } catch {
-                      showToast({ message: '复制失败，请手动复制：' + url, kind: 'error', timeoutMs: 6000 })
-                    }
-                  }}
-                  data-testid="lobby-detail-copy"
-                  className="border border-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-50 transition"
-                >
-                  复制房间链接
-                </button>
-              </div>
-
-              <button
+            <div className="flex flex-wrap items-center gap-3 mb-6">
+              <Button
                 onClick={async () => {
-                  const next = !qrVisible
-                  setQrVisible(next)
-                  if (!next) return
-                  if (qrDataUrl) return
+                  const roomId = String(detailRoom.id)
+                  const roomMembers = (detailRoom.room_members || []) as Array<{ id: string }>
+                  const joinable = roomMembers.length < 4
+                  if (!joinable) return
+                  await handleJoin(roomId)
+                }}
+                disabled={joiningId === String(detailRoom.id) || (detailRoom.room_members || []).length >= 4}
+                isLoading={joiningId === String(detailRoom.id)}
+                data-testid="lobby-detail-join"
+                className="bg-gradient-to-r from-[#6BA539] to-[#A8C8A8] hover:from-[#5a9430] hover:to-[#8fb890] shadow-md hover:shadow-lg transition-all duration-300"
+              >
+                直接加入
+              </Button>
+              <Button
+                onClick={async () => {
+                  const url = `${window.location.origin}/room/${detailRoom.id}`
                   try {
-                    const url = `${window.location.origin}/room/${detailRoom.id}`
-                    const dataUrl = await QRCode.toDataURL(url, { margin: 1, width: 180 })
-                    setQrDataUrl(dataUrl)
-                  } catch (e: any) {
-                    showToast({ message: '二维码生成失败: ' + (e?.message || String(e)), kind: 'error' })
+                    await navigator.clipboard.writeText(url)
+                    showToast({ message: '房间链接已复制', kind: 'success' })
+                  } catch {
+                    showToast({ message: '复制失败，请手动复制：' + url, kind: 'error', timeoutMs: 6000 })
                   }
                 }}
-                data-testid="lobby-detail-qr"
-                className="text-indigo-600 hover:text-indigo-700 text-sm underline"
+                variant="outline"
+                data-testid="lobby-detail-copy"
+                className="border-[#D3D3D3] text-[#6BA539] hover:bg-[#F5F5DC]/50"
               >
-                二维码邀请
-              </button>
+                复制房间链接
+              </Button>
+              <RippleEffect className="relative inline-block">
+                <button
+                  onClick={async () => {
+                    const next = !qrVisible
+                    setQrVisible(next)
+                    if (!next) return
+                    if (qrDataUrl) return
+                    try {
+                      const url = `${window.location.origin}/room/${detailRoom.id}`
+                      const dataUrl = await QRCode.toDataURL(url, { margin: 1, width: 180 })
+                      setQrDataUrl(dataUrl)
+                    } catch (e: any) {
+                      showToast({ message: '二维码生成失败: ' + (e?.message || String(e)), kind: 'error' })
+                    }
+                  }}
+                  data-testid="lobby-detail-qr"
+                  className="text-[#6BA539] hover:text-[#5a9430] text-sm font-medium hover:underline transition-all"
+                >
+                  二维码邀请
+                </button>
+              </RippleEffect>
             </div>
 
             {qrVisible && (
-              <div className="flex items-center justify-center mb-4">
+              <div className="flex items-center justify-center mb-6 bg-white rounded-lg p-4 border border-[#D3D3D3]">
                 {qrDataUrl ? (
-                  <Image alt="房间二维码" data-testid="lobby-detail-qr-img" src={qrDataUrl} width={180} height={180} unoptimized className="border rounded" />
+                  <Image alt="房间二维码" data-testid="lobby-detail-qr-img" src={qrDataUrl} width={180} height={180} unoptimized className="rounded-lg" />
                 ) : (
                   <div className="text-sm text-gray-500">生成中...</div>
                 )}
               </div>
             )}
 
-            <div className="border rounded-lg divide-y">
+            <div className="border border-[#D3D3D3] rounded-lg divide-y divide-[#D3D3D3]/50 bg-white/50">
               {(detailRoom.room_members || [])
                 .slice()
                 .sort((a: any, b: any) => (a.seat_no ?? 99) - (b.seat_no ?? 99))
                 .map((m: any, idx: number) => (
-                  <div key={m.id || idx} className="flex items-center justify-between p-3">
+                  <div key={m.id || idx} className="flex items-center justify-between p-4 hover:bg-[#F5F5DC]/30 transition-colors">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                        {m.member_type === 'ai' ? '🤖' : '👤'}
-                      </div>
+                      <Avatar
+                        name={m.member_type === 'ai' ? 'AI' : '玩家'}
+                        size="sm"
+                      />
                       <div className="text-sm">
-                        <div className="font-medium">
+                        <div className="font-medium text-gray-900">
                           座位 {m.seat_no ?? '-'} · {m.member_type === 'ai' ? 'AI' : '真人'}
                         </div>
-                        <div className="text-xs text-gray-500">
-                          {m.ready ? '已准备' : '未准备'}
+                        <div className="text-xs text-gray-500 flex items-center gap-1">
+                          {m.ready ? (
+                            <>
+                              <svg className="w-3 h-3 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                              已准备
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                              </svg>
+                              未准备
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
-                    <div className={`text-xs px-2 py-1 rounded ${m.online ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600'}`}>
+                    <Badge variant={m.online ? 'success' : 'secondary'} size="sm">
                       {m.online ? '在线' : '离线'}
-                    </div>
+                    </Badge>
                   </div>
                 ))}
               {(detailRoom.room_members || []).length === 0 && (
-                <div className="p-4 text-sm text-gray-500 text-center">暂无成员</div>
+                <div className="p-8 text-sm text-gray-500 text-center">暂无成员</div>
               )}
             </div>
-          </div>
-        </div>
-      )}
-    </div>
+          </>
+          )}
+      </Modal>
+    </CloudMountainBackground>
   )
 }

@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { supabase } from '@/lib/supabase/client'
 import { throttle } from '@/lib/utils/throttle'
 import { devError, devLog, devWarn, isDev } from '@/lib/utils/devLog'
+import { realtimeOptimizer } from '@/lib/performance/realtime-optimizer'
 
 export interface Card {
   suit: 'H' | 'D' | 'C' | 'S' | 'J'
@@ -39,7 +40,7 @@ const computeLastActionFromRecentTurns = (recentTurns: TurnRow[], currentSeat: n
 
 interface GameState {
   gameId: string | null
-  status: 'deal' | 'playing' | 'finished'
+  status: 'deal' | 'playing' | 'paused' | 'finished'
   turnNo: number
   currentSeat: number
   levelRank: number
@@ -49,6 +50,19 @@ interface GameState {
   scores: Record<string, number>
   counts: number[] // Remaining cards per seat
   rankings: number[] // Finishing order [seatNo, seatNo, ...]
+  
+  // Pause state
+  pausedBy: string | null
+  pausedAt: string | null
+  pauseReason: string | null
+  
+  // Tribute state
+  tributePhase: boolean
+  tributeFrom: number[] // Seats that need to tribute
+  tributeTo: number[] // Seats that receive tribute
+  resistTribute: number[] // Seats that resist tribute
+  tributeCards: Record<number, Card[]> // Cards to tribute per seat
+  returnCards: Record<number, Card[]> // Cards to return per seat
   
   setGame: (data: Partial<GameState>) => void
   resetGame: () => void
@@ -61,6 +75,11 @@ interface GameState {
   getAIHand: (seatNo: number) => Promise<Card[]>
   fetchLastTrickPlay: () => Promise<{ type: 'play' | 'pass', cards?: Card[], seatNo: number } | null>
   fetchTurnsSince: (gameId: string, fromTurnNo: number) => Promise<TurnRow[]>
+  calculateTribute: () => Promise<void>
+  submitTribute: (tributeCard: Card) => Promise<void>
+  submitReturn: (returnCard: Card) => Promise<void>
+  pauseGame: (reason?: string) => Promise<void>
+  resumeGame: () => Promise<void>
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -75,6 +94,19 @@ export const useGameStore = create<GameState>((set, get) => ({
   scores: {},
   counts: [27, 27, 27, 27],
   rankings: [],
+  
+  // Pause state
+  pausedBy: null,
+  pausedAt: null,
+  pauseReason: null,
+  
+  // Tribute state
+  tributePhase: false,
+  tributeFrom: [],
+  tributeTo: [],
+  resistTribute: [],
+  tributeCards: {},
+  returnCards: {},
 
   setGame: (data) => set((state) => ({ ...state, ...data })),
   resetGame: () =>
@@ -90,6 +122,15 @@ export const useGameStore = create<GameState>((set, get) => ({
       scores: {},
       counts: [27, 27, 27, 27],
       rankings: [],
+      pausedBy: null,
+      pausedAt: null,
+      pauseReason: null,
+      tributePhase: false,
+      tributeFrom: [],
+      tributeTo: [],
+      resistTribute: [],
+      tributeCards: {},
+      returnCards: {},
     }),
   updateHand: (cards) => set({ myHand: cards }),
   
@@ -201,7 +242,7 @@ export const useGameStore = create<GameState>((set, get) => ({
          devWarn('Turn mismatch detected! Fetching fresh game state...')
          const { data: freshGame } = await supabase
           .from('games')
-          .select('*')
+          .select('id,room_id,status,turn_no,current_seat,level_rank,started_at,ended_at,state_public')
           .eq('id', state.gameId)
           .single()
         
@@ -236,9 +277,9 @@ export const useGameStore = create<GameState>((set, get) => ({
     // 1. Fetch active game
     const { data: game, error: gameError } = await supabase
       .from('games')
-      .select('*')
+      .select('id,room_id,status,turn_no,current_seat,level_rank,started_at,ended_at,created_at,state_public,paused_by,paused_at,pause_reason')
       .eq('room_id', roomId)
-      .in('status', ['playing', 'finished']) // Also fetch finished games
+      .in('status', ['playing', 'paused', 'finished']) // Also fetch paused and finished games
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle()
@@ -263,7 +304,10 @@ export const useGameStore = create<GameState>((set, get) => ({
       currentSeat: game.current_seat,
       levelRank,
       counts,
-      rankings
+      rankings,
+      pausedBy: game.paused_by || null,
+      pausedAt: game.paused_at || null,
+      pauseReason: game.pause_reason || null
     })
 
     // 2. Fetch my hand
@@ -297,6 +341,9 @@ export const useGameStore = create<GameState>((set, get) => ({
     let turnsChannel: any = null
     let turnsGameId: string | null = null
 
+    const gameConnectionId = `game:${roomId}`
+    const turnsConnectionId = `turns:${roomId}`
+
     const ensureTurnsChannel = (nextGameId: string | null) => {
       if (!nextGameId) return
       if (turnsGameId === nextGameId && turnsChannel) return
@@ -304,12 +351,14 @@ export const useGameStore = create<GameState>((set, get) => ({
         supabase.removeChannel(turnsChannel)
         turnsChannel = null
         turnsGameId = null
+        realtimeOptimizer.updateConnectionStatus(turnsConnectionId, 'disconnected')
       }
 
       turnsGameId = nextGameId
       turnsChannel = supabase
         .channel(`turns-game:${nextGameId}`)
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'turns', filter: `game_id=eq.${nextGameId}` }, async (payload) => {
+          const startTime = performance.now()
           const newTurn = payload.new as any
           const incoming = {
             turn_no: newTurn.turn_no as number,
@@ -324,8 +373,18 @@ export const useGameStore = create<GameState>((set, get) => ({
             const lastAction = await get().fetchLastTrickPlay()
             set({ lastAction })
           }
+          const latency = performance.now() - startTime
+          realtimeOptimizer.recordMessage(turnsConnectionId, latency)
         })
-        .subscribe((status: any) => options?.onStatus?.(String(status)))
+        .subscribe((status: any) => {
+          const statusStr = String(status)
+          if (statusStr === 'SUBSCRIBED') {
+            realtimeOptimizer.updateConnectionStatus(turnsConnectionId, 'connected')
+          } else if (statusStr === 'CLOSED' || statusStr === 'CHANNEL_ERROR') {
+            realtimeOptimizer.updateConnectionStatus(turnsConnectionId, statusStr.toLowerCase() as any)
+          }
+          options?.onStatus?.(statusStr)
+        })
     }
 
     // Subscribe to games table for turn updates
@@ -335,6 +394,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         'postgres_changes',
         { event: '*', schema: 'public', table: 'games', filter: `room_id=eq.${roomId}` },
         async (payload) => {
+          const startTime = performance.now()
           devLog('[Store] Game Update Payload:', payload)
           const newGame = payload.new as any
           const counts = newGame.state_public?.counts || [27, 27, 27, 27]
@@ -384,9 +444,23 @@ export const useGameStore = create<GameState>((set, get) => ({
               }
             }
           }
+          const latency = performance.now() - startTime
+          realtimeOptimizer.recordMessage(gameConnectionId, latency)
         }
       )
-      .subscribe((status: any) => options?.onStatus?.(String(status)))
+      .subscribe((status: any) => {
+        const statusStr = String(status)
+        if (statusStr === 'SUBSCRIBED') {
+          realtimeOptimizer.updateConnectionStatus(gameConnectionId, 'connected')
+        } else if (statusStr === 'CLOSED' || statusStr === 'CHANNEL_ERROR') {
+          realtimeOptimizer.updateConnectionStatus(gameConnectionId, statusStr.toLowerCase() as any)
+        }
+        options?.onStatus?.(statusStr)
+      })
+
+    // Register connections with optimizer
+    realtimeOptimizer.registerConnection(gameConnectionId, `game:${roomId}`)
+    realtimeOptimizer.registerConnection(turnsConnectionId, `turns:${roomId}`)
 
     ensureTurnsChannel(get().gameId)
 
@@ -394,6 +468,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       fetchGameThrottled.cancel()
       supabase.removeChannel(gameChannel)
       if (turnsChannel) supabase.removeChannel(turnsChannel)
+      realtimeOptimizer.updateConnectionStatus(gameConnectionId, 'disconnected')
+      realtimeOptimizer.updateConnectionStatus(turnsConnectionId, 'disconnected')
     }
   },
 
@@ -405,5 +481,157 @@ export const useGameStore = create<GameState>((set, get) => ({
     }
     // Optimistic update or wait for subscription
     await get().fetchGame(roomId)
+  },
+
+  calculateTribute: async () => {
+    const state = get()
+    if (!state.gameId || state.rankings.length === 0) return
+
+    const { rankings, levelRank } = state
+    
+    // Determine winning and losing teams
+    const winningTeam = rankings[0] % 2
+    const losingTeam = 1 - winningTeam
+
+    // Fetch all hands
+    const winnerHands: Record<number, Card[]> = {}
+    const loserHands: Record<number, Card[]> = {}
+
+    for (let seat = 0; seat < 4; seat++) {
+      const team = seat % 2
+      const hand = await get().getAIHand(seat)
+      
+      if (team === winningTeam) {
+        winnerHands[seat] = hand
+      } else {
+        loserHands[seat] = hand
+      }
+    }
+
+    // Calculate tribute using tribute rules
+    const { calculateTeamTribute } = await import('@/lib/game/tributeRules')
+    const tributeState = calculateTeamTribute(winningTeam, losingTeam, winnerHands, loserHands, levelRank)
+
+    set({
+      tributePhase: true,
+      tributeFrom: tributeState.tributeFrom,
+      tributeTo: tributeState.tributeTo,
+      resistTribute: tributeState.resistTribute,
+      tributeCards: {},
+      returnCards: {}
+    })
+  },
+
+  submitTribute: async (tributeCard: Card) => {
+    const state = get()
+    if (!state.gameId) return
+
+    const { error } = await supabase.rpc('submit_tribute', {
+      p_game_id: state.gameId,
+      p_tribute_card: tributeCard
+    })
+
+    if (error) {
+      devError('Submit tribute failed:', error)
+      throw error
+    }
+
+    // Update local state
+    const newHand = state.myHand.filter(c => c.id !== tributeCard.id)
+    set({ myHand: newHand })
+  },
+
+  submitReturn: async (returnCard: Card) => {
+    const state = get()
+    if (!state.gameId) return
+
+    const { error } = await supabase.rpc('submit_return', {
+      p_game_id: state.gameId,
+      p_return_card: returnCard
+    })
+
+    if (error) {
+      devError('Submit return failed:', error)
+      throw error
+    }
+
+    // Update local state
+    const newHand = [...state.myHand, returnCard]
+    set({ myHand: newHand })
+  },
+
+  pauseGame: async (reason = '') => {
+    const state = get()
+    if (!state.gameId) {
+      devError('Cannot pause game: No game ID')
+      return
+    }
+
+    if (state.status !== 'playing') {
+      devError('Cannot pause game: Game is not in playing status')
+      return
+    }
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      devError('Cannot pause game: User not authenticated')
+      return
+    }
+
+    const { error } = await supabase.rpc('pause_game', {
+      p_game_id: state.gameId,
+      p_uid: user.id,
+      p_reason: reason
+    })
+
+    if (error) {
+      devError('Pause game failed:', error)
+      throw error
+    }
+
+    // Update local state
+    set({
+      status: 'paused',
+      pausedBy: user.id,
+      pausedAt: new Date().toISOString(),
+      pauseReason: reason
+    })
+  },
+
+  resumeGame: async () => {
+    const state = get()
+    if (!state.gameId) {
+      devError('Cannot resume game: No game ID')
+      return
+    }
+
+    if (state.status !== 'paused') {
+      devError('Cannot resume game: Game is not in paused status')
+      return
+    }
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      devError('Cannot resume game: User not authenticated')
+      return
+    }
+
+    const { error } = await supabase.rpc('resume_game', {
+      p_game_id: state.gameId,
+      p_uid: user.id
+    })
+
+    if (error) {
+      devError('Resume game failed:', error)
+      throw error
+    }
+
+    // Update local state
+    set({
+      status: 'playing',
+      pausedBy: null,
+      pausedAt: null,
+      pauseReason: null
+    })
   }
 }))

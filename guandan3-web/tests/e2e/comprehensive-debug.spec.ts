@@ -128,7 +128,7 @@ test.describe.skip('GuanDan3 Comprehensive Debug & Test', () => {
         await expect(handArea).toBeVisible();
         const firstCard = handArea.locator('div.cursor-pointer').first();
         await firstCard.click();
-        await expect(firstCard).toHaveClass(/translate-y-8/); // Verify selection
+        await expect(firstCard).toHaveClass(/ring-yellow-400/); // Verify selection
         
         await page.screenshot({ path: path.join(SCREENSHOTS_DIR, `${runTimestamp}_04_cards_selected.png`) });
 

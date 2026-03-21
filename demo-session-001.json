@@ -1,0 +1,6 @@
+{
+  "message": "Hello MCP Demo",
+  "timestamp": "2026-03-20T00:00:00.000Z",
+  "sessionId": "demo-session-001",
+  "type": "demo"
+}

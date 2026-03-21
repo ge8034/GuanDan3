@@ -1,3 +1,6 @@
+
+
+
 # Claude Code 项目指南
 
 ## 环境信息
@@ -305,7 +308,15 @@ guandan3-web/
   - web 容器 CPU 平均 ≤ 30%（20 并发）
 - **测试时长**：持续 10–30 分钟观察尾延迟与内存趋势
 
+## 工作流程
+  -开始新工作前，务必验证TypeScript错误。运行`npx pyright --verbose`检查类型问题，然后将其修复，以此作为任何功能开发或代码审查请求的前提条件。
+## 持续集成/持续部署
+  -使用`claude -p 'fix TypeScript errors and verify tests' --allowedTools 'Edit,Read,Bash'`进行批量修复。这可以避免工具干扰，使Claude专注于读取、编辑和运行命令。
+
 ## 代码审核标准
+
+###审查务必先运行
+  -当需要审查代码时，首先列出所有测试（`npx playwright list`）并运行这些测试（`npx playwright test`），然后根据测试失败情况分析代码。始终从测试验证开始。
 
 ### 审核七大维度
 
