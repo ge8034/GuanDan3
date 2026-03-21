@@ -15,21 +15,18 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [mode, setMode] = useState<ThemeMode>(() => {
-    if (typeof window !== 'undefined') {
-      const savedMode = localStorage.getItem('theme-mode') as ThemeMode
-      return savedMode || 'light'
-    }
-    return 'light'
-  })
-  const [gameTheme, setGameTheme] = useState<GameTheme>(() => {
-    if (typeof window !== 'undefined') {
-      const savedGameTheme = localStorage.getItem('game-theme') as GameTheme
-      return savedGameTheme || 'classic'
-    }
-    return 'classic'
-  })
+  const [mounted, setMounted] = useState(false)
+  const [mode, setMode] = useState<ThemeMode>('light')
+  const [gameTheme, setGameTheme] = useState<GameTheme>('classic')
   const [customThemes, setCustomThemes] = useState<Record<string, ThemeConfig>>({})
+
+  useEffect(() => {
+    setMounted(true)
+    const savedMode = localStorage.getItem('theme-mode') as ThemeMode
+    const savedGameTheme = localStorage.getItem('game-theme') as GameTheme
+    if (savedMode) setMode(savedMode)
+    if (savedGameTheme) setGameTheme(savedGameTheme)
+  }, [])
 
   useEffect(() => {
     const loadCustomThemes = () => {

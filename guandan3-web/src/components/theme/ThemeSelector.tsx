@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTheme } from '@/lib/theme/theme-context'
 import { GameTheme, ThemeMode } from '@/lib/theme/theme-types'
@@ -8,6 +8,11 @@ import { GameTheme, ThemeMode } from '@/lib/theme/theme-types'
 export default function ThemeSelector() {
   const { mode, gameTheme, setMode, setGameTheme, currentTheme } = useTheme()
   const [isOpen, setIsOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const gameThemes: Array<{ id: GameTheme; name: string; description: string }> = [
     { id: 'classic', name: '雅致经典', description: '新中式水墨风格' },
@@ -35,7 +40,7 @@ export default function ThemeSelector() {
         }}
       >
         <span className="text-xl">🎨</span>
-        <span className="font-medium">{currentTheme.name}</span>
+        <span className="font-medium">{mounted ? currentTheme.name : '雅致经典'}</span>
         <motion.span
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.2 }}
