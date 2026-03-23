@@ -27,7 +27,7 @@ export function useGameStats() {
     }
 
     if (gameStatus === 'finished' && gameStartedRef.current && !gameEndedRef.current) {
-      const myRanking = rankings.indexOf(members.find(m => m.pid === user.id)?.seat_no ?? 0)
+      const myRanking = rankings.indexOf(members.find(m => m.uid === user.id)?.seat_no ?? 0)
       const result = myRanking === 0 || myRanking === 1 ? 'win' : myRanking === 2 ? 'draw' : 'lose'
       
       const teamScore = result === 'win' ? 100 : result === 'draw' ? 50 : 0

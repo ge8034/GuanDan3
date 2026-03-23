@@ -1,626 +1,323 @@
 {
-  "timestamp": 1774270719.5081844,
+  "timestamp": 1774273492.1486537,
   "all_messages": [
     {
       "type": "info",
       "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
-      "timestamp": 1774270662.482297
+      "timestamp": 1774273430.5258257
     },
     {
       "type": "log",
       "text": "[HMR] connected",
-      "timestamp": 1774270662.8443148
+      "timestamp": 1774273431.137648
     },
     {
       "type": "log",
       "text": "[Fast Refresh] rebuilding",
-      "timestamp": 1774270671.2328029
+      "timestamp": 1774273431.3371449
     },
     {
       "type": "log",
-      "text": "[Fast Refresh] done in 896ms",
-      "timestamp": 1774270672.2370844
+      "text": "[Fast Refresh] done in 294ms",
+      "timestamp": 1774273431.4773238
+    },
+    {
+      "type": "log",
+      "text": "[Fast Refresh] rebuilding",
+      "timestamp": 1774273438.9936619
+    },
+    {
+      "type": "log",
+      "text": "[Fast Refresh] done in 5010ms",
+      "timestamp": 1774273444.0247872
+    },
+    {
+      "type": "log",
+      "text": "[Fast Refresh] rebuilding",
+      "timestamp": 1774273446.0396457
+    },
+    {
+      "type": "log",
+      "text": "[Fast Refresh] done in 617ms",
+      "timestamp": 1774273447.0468795
     },
     {
       "type": "log",
       "text": "[Performance] RoomPage rendered 1 times, current render took 0ms",
-      "timestamp": 1774270672.2396448
+      "timestamp": 1774273447.048522
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage unmounted after 6ms, total renders: 1",
-      "timestamp": 1774270672.240147
+      "text": "[Performance] RoomPage unmounted after 7ms, total renders: 1",
+      "timestamp": 1774273447.0489213
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 2 times, current render took 10ms",
-      "timestamp": 1774270672.2405257
+      "text": "[Performance] RoomPage rendered 2 times, current render took 13ms",
+      "timestamp": 1774273447.0492601
     },
     {
       "type": "log",
-      "text": "[fetchGame] Called for room: 09502a95-3e9b-467f-ba34-de30fd71020b",
-      "timestamp": 1774270672.2409117
+      "text": "[fetchGame] Called for room: 2e669bf6-2393-4578-a097-12d4b7e19fec",
+      "timestamp": 1774273447.0664833
     },
     {
       "type": "log",
-      "text": "[useRoomSubscription] Subscribing to room: 09502a95-3e9b-467f-ba34-de30fd71020b",
-      "timestamp": 1774270672.2415564
+      "text": "[useRoomSubscription] Subscribing to room: 2e669bf6-2393-4578-a097-12d4b7e19fec",
+      "timestamp": 1774273447.0687413
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 3 times, current render took 109ms",
-      "timestamp": 1774270672.2420843
+      "text": "[Performance] RoomPage rendered 3 times, current render took 110ms",
+      "timestamp": 1774273447.0708797
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 4 times, current render took 1047ms",
-      "timestamp": 1774270697.247278
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 5 times, current render took 1255ms",
-      "timestamp": 1774270697.2490263
-    },
-    {
-      "type": "log",
-      "text": "[AutoStart] 检查自动开始条件: {mode: pve1v3, expectedMode: pve1v3, gameStatus: deal, expectedStatus: deal, roomLoaded: false}",
-      "timestamp": 1774270697.2496495
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 6 times, current render took 1488ms",
-      "timestamp": 1774270697.2578988
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 7 times, current render took 1526ms",
-      "timestamp": 1774270697.2588015
+      "text": "[Performance] RoomPage rendered 4 times, current render took 1068ms",
+      "timestamp": 1774273472.0820186
     },
     {
       "type": "log",
       "text": "[fetchGame] Game query result: {hasGame: false, gameError: null}",
-      "timestamp": 1774270697.2594686
+      "timestamp": 1774273472.082697
     },
     {
       "type": "log",
       "text": "[fetchGame] No game found, resetting",
-      "timestamp": 1774270697.260278
+      "timestamp": 1774273472.083334
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 8 times, current render took 1654ms",
-      "timestamp": 1774270697.2609684
+      "text": "[Performance] RoomPage rendered 5 times, current render took 1109ms",
+      "timestamp": 1774273472.0840302
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 9 times, current render took 2211ms",
-      "timestamp": 1774270697.2627547
+      "text": "[Fast Refresh] rebuilding",
+      "timestamp": 1774273472.085765
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 10 times, current render took 2256ms",
-      "timestamp": 1774270697.263472
+      "text": "[Fast Refresh] done in 166ms",
+      "timestamp": 1774273472.086609
+    },
+    {
+      "type": "log",
+      "text": "[Performance] RoomPage rendered 6 times, current render took 1599ms",
+      "timestamp": 1774273472.0869756
+    },
+    {
+      "type": "log",
+      "text": "[AutoStart] 检查自动开始条件: {mode: pve1v3, expectedMode: pve1v3, gameStatus: deal, expectedStatus: deal, roomLoaded: false}",
+      "timestamp": 1774273472.087466
+    },
+    {
+      "type": "log",
+      "text": "[Performance] RoomPage rendered 7 times, current render took 2057ms",
+      "timestamp": 1774273472.0911927
+    },
+    {
+      "type": "log",
+      "text": "[Performance] RoomPage rendered 8 times, current render took 2412ms",
+      "timestamp": 1774273472.0928233
+    },
+    {
+      "type": "log",
+      "text": "[Performance] RoomPage rendered 9 times, current render took 2456ms",
+      "timestamp": 1774273472.093949
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 ()",
+      "timestamp": 1774273472.0947921
+    },
+    {
+      "type": "error",
+      "text": "Fetch members error: {code: 42703, details: null, hint: Perhaps you meant to reference the column \"room_members.id\" or the column \"room_members.uid\"., message: column room_members.pid does not exist}",
+      "timestamp": 1774273472.0961769
+    },
+    {
+      "type": "log",
+      "text": "[Performance] RoomPage rendered 10 times, current render took 2976ms",
+      "timestamp": 1774273472.0968814
     },
     {
       "type": "log",
       "text": "[AutoStart] 检查自动开始条件: {mode: pve1v3, expectedMode: pve1v3, gameStatus: deal, expectedStatus: deal, roomLoaded: true}",
-      "timestamp": 1774270697.264447
+      "timestamp": 1774273472.0977967
     },
     {
       "type": "log",
       "text": "[AutoStart] 满足所有条件，准备自动开始游戏",
-      "timestamp": 1774270697.265109
+      "timestamp": 1774273472.0984652
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 11 times, current render took 3050ms",
-      "timestamp": 1774270697.265941
+      "text": "[Fast Refresh] rebuilding",
+      "timestamp": 1774273472.1001296
+    },
+    {
+      "type": "log",
+      "text": "[Fast Refresh] done in 204ms",
+      "timestamp": 1774273472.1013098
     },
     {
       "type": "log",
       "text": "[AutoStart] 调用 startGame",
-      "timestamp": 1774270697.2665436
+      "timestamp": 1774273472.102308
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 12 times, current render took 3856ms",
-      "timestamp": 1774270697.271212
-    },
-    {
-      "type": "log",
-      "text": "[fetchGame] Called for room: 09502a95-3e9b-467f-ba34-de30fd71020b",
-      "timestamp": 1774270697.2727814
-    },
-    {
-      "type": "log",
-      "text": "[Store] Game Update Payload: {schema: public, table: games, commit_timestamp: 2026-03-23T12:57:57.603Z, eventType: INSERT, new: Object}",
-      "timestamp": 1774270697.274014
-    },
-    {
-      "type": "log",
-      "text": "[Store] Game Update: playing []",
-      "timestamp": 1774270697.275041
-    },
-    {
-      "type": "log",
-      "text": "[Store] Event type: INSERT Checking fetch condition",
-      "timestamp": 1774270697.2760172
-    },
-    {
-      "type": "log",
-      "text": "[Store] Calling fetchGameThrottled",
-      "timestamp": 1774270697.276401
-    },
-    {
-      "type": "log",
-      "text": "[fetchGame] Called for room: 09502a95-3e9b-467f-ba34-de30fd71020b",
-      "timestamp": 1774270697.2769668
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 13 times, current render took 4215ms",
-      "timestamp": 1774270697.2774076
-    },
-    {
-      "type": "log",
-      "text": "[AutoStart] 检查自动开始条件: {mode: pve1v3, expectedMode: pve1v3, gameStatus: playing, expectedStatus: deal, roomLoaded: true}",
-      "timestamp": 1774270697.2779503
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 14 times, current render took 4440ms",
-      "timestamp": 1774270697.2785356
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 15 times, current render took 4505ms",
-      "timestamp": 1774270697.2791023
-    },
-    {
-      "type": "log",
-      "text": "[fetchGame] Game query result: {hasGame: true, gameError: null}",
-      "timestamp": 1774270697.279595
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 16 times, current render took 4616ms",
-      "timestamp": 1774270697.280142
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 17 times, current render took 5067ms",
-      "timestamp": 1774270697.2812862
-    },
-    {
-      "type": "log",
-      "text": "[fetchGame] Game query result: {hasGame: true, gameError: null}",
-      "timestamp": 1774270697.2821405
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 18 times, current render took 5161ms",
-      "timestamp": 1774270697.2827446
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 19 times, current render took 6066ms",
-      "timestamp": 1774270697.2839978
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 20 times, current render took 6169ms",
-      "timestamp": 1774270697.2847364
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 21 times, current render took 6909ms",
-      "timestamp": 1774270697.2901993
-    },
-    {
-      "type": "log",
-      "text": "[fetchGame] Called for room: 09502a95-3e9b-467f-ba34-de30fd71020b",
-      "timestamp": 1774270697.2909942
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 22 times, current render took 7087ms",
-      "timestamp": 1774270697.29176
-    },
-    {
-      "type": "log",
-      "text": "[fetchGame] Game query result: {hasGame: true, gameError: null}",
-      "timestamp": 1774270697.2923536
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 23 times, current render took 7594ms",
-      "timestamp": 1774270697.2927153
+      "text": "[Performance] RoomPage rendered 11 times, current render took 4055ms",
+      "timestamp": 1774273472.1034453
     },
     {
       "type": "error",
       "text": "Failed to load resource: the server responded with a status of 400 ()",
-      "timestamp": 1774270697.2939894
-    },
-    {
-      "type": "log",
-      "text": "[fetchGame] Hands query result: {handsCount: 0, hasError: true, myUid: 6beafc36-f42b-4f0c-9ab0-0a3938dad2a8, mySeatNo: 0}",
-      "timestamp": 1774270697.2946424
+      "timestamp": 1774273472.1044314
     },
     {
       "type": "error",
-      "text": "Fetch hands error: {code: 42703, details: null, hint: null, message: column game_hands.uid does not exist}",
-      "timestamp": 1774270697.2952616
+      "text": "Start game failed: {code: 23502, details: Failing row contains (7dee3984-9501-45ec-891c-3de0…4, \"val..., 2026-03-23 13:44:13.339106+00, null)., hint: null, message: null value in column \"uid\" of relation \"game_hands\" violates not-null constraint}",
+      "timestamp": 1774273472.1053307
     },
     {
       "type": "error",
-      "text": "Failed to load resource: the server responded with a status of 400 ()",
-      "timestamp": 1774270697.3005297
+      "text": "[AutoStart] Failed to start practice game: {code: 23502, details: Failing row contains (7dee3984-9501-45ec-891c-3de0…4, \"val..., 2026-03-23 13:44:13.339106+00, null)., hint: null, message: null value in column \"uid\" of relation \"game_hands\" violates not-null constraint}",
+      "timestamp": 1774273472.106337
     },
     {
       "type": "log",
-      "text": "[fetchGame] Hands query result: {handsCount: 0, hasError: true, myUid: 6beafc36-f42b-4f0c-9ab0-0a3938dad2a8, mySeatNo: 0}",
-      "timestamp": 1774270697.301486
+      "text": "[Performance] RoomPage rendered 12 times, current render took 6047ms",
+      "timestamp": 1774273472.1088917
     },
     {
-      "type": "error",
-      "text": "Fetch hands error: {code: 42703, details: null, hint: null, message: column game_hands.uid does not exist}",
-      "timestamp": 1774270697.3027701
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 24 times, current render took 8927ms",
-      "timestamp": 1774270697.303639
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 25 times, current render took 9124ms",
-      "timestamp": 1774270697.3052642
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 26 times, current render took 9287ms",
-      "timestamp": 1774270697.306368
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 27 times, current render took 9376ms",
-      "timestamp": 1774270697.307339
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 28 times, current render took 9668ms",
-      "timestamp": 1774270697.3095212
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 29 times, current render took 9759ms",
-      "timestamp": 1774270697.311612
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 30 times, current render took 9784ms",
-      "timestamp": 1774270697.31224
-    },
-    {
-      "type": "log",
-      "text": "[AutoStart] startGame 完成",
-      "timestamp": 1774270697.3138866
-    },
-    {
-      "type": "error",
-      "text": "Failed to load resource: the server responded with a status of 400 ()",
-      "timestamp": 1774270697.314399
-    },
-    {
-      "type": "log",
-      "text": "[fetchGame] Hands query result: {handsCount: 0, hasError: true, myUid: 6beafc36-f42b-4f0c-9ab0-0a3938dad2a8, mySeatNo: 0}",
-      "timestamp": 1774270697.3148932
-    },
-    {
-      "type": "error",
-      "text": "Fetch hands error: {code: 42703, details: null, hint: null, message: column game_hands.uid does not exist}",
-      "timestamp": 1774270697.3158052
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 31 times, current render took 10751ms",
-      "timestamp": 1774270697.3176908
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 32 times, current render took 10856ms",
-      "timestamp": 1774270697.3182695
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 33 times, current render took 11123ms",
-      "timestamp": 1774270697.31902
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 34 times, current render took 12209ms",
-      "timestamp": 1774270697.319958
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 35 times, current render took 13938ms",
-      "timestamp": 1774270697.321443
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 36 times, current render took 14054ms",
-      "timestamp": 1774270697.3223379
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 37 times, current render took 14703ms",
-      "timestamp": 1774270697.32347
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 38 times, current render took 15094ms",
-      "timestamp": 1774270697.3243032
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 39 times, current render took 17107ms",
-      "timestamp": 1774270697.3283348
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 40 times, current render took 18163ms",
-      "timestamp": 1774270697.329294
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 41 times, current render took 19110ms",
-      "timestamp": 1774270697.3303032
-    },
-    {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 42 times, current render took 19418ms",
-      "timestamp": 1774270697.331165
+      "text": "[Performance] RoomPage rendered 13 times, current render took 8058ms",
+      "timestamp": 1774273472.1098726
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 43 times, current render took 19975ms",
-      "timestamp": 1774270697.3326604
+      "text": "[Performance] RoomPage rendered 14 times, current render took 10063ms",
+      "timestamp": 1774273472.1110268
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 44 times, current render took 20029ms",
-      "timestamp": 1774270697.33359
+      "text": "[Performance] RoomPage rendered 15 times, current render took 11063ms",
+      "timestamp": 1774273472.1119485
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 45 times, current render took 21055ms",
-      "timestamp": 1774270697.3346765
+      "text": "[Performance] RoomPage rendered 16 times, current render took 12059ms",
+      "timestamp": 1774273472.1129386
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 46 times, current render took 23045ms",
-      "timestamp": 1774270697.3368113
+      "text": "[Performance] RoomPage rendered 17 times, current render took 14048ms",
+      "timestamp": 1774273472.1137943
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 47 times, current render took 23412ms",
-      "timestamp": 1774270697.337781
+      "text": "[Performance] RoomPage rendered 18 times, current render took 16053ms",
+      "timestamp": 1774273472.1144857
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 48 times, current render took 23973ms",
-      "timestamp": 1774270697.3392172
+      "text": "[Performance] RoomPage rendered 19 times, current render took 18057ms",
+      "timestamp": 1774273472.1150439
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 49 times, current render took 24056ms",
-      "timestamp": 1774270697.3399525
+      "text": "[Performance] RoomPage rendered 20 times, current render took 19055ms",
+      "timestamp": 1774273472.1156013
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 50 times, current render took 25060ms",
-      "timestamp": 1774270697.340872
+      "text": "[Performance] RoomPage rendered 21 times, current render took 21063ms",
+      "timestamp": 1774273472.1162405
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 51 times, current render took 27058ms",
-      "timestamp": 1774270707.35227
+      "text": "[Performance] RoomPage rendered 22 times, current render took 23047ms",
+      "timestamp": 1774273472.1166656
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 52 times, current render took 28148ms",
-      "timestamp": 1774270707.3534536
+      "text": "[Performance] RoomPage rendered 23 times, current render took 24065ms",
+      "timestamp": 1774273472.117127
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 53 times, current render took 28663ms",
-      "timestamp": 1774270707.3546078
+      "text": "[Performance] RoomPage rendered 24 times, current render took 26062ms",
+      "timestamp": 1774273482.119989
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 54 times, current render took 29228ms",
-      "timestamp": 1774270707.355741
+      "text": "[Performance] RoomPage rendered 25 times, current render took 28058ms",
+      "timestamp": 1774273482.1205716
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 55 times, current render took 30052ms",
-      "timestamp": 1774270707.3564665
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 56 times, current render took 32071ms",
-      "timestamp": 1774270707.3571541
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 57 times, current render took 33074ms",
-      "timestamp": 1774270707.357707
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 58 times, current render took 34064ms",
-      "timestamp": 1774270707.3583043
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 59 times, current render took 35047ms",
-      "timestamp": 1774270707.359147
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 60 times, current render took 35097ms",
-      "timestamp": 1774270707.3597631
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 61 times, current render took 35688ms",
-      "timestamp": 1774270719.456697
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 62 times, current render took 36296ms",
-      "timestamp": 1774270719.4577217
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 63 times, current render took 36350ms",
-      "timestamp": 1774270719.4583957
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 64 times, current render took 37061ms",
-      "timestamp": 1774270719.459164
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 65 times, current render took 37262ms",
-      "timestamp": 1774270719.4605558
-    },
-    {
-      "type": "log",
-      "text": "[Store] Game Update Payload: {schema: public, table: games, commit_timestamp: 2026-03-23T12:58:29.802Z, eventType: UPDATE, new: Object}",
-      "timestamp": 1774270719.4620728
-    },
-    {
-      "type": "log",
-      "text": "[Store] Game Update: playing []",
-      "timestamp": 1774270719.464157
-    },
-    {
-      "type": "log",
-      "text": "[Store] Event type: UPDATE Checking fetch condition",
-      "timestamp": 1774270719.4650075
-    },
-    {
-      "type": "log",
-      "text": "[Store] Calling fetchGameThrottled",
-      "timestamp": 1774270719.4655173
-    },
-    {
-      "type": "log",
-      "text": "[fetchGame] Called for room: 09502a95-3e9b-467f-ba34-de30fd71020b",
-      "timestamp": 1774270719.4661427
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 66 times, current render took 37313ms",
-      "timestamp": 1774270719.4665956
-    },
-    {
-      "type": "log",
-      "text": "[fetchGame] Game query result: {hasGame: true, gameError: null}",
-      "timestamp": 1774270719.4680243
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 67 times, current render took 37949ms",
-      "timestamp": 1774270719.4686596
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 68 times, current render took 38054ms",
-      "timestamp": 1774270719.4692194
-    },
-    {
-      "type": "log",
-      "text": "[Performance] RoomPage rendered 69 times, current render took 39117ms",
-      "timestamp": 1774270719.4748156
-    },
-    {
-      "type": "error",
-      "text": "Failed to load resource: the server responded with a status of 400 ()",
-      "timestamp": 1774270719.4757483
-    },
-    {
-      "type": "log",
-      "text": "[fetchGame] Hands query result: {handsCount: 0, hasError: true, myUid: 6beafc36-f42b-4f0c-9ab0-0a3938dad2a8, mySeatNo: 0}",
-      "timestamp": 1774270719.4767747
-    },
-    {
-      "type": "error",
-      "text": "Fetch hands error: {code: 42703, details: null, hint: null, message: column game_hands.uid does not exist}",
-      "timestamp": 1774270719.4777951
+      "text": "[Performance] RoomPage rendered 26 times, current render took 30048ms",
+      "timestamp": 1774273482.1211817
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 70 times, current render took 39677ms",
-      "timestamp": 1774270719.4785175
+      "text": "[Performance] RoomPage rendered 27 times, current render took 32055ms",
+      "timestamp": 1774273482.1215944
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 71 times, current render took 40050ms",
-      "timestamp": 1774270719.4802856
+      "text": "[Performance] RoomPage rendered 28 times, current render took 33057ms",
+      "timestamp": 1774273482.1221235
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 72 times, current render took 40094ms",
-      "timestamp": 1774270719.48118
+      "text": "[Performance] RoomPage rendered 29 times, current render took 34055ms",
+      "timestamp": 1774273482.1226256
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 73 times, current render took 40127ms",
-      "timestamp": 1774270719.481949
+      "text": "[Performance] RoomPage rendered 30 times, current render took 36049ms",
+      "timestamp": 1774273492.131474
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 74 times, current render took 41050ms",
-      "timestamp": 1774270719.4839554
+      "text": "[Performance] RoomPage rendered 31 times, current render took 37059ms",
+      "timestamp": 1774273492.132042
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 75 times, current render took 42062ms",
-      "timestamp": 1774270719.4848154
+      "text": "[Performance] RoomPage rendered 32 times, current render took 39045ms",
+      "timestamp": 1774273492.1324558
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 76 times, current render took 44067ms",
-      "timestamp": 1774270719.4865081
+      "text": "[Performance] RoomPage rendered 33 times, current render took 40046ms",
+      "timestamp": 1774273492.1332185
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 77 times, current render took 46054ms",
-      "timestamp": 1774270719.4896643
+      "text": "[Performance] RoomPage rendered 34 times, current render took 42071ms",
+      "timestamp": 1774273492.133771
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 78 times, current render took 46420ms",
-      "timestamp": 1774270719.4908319
+      "text": "[Performance] RoomPage rendered 35 times, current render took 43055ms",
+      "timestamp": 1774273492.1344838
     },
     {
       "type": "log",
-      "text": "[Performance] RoomPage rendered 79 times, current render took 46977ms",
-      "timestamp": 1774270719.4917712
+      "text": "[Performance] RoomPage rendered 36 times, current render took 45042ms",
+      "timestamp": 1774273492.1351135
     }
   ],
   "errors": [
     "Failed to load resource: the server responded with a status of 400 ()",
-    "Fetch hands error: {code: 42703, details: null, hint: null, message: column game_hands.uid does not exist}",
+    "Fetch members error: {code: 42703, details: null, hint: Perhaps you meant to reference the column \"room_members.id\" or the column \"room_members.uid\"., message: column room_members.pid does not exist}",
     "Failed to load resource: the server responded with a status of 400 ()",
-    "Fetch hands error: {code: 42703, details: null, hint: null, message: column game_hands.uid does not exist}",
-    "Failed to load resource: the server responded with a status of 400 ()",
-    "Fetch hands error: {code: 42703, details: null, hint: null, message: column game_hands.uid does not exist}",
-    "Failed to load resource: the server responded with a status of 400 ()",
-    "Fetch hands error: {code: 42703, details: null, hint: null, message: column game_hands.uid does not exist}"
+    "Start game failed: {code: 23502, details: Failing row contains (7dee3984-9501-45ec-891c-3de0…4, \"val..., 2026-03-23 13:44:13.339106+00, null)., hint: null, message: null value in column \"uid\" of relation \"game_hands\" violates not-null constraint}",
+    "[AutoStart] Failed to start practice game: {code: 23502, details: Failing row contains (7dee3984-9501-45ec-891c-3de0…4, \"val..., 2026-03-23 13:44:13.339106+00, null)., hint: null, message: null value in column \"uid\" of relation \"game_hands\" violates not-null constraint}"
   ],
   "warnings": [],
   "final_state": {
@@ -629,6 +326,6 @@
     "passButtonExists": false,
     "handContainerExists": true,
     "roomHeaderExists": false,
-    "pathname": "/room/09502a95-3e9b-467f-ba34-de30fd71020b"
+    "pathname": "/room/2e669bf6-2393-4578-a097-12d4b7e19fec"
   }
 }

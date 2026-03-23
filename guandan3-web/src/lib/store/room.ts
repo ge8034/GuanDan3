@@ -15,7 +15,7 @@ export interface Room {
 }
 
 export interface RoomMember {
-  pid: string | null  // 数据库使用 pid 而不是 uid
+  uid: string | null
   seat_no: number
   ready: boolean
   online?: boolean
@@ -96,7 +96,7 @@ export const useRoomStore = create<RoomState>((set, get) => ({
 
     if (user) {
        const nextMembers = currentMembers.map(m =>
-         m.pid === user.id ? { ...m, ready } : m
+         m.uid === user.id ? { ...m, ready } : m
        )
        set({ members: nextMembers })
     }
@@ -187,7 +187,7 @@ export const useRoomStore = create<RoomState>((set, get) => ({
         seat_no: seatNo,
         member_type: 'ai',
         ready: true,
-        pid: null, // AI has no player pid
+        uid: null, // AI has no user uid
         ai_key: `ai-${Date.now()}-${seatNo}`, // Unique key for AI
         difficulty // AI difficulty level
       })
@@ -215,10 +215,10 @@ export const useRoomStore = create<RoomState>((set, get) => ({
     }
     set({ currentRoom: room })
 
-    // 2. Fetch Members - 数据库使用 pid 而不是 uid
+    // 2. Fetch Members
     const { data: members, error: membersError } = await supabase
       .from('room_members')
-      .select('id,room_id,pid,seat_no,ready,online,member_type,ai_key')
+      .select('id,room_id,uid,seat_no,ready,online,member_type,ai_key')
       .eq('room_id', roomId)
       .order('seat_no')
 

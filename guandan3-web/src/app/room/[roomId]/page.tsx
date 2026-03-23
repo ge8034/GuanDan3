@@ -435,7 +435,7 @@ export default function RoomPage() {
 
       <EnhancedChatBox
         roomId={roomId}
-        userId={myMember?.pid || 'guest'}
+        userId={myMember?.uid || 'guest'}
         userName={myMember ? `座位 ${myMember.seat_no}` : '游客'}
       />
 
