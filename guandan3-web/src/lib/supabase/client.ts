@@ -33,9 +33,11 @@ export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKe
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
-    // 会话存储配置
-    storage: window.localStorage,
-    storageKey: 'guandan3-auth-token',
+    // SSR安全检查：只在客户端使用localStorage
+    ...(typeof window !== 'undefined' ? {
+      storage: window.localStorage,
+      storageKey: 'guandan3-auth-token',
+    } : {}),
   },
 })
 
