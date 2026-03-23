@@ -3,7 +3,7 @@ import type { Room, RoomMember } from '@/lib/store/room'
 export const getIsOwner = (room: Room | null, userId: string | null | undefined) => room?.owner_uid === userId
 
 export const getMemberByUid = (members: RoomMember[], userId: string | null | undefined) =>
-  members.find(m => !!userId && m.uid === userId)
+  members.find(m => !!userId && m.pid === userId)
 
 export const getMemberBySeat = (members: RoomMember[], seatNo: number) => members.find(m => m.seat_no === seatNo)
 

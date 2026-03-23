@@ -320,12 +320,12 @@ export const useGameStore = create<GameState>((set, get) => ({
 
     if (user?.id) {
       myUid = user.id
-      // Get my seat from room_members
+      // Get my seat from room_members - 数据库使用 pid
       const { data: memberData } = await supabase
         .from('room_members')
         .select('seat_no')
         .eq('room_id', roomId)
-        .eq('uid', user.id)
+        .eq('pid', user.id)
         .maybeSingle()
 
       mySeatNo = memberData?.seat_no
