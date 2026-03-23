@@ -9,5 +9,34 @@ if (!supabaseUrl || !supabaseAnonKey) {
   )
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// 配置超时和全局错误处理
+export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+  global: {
+    fetch: (url, options) => {
+      // 使用AbortController实现超时（兼容性更好）
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 60000) // 60秒超时
+      return fetch(url, {
+        ...options,
+        signal: controller.signal,
+      }).finally(() => clearTimeout(timeoutId))
+    },
+  },
+  // 启用实时功能
+  realtime: {
+    params: {
+      eventsPerSecond: 10,
+    },
+  },
+  // 认证配置
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    // 会话存储配置
+    storage: window.localStorage,
+    storageKey: 'guandan3-auth-token',
+  },
+})
+
 export type { SupabaseClient }

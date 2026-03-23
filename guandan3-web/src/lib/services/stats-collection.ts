@@ -6,7 +6,7 @@ export interface GameEventData {
   user_id: string
   event_type: 'card_played' | 'trick_won' | 'bomb_used' | 'rocket_used' | 'perfect_round' | 'game_end'
   timestamp: number
-  data?: Record<string, any>
+  data?: Record<string, unknown>
 }
 
 export class StatsCollectionService {
@@ -200,14 +200,22 @@ export class StatsCollectionService {
 
     try {
       const { error } = await supabase.from('game_events').insert(events)
-      // 如果表不存在，静默忽略（统计功能可选）
-      if (error && error.code !== 'PGRST116') {
-        console.error('Failed to flush game events:', error)
+      // 如果表不存在或其他可选功能错误，静默忽略（统计功能可选）
+      // PGRST116 = 表不存在, PGRST205 = 找不到表, code undefined = 连接错误
+      if (error && error.code !== 'PGRST116' && error.code !== 'PGRST205' && error.message?.includes('game_events') === false) {
+        console.error('[stats] Failed to flush game events:', error)
       }
-    } catch (error: any) {
-      // 只在非404错误时才保留事件重试
-      if (!error.message?.includes('404') && !error.message?.includes('PGRST116')) {
-        console.error('Failed to flush game events:', error)
+    } catch (error: unknown) {
+      // 只在非404/表不存在错误时才保留事件重试
+      const err = error as { message?: string; code?: string }
+      const isTableNotFound = err.message?.includes('404') ||
+                              err.message?.includes('PGRST116') ||
+                              err.message?.includes('PGRST205') ||
+                              err.message?.includes('game_events') ||
+                              err.code === 'PGRST116' ||
+                              err.code === 'PGRST205'
+      if (!isTableNotFound) {
+        console.error('[stats] Failed to flush game events:', error)
         this.eventBuffer.unshift(...events)
       }
     }
@@ -221,9 +229,9 @@ export class StatsCollectionService {
     try {
       const { error } = await supabase.from('game_stats').insert(this.currentGameData as GameStats)
 
-      // 如果表不存在或其他错误，静默处理
-      if (error && error.code !== 'PGRST116') {
-        console.error('Failed to save game stats:', error)
+      // 如果表不存在或其他可选功能错误，静默处理
+      if (error && error.code !== 'PGRST116' && error.code !== 'PGRST205') {
+        console.error('[stats] Failed to save game stats:', error)
       }
 
       await this.updatePlayerStats().catch(() => {})
@@ -231,10 +239,16 @@ export class StatsCollectionService {
       await this.updateTimeStats().catch(() => {})
 
       this.currentGameData = null
-    } catch (error: any) {
-      // 在非404错误时才抛出
-      if (!error.message?.includes('404') && !error.message?.includes('PGRST116')) {
-        console.error('Failed to save game stats:', error)
+    } catch (error: unknown) {
+      // 在非404/表不存在错误时才抛出
+      const err = error as { message?: string; code?: string }
+      const isTableNotFound = err.message?.includes('404') ||
+                              err.message?.includes('PGRST116') ||
+                              err.message?.includes('PGRST205') ||
+                              err.code === 'PGRST116' ||
+                              err.code === 'PGRST205'
+      if (!isTableNotFound) {
+        console.error('[stats] Failed to save game stats:', error)
         throw error
       }
       this.currentGameData = null
@@ -329,9 +343,10 @@ export class StatsCollectionService {
           console.error('Failed to create player stats:', error)
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // 静默忽略表不存在的错误
-      if (!error.message?.includes('PGRST116')) {
+      const err = error as { message?: string; code?: string }
+      if (!err.message?.includes('PGRST116') && err.code !== 'PGRST116') {
         console.error('Failed to update player stats:', error)
       }
     }
@@ -393,9 +408,10 @@ export class StatsCollectionService {
             })
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // 静默忽略表不存在的错误
-      if (!error.message?.includes('PGRST116')) {
+      const err = error as { message?: string; code?: string }
+      if (!err.message?.includes('PGRST116') && err.code !== 'PGRST116') {
         console.error('Failed to update card play stats:', error)
       }
     }
@@ -462,9 +478,10 @@ export class StatsCollectionService {
             updated_at: new Date().toISOString()
           })
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // 静默忽略表不存在的错误
-      if (!error.message?.includes('PGRST116')) {
+      const err = error as { message?: string; code?: string }
+      if (!err.message?.includes('PGRST116') && err.code !== 'PGRST116') {
         console.error('Failed to update time stats:', error)
       }
     }
