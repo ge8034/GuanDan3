@@ -72,19 +72,20 @@ const CardViewComponent = ({ card, variant, selected, disabled, onClick, style, 
   return (
     <motion.div
       layout
+      data-card-id={card.id}
       initial={variant === 'hand' ? { opacity: 0, y: 100, rotate: -5 } : { opacity: 0, scale: 0.5, y: 20 }}
-      animate={{ 
-        opacity: 1, 
-        y: selected ? -30 : 0, 
+      animate={{
+        opacity: 1,
+        y: selected ? -30 : 0,
         scale: 1,
         rotate: 0,
-        transition: { 
-          type: 'spring', 
-          stiffness: 400, 
+        transition: {
+          type: 'spring',
+          stiffness: 400,
           damping: 25,
           mass: 0.8,
-          delay: index * 0.05 
-        } 
+          delay: index * 0.05
+        }
       }}
       exit={{ opacity: 0, y: -50, scale: 0.8, transition: { duration: 0.2 } }}
       whileHover={!disabled && variant === 'hand' ? { y: selected ? -40 : -15, scale: 1.05, zIndex: 20 } : {}}

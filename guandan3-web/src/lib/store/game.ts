@@ -242,12 +242,12 @@ export const useGameStore = create<GameState>((set, get) => ({
          devWarn('Turn mismatch detected! Fetching fresh game state...')
          const { data: freshGame } = await supabase
           .from('games')
-          .select('id,room_id,status,turn_no,current_seat,level_rank,started_at,ended_at,state_public')
+          .select('id,room_id,status,turn_no,current_seat,state_public')
           .eq('id', state.gameId)
           .single()
         
         if (freshGame) {
-          devLog('State refreshed:', freshGame.turn_no, freshGame.current_seat)
+          if (isDev()) devLog('State refreshed:', freshGame.turn_no, freshGame.current_seat)
           set({
             turnNo: freshGame.turn_no,
             currentSeat: freshGame.current_seat,
@@ -274,22 +274,25 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   fetchGame: async (roomId) => {
+    if (isDev()) devLog('[fetchGame] Called for room:', roomId)
     // 1. Fetch active game
     const { data: game, error: gameError } = await supabase
       .from('games')
-      .select('id,room_id,status,turn_no,current_seat,level_rank,started_at,ended_at,created_at,state_public,paused_by,paused_at,pause_reason')
+      .select('id,room_id,status,turn_no,current_seat,state_public')
       .eq('room_id', roomId)
-      .in('status', ['playing', 'paused', 'finished']) // Also fetch paused and finished games
-      .order('created_at', { ascending: false })
+      .in('status', ['playing', 'paused', 'finished'])
       .limit(1)
       .maybeSingle()
-    
+
+    if (isDev()) devLog('[fetchGame] Game query result:', { hasGame: !!game, gameError })
+
     if (gameError) {
       devError('Fetch game error:', gameError)
       return
     }
-    
+
     if (!game) {
+      if (isDev()) devLog('[fetchGame] No game found, resetting')
       get().resetGame()
       return
     }
@@ -297,7 +300,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     const counts = (game.state_public as any)?.counts || [27, 27, 27, 27]
     const rankings = (game.state_public as any)?.rankings || []
     const levelRank = (game.state_public as any)?.levelRank || 2
-    set({ 
+    set({
       gameId: game.id,
       status: game.status as any,
       turnNo: game.turn_no,
@@ -305,9 +308,9 @@ export const useGameStore = create<GameState>((set, get) => ({
       levelRank,
       counts,
       rankings,
-      pausedBy: game.paused_by || null,
-      pausedAt: game.paused_at || null,
-      pauseReason: game.pause_reason || null
+      pausedBy: null,
+      pausedAt: null,
+      pauseReason: null
     })
 
     // 2. Fetch my hand
@@ -315,18 +318,23 @@ export const useGameStore = create<GameState>((set, get) => ({
       .from('game_hands')
       .select('hand')
       .eq('game_id', game.id)
-    
+
+    if (isDev()) devLog('[fetchGame] Hands query result:', { handsCount: hands?.length || 0, hasError: !!handsError })
+
     if (handsError) {
       devError('Fetch hands error:', handsError)
     } else if (hands && hands.length > 0) {
       // Cast JSONB to Card[]
       const myHand = hands[0].hand as unknown as Card[]
+      if (isDev()) devLog('[fetchGame] Setting myHand:', { cardsCount: myHand?.length || 0 })
       // Sort hand
       myHand.sort((a, b) => {
         if (a.val !== b.val) return b.val - a.val
         return a.suit.localeCompare(b.suit)
       })
       set({ myHand })
+    } else {
+      if (isDev()) devLog('[fetchGame] No hands found, skipping myHand set')
     }
 
     // 3. Fetch last action
@@ -336,7 +344,9 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   subscribeGame: (roomId, options) => {
     const fetchGameThrottled = throttle(() => {
-      get().fetchGame(roomId).catch(() => {})
+      get().fetchGame(roomId).catch((err) => {
+        devError('[fetchGameThrottled] Error:', err)
+      })
     }, 350)
     let turnsChannel: any = null
     let turnsGameId: string | null = null
@@ -395,13 +405,13 @@ export const useGameStore = create<GameState>((set, get) => ({
         { event: '*', schema: 'public', table: 'games', filter: `room_id=eq.${roomId}` },
         async (payload) => {
           const startTime = performance.now()
-          devLog('[Store] Game Update Payload:', payload)
+          if (isDev()) devLog('[Store] Game Update Payload:', payload)
           const newGame = payload.new as any
           const counts = newGame.state_public?.counts || [27, 27, 27, 27]
           const rankings = newGame.state_public?.rankings || []
           const levelRank = newGame.state_public?.levelRank || 2
 
-          devLog('[Store] Game Update:', newGame.status, rankings)
+          if (isDev()) devLog('[Store] Game Update:', newGame.status, rankings)
 
           const previousTurnNo = get().turnNo
           const previousGameId = get().gameId
@@ -421,13 +431,17 @@ export const useGameStore = create<GameState>((set, get) => ({
           }
           ensureTurnsChannel(newGame.id || null)
           // Also refetch hand if game just started
+          if (isDev()) devLog('[Store] Event type:', payload.eventType, 'Checking fetch condition')
           if (payload.eventType === 'INSERT' || (payload.eventType === 'UPDATE' && (payload.old as any)?.status !== 'playing')) {
+             if (isDev()) devLog('[Store] Calling fetchGameThrottled')
              fetchGameThrottled()
+          } else {
+             if (isDev()) devLog('[Store] Skip fetchGameThrottled - condition not met')
           }
 
           // If rankings changed (someone finished), we might want to refresh state more aggressively or just trust the payload
           if (rankings.length > previousRankingsLen) {
-             devLog('[Store] Rankings updated, forcing refresh')
+             if (isDev()) devLog('[Store] Rankings updated, forcing refresh')
              fetchGameThrottled()
           }
 
