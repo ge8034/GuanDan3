@@ -106,6 +106,50 @@ export default function RoomPage() {
   
   // Game Statistics Collection
   useGameStats()
+
+  // Auto-start game for practice mode
+  const autoStartStartedRef = useRef(false)
+  useEffect(() => {
+    // 练习模式自动开始游戏
+    const shouldAutoStart =
+      currentRoom?.mode === 'pve1v3' && // 练习模式
+      gameStatus === 'deal' && // 游戏未开始
+      roomLoaded && // 房间已加载
+      isOwner && // 是房主
+      !autoStartStartedRef.current && // 未尝试过自动开始
+      !gameId // 没有游戏ID
+
+    // DEBUG: 打印自动开始条件
+    if (currentRoom) {
+      console.log('[AutoStart] 检查自动开始条件:', {
+        mode: currentRoom?.mode,
+        expectedMode: 'pve1v3',
+        gameStatus,
+        expectedStatus: 'deal',
+        roomLoaded,
+        isOwner,
+        autoStartStarted: autoStartStartedRef.current,
+        gameId,
+        shouldStart: shouldAutoStart
+      })
+    }
+
+    if (shouldAutoStart) {
+      console.log('[AutoStart] 满足所有条件，准备自动开始游戏')
+      autoStartStartedRef.current = true
+      const timer = setTimeout(async () => {
+        try {
+          console.log('[AutoStart] 调用 startGame')
+          await startGame(roomId)
+          console.log('[AutoStart] startGame 完成')
+        } catch (e) {
+          console.error('[AutoStart] Failed to start practice game:', e)
+        }
+      }, 1000) // 延迟1秒确保房间状态已同步
+      return () => clearTimeout(timer)
+    }
+  }, [currentRoom?.mode, gameStatus, roomLoaded, isOwner, gameId, roomId, startGame])
+
   const [isDebugVisible, setIsDebugVisible] = useState(false)
   const [showDealAnimation, setShowDealAnimation] = useState(false)
   const [showPlayAnimation, setShowPlayAnimation] = useState(false)

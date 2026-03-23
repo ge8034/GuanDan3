@@ -173,7 +173,10 @@ export const optimizedQueries = {
   async getRoomMembers(roomId: string): Promise<any[] | null> {
     return apiOptimizer.query(
       async () => {
-        const { data, error } = await supabase.from('room_members').select('*').eq('room_id', roomId).order('seat_no')
+        const { data, error } = await supabase.from('room_members')
+          .select('id,room_id,uid,seat_no,ready,online,member_type,ai_key,difficulty')
+          .eq('room_id', roomId)
+          .order('seat_no')
         if (error) throw error
         return data
       },

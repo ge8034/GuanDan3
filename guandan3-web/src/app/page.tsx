@@ -49,17 +49,17 @@ export default function Home() {
         const { ok } = await ensureAuthed({ onError: msg => showToast({ message: msg, kind: 'error' }) })
         if (!ok) return
       }
-      
+
       const { data, error } = await supabase.rpc('create_practice_room', {
         p_visibility: 'private'
       })
-      
+
       if (error) {
         console.error('Create room failed:', error)
         showToast({ message: mapSupabaseErrorToMessage(error, '创建房间失败'), kind: 'error' })
         return
       }
-      
+
       const roomId = data?.[0]?.room_id
       if (roomId) {
         router.push(`/room/${roomId}`)

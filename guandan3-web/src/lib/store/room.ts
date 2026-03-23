@@ -208,7 +208,7 @@ export const useRoomStore = create<RoomState>((set, get) => ({
       .select('id,name,mode,type,status,visibility,owner_uid,created_at')
       .eq('id', roomId)
       .single()
-    
+
     if (roomError) {
       devError('Fetch room error:', roomError)
       return
@@ -218,14 +218,15 @@ export const useRoomStore = create<RoomState>((set, get) => ({
     // 2. Fetch Members
     const { data: members, error: membersError } = await supabase
       .from('room_members')
-      .select('id,room_id,uid,seat_no,ready,online,member_type,created_at')
+      .select('id,room_id,uid,seat_no,ready,online,member_type')
       .eq('room_id', roomId)
       .order('seat_no')
-    
+
     if (membersError) {
       devError('Fetch members error:', membersError)
       return
     }
+
     set({ members: members || [] })
   },
 

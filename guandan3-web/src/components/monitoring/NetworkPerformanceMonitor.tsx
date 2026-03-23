@@ -44,10 +44,13 @@ export default function NetworkPerformanceMonitor() {
 
     const updateMetrics = () => {
       try {
-        const report = supabase.getNetworkPerformanceReport()
-        setMetrics(report.metrics)
-        setSlowRequests(report.slowRequests.slice(0, 5))
-        setFailedRequests(report.failedRequests.slice(0, 5))
+        const client = supabase as any
+        if (client.getNetworkPerformanceReport) {
+          const report = client.getNetworkPerformanceReport()
+          setMetrics(report.metrics)
+          setSlowRequests(report.slowRequests.slice(0, 5))
+          setFailedRequests(report.failedRequests.slice(0, 5))
+        }
       } catch (error) {
         console.error('Failed to get network metrics:', error)
       }
@@ -160,7 +163,12 @@ export default function NetworkPerformanceMonitor() {
 
       <div className="mt-3 pt-3 border-t border-gray-700">
         <button
-          onClick={() => supabase.clearNetworkMetrics()}
+          onClick={() => {
+            const client = supabase as any
+            if (client.clearNetworkMetrics) {
+              client.clearNetworkMetrics()
+            }
+          }}
           className="w-full bg-blue-600 hover:bg-blue-700 text-white py-1 px-2 rounded transition-colors"
         >
           清除指标

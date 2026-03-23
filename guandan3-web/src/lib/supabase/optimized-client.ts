@@ -1,7 +1,9 @@
 import { createClient as createSupabaseClient, SupabaseClient } from '@supabase/supabase-js'
 import { databaseOptimizer, DatabaseMetrics } from '../performance/database-optimizer'
 import { networkOptimizer, NetworkMetrics } from '../performance/network-optimizer'
+import { supabase as baseSupabase } from './client'
 
+// 重新导出基础客户端实例，避免多个 GoTrueClient 实例
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
@@ -267,6 +269,7 @@ function createOptimizedClient(): OptimizedSupabaseClient {
   return client
 }
 
-export const supabase = createOptimizedClient()
+// 重新导出基础客户端实例，避免多个 GoTrueClient 实例
+export const supabase = baseSupabase
 export { createOptimizedClient }
 export type { OptimizedSupabaseClient }

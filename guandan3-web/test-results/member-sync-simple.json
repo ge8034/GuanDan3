@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-03-23T15:22:39.035799",
+  "final_url": "http://localhost:3000/",
+  "console_messages": [
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+      "time": "2026-03-23T15:22:26.438998"
+    },
+    {
+      "type": "log",
+      "text": "[HMR] connected",
+      "time": "2026-03-23T15:22:26.682680"
+    }
+  ],
+  "console_errors": [],
+  "debug_logs": []
+}

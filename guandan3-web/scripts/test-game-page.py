@@ -1,180 +1,97 @@
-#!/usr/bin/env python3
 """
-游戏页面测试脚本 - 捕获控制台日志和错误
-用于分析游戏页面的运行时问题
+测试游戏页面并捕获控制台日志
+用于发现运行时问题
 """
 from playwright.sync_api import sync_playwright
 import json
-from datetime import datetime
-from pathlib import Path
-import sys
-import io
+import time
 
-# 修复 Windows 控制台编码问题
-if sys.platform == 'win32':
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
-    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
-
-
-def main():
-    """测试游戏页面并捕获所有控制台输出"""
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_dir = Path("test-results/game-page-test")
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    console_logs = []
-    console_errors = []
-    page_errors = []
-    network_errors = []
+def test_game_page():
+    issues_found = []
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
-        context = browser.new_context(
-            viewport={'width': 1920, 'height': 1080},
-            record_video_dir=str(output_dir / "videos"),
-            record_video_size={"width": 1920, "height": 1080}
-        )
+        context = browser.new_context()
         page = context.new_page()
 
-        # 捕获控制台日志
-        def handle_console(msg):
-            log_entry = {
-                'type': msg.type,
-                'text': msg.text(),
-                'timestamp': datetime.now().isoformat(),
-                'location': f"{msg.location.get('url', 'unknown')}:{msg.location.get('lineNumber', '?')}"
-            }
-            console_logs.append(log_entry)
-            print(f"[{msg.type().upper()}] {msg.text()}")
+        console_messages = []
+        console_errors = []
 
-            if msg.type() == 'error':
-                console_errors.append(log_entry)
+        def on_console(msg):
+            msg_type = msg.type
+            msg_text = msg.text
+            console_messages.append({"type": msg_type, "text": msg_text})
+            if msg_type == "error":
+                console_errors.append(msg_text)
+                print(f"[CONSOLE ERROR] {msg_text}")
+            elif msg_type == "warning":
+                print(f"[CONSOLE WARNING] {msg_text}")
 
-        page.on('console', handle_console)
+        page.on("console", on_console)
 
-        # 捕获页面错误
-        def handle_page_error(error):
-            error_entry = {
-                'message': str(error),
-                'timestamp': datetime.now().isoformat()
-            }
-            page_errors.append(error_entry)
+        page_errors = []
+        def on_page_error(error):
+            page_errors.append(str(error))
             print(f"[PAGE ERROR] {error}")
 
-        page.on('pageerror', handle_page_error)
+        page.on("pageerror", on_page_error)
 
-        # 捕获网络请求失败
-        def handle_request_failed(request):
-            failure = request.failure()
-            if failure:
-                error_entry = {
-                    'url': request.url,
-                    'error': failure.error_text,
-                    'timestamp': datetime.now().isoformat()
-                }
-                network_errors.append(error_entry)
-                print(f"[NETWORK ERROR] {request.url} - {failure.error_text}")
+        print("=" * 60)
+        print("访问首页...")
+        print("=" * 60)
 
-        page.on('requestfailed', handle_request_failed)
+        page.goto("http://localhost:3000", wait_until="networkidle", timeout=60000)
+        time.sleep(2)
 
-        # 导航到游戏页面
-        print(f"\n{'='*60}")
-        print("导航到游戏页面: http://localhost:3000")
-        print(f"{'='*60}\n")
+        print("首页标题:", page.title())
 
-        try:
-            page.goto('http://localhost:3000', wait_until='networkidle', timeout=30000)
-            print("✓ 页面加载完成")
+        home_practice = page.query_selector('[data-testid="home-practice"]')
+        home_lobby = page.query_selector('[data-testid="home-enter-lobby"]')
 
-            # 等待一段时间让页面完全初始化
-            page.wait_for_timeout(5000)
+        print(f"'开始练习' 按钮: {'存在' if home_practice else '不存在'}")
+        print(f"'进入大厅' 按钮: {'存在' if home_lobby else '不存在'}")
 
-            # 截图
-            screenshot_path = output_dir / f"screenshot_{timestamp}.png"
-            page.screenshot(path=str(screenshot_path), full_page=True)
-            print(f"✓ 截图已保存: {screenshot_path}")
+        if not home_practice:
+            issues_found.append("缺少 '开始练习' 按钮")
+        if not home_lobby:
+            issues_found.append("缺少 '进入大厅' 按钮")
 
-            # 获取页面标题
-            title = page.title()
-            print(f"✓ 页面标题: {title}")
+        print("\n" + "=" * 60)
+        print("点击 '开始练习' 创建练习房间...")
+        print("=" * 60)
 
-            # 获取页面内容摘要
-            content = page.content()
-            print(f"✓ 页面内容长度: {len(content)} 字符")
+        if home_practice:
+            home_practice.click()
+            time.sleep(3)
 
-            # 查找关键元素
-            try:
-                # 检查是否有 Phaser canvas
-                canvas_count = page.locator('canvas').count()
-                print(f"✓ Canvas 元素数量: {canvas_count}")
+            print("当前URL:", page.url)
+            
+            game_page_checks = {
+                "room-hand": page.query_selector('[data-testid="room-hand"]'),
+                "room-play": page.query_selector('[data-testid="room-play"]'),
+            }
 
-                # 检查是否有游戏相关的按钮
-                buttons = page.locator('button').all()
-                print(f"✓ Button 元素数量: {len(buttons)}")
+            print("\n游戏页面元素:")
+            for name, element in game_page_checks.items():
+                status = "存在" if element else "不存在"
+                print(f"  {name}: {status}")
+                if not element:
+                    issues_found.append(f"缺少 {name} 元素")
 
-                for i, btn in enumerate(buttons[:10]):  # 只显示前10个
-                    try:
-                        text = btn.text_content() or ""
-                        if text.strip():
-                            print(f"  - Button {i+1}: {text[:50]}")
-                    except:
-                        pass
-
-            except Exception as e:
-                print(f"⚠ 元素检查时出错: {e}")
-
-        except Exception as e:
-            print(f"✗ 页面导航失败: {e}")
-            page_errors.append({
-                'message': f"Navigation failed: {e}",
-                'timestamp': datetime.now().isoformat()
-            })
-
-        # 保存日志到文件
-        log_file = output_dir / f"console_logs_{timestamp}.json"
-        with open(log_file, 'w', encoding='utf-8') as f:
-            json.dump({
-                'console_logs': console_logs,
-                'console_errors': console_errors,
-                'page_errors': page_errors,
-                'network_errors': network_errors,
-                'summary': {
-                    'total_console_messages': len(console_logs),
-                    'total_console_errors': len(console_errors),
-                    'total_page_errors': len(page_errors),
-                    'total_network_errors': len(network_errors),
-                    'timestamp': timestamp
-                }
-            }, f, indent=2, ensure_ascii=False)
-
-        print(f"\n{'='*60}")
-        print("日志摘要")
-        print(f"{'='*60}")
-        print(f"总控制台消息: {len(console_logs)}")
+        print("\n" + "=" * 60)
+        print("测试摘要")
+        print("=" * 60)
         print(f"控制台错误: {len(console_errors)}")
         print(f"页面错误: {len(page_errors)}")
-        print(f"网络错误: {len(network_errors)}")
-        print(f"日志已保存: {log_file}")
-        print(f"{'='*60}\n")
+        print(f"发现问题: {len(issues_found)}")
 
-        # 如果有错误，显示详细信息
-        if console_errors:
-            print("\n控制台错误详情:")
-            for err in console_errors:
-                print(f"  - {err['text']}")
-
-        if page_errors:
-            print("\n页面错误详情:")
-            for err in page_errors:
-                print(f"  - {err['message']}")
-
-        if network_errors:
-            print("\n网络错误详情:")
-            for err in network_errors:
-                print(f"  - {err['url']}: {err['error']}")
+        if issues_found:
+            print("\n发现的问题:")
+            for i, issue in enumerate(issues_found[:5], 1):
+                print(f"  {i}. {issue}")
 
         browser.close()
+        return len(issues_found) == 0
 
-
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    test_game_page()

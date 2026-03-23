@@ -316,7 +316,7 @@ export async function setupGameMocks(page: Page, userId: string = 'mock-user-id'
 
     // Remove played cards from hand
     playedCards.forEach((playedCard: any) => {
-      const index = currentHandCards.findIndex(c => c.id === playedCard.id);
+      const index = currentHandCards.findIndex((c: { id: number }) => c.id === playedCard.id);
       if (index !== -1) {
         const removedCard = currentHandCards.splice(index, 1)[0];
         console.log(`Removed card: ${removedCard.rank}${removedCard.suit}, remaining: ${currentHandCards.length}`);

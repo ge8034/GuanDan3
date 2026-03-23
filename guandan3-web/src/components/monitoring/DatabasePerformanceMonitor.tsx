@@ -44,10 +44,14 @@ export default function DatabasePerformanceMonitor() {
 
     const updateMetrics = () => {
       try {
-        const dbMetrics = supabase.getDatabaseMetrics()
-        const report = supabase.getDatabasePerformanceReport()
-        setMetrics(dbMetrics)
-        setCacheStats(report.cacheStats)
+        // 检查方法是否存在（兼容标准Supabase客户端）
+        const client = supabase as any
+        if (client.getDatabaseMetrics && client.getDatabasePerformanceReport) {
+          const dbMetrics = client.getDatabaseMetrics()
+          const report = client.getDatabasePerformanceReport()
+          setMetrics(dbMetrics)
+          setCacheStats(report.cacheStats)
+        }
       } catch (error) {
         console.error('Failed to get database metrics:', error)
       }
@@ -165,21 +169,29 @@ export default function DatabasePerformanceMonitor() {
 
       <div className="mt-3 pt-3 border-t border-gray-700 space-y-2">
         <button
-          onClick={() => supabase.clearDatabaseCache()}
+          onClick={() => {
+            const client = supabase as any
+            if (client.clearDatabaseCache) {
+              client.clearDatabaseCache()
+            }
+          }}
           className="w-full bg-blue-600 hover:bg-blue-700 text-white py-1 px-2 rounded transition-colors"
         >
           清除缓存
         </button>
         <button
           onClick={() => {
-            const report = supabase.exportDatabaseMetrics()
-            const blob = new Blob([report], { type: 'application/json' })
-            const url = URL.createObjectURL(blob)
-            const a = document.createElement('a')
-            a.href = url
-            a.download = `database-metrics-${Date.now()}.json`
-            a.click()
-            URL.revokeObjectURL(url)
+            const client = supabase as any
+            if (client.exportDatabaseMetrics) {
+              const report = client.exportDatabaseMetrics()
+              const blob = new Blob([report], { type: 'application/json' })
+              const url = URL.createObjectURL(blob)
+              const a = document.createElement('a')
+              a.href = url
+              a.download = `database-metrics-${Date.now()}.json`
+              a.click()
+              URL.revokeObjectURL(url)
+            }
           }}
           className="w-full bg-green-600 hover:bg-green-700 text-white py-1 px-2 rounded transition-colors"
         >
