@@ -316,8 +316,10 @@ export const useGameStore = create<GameState>((set, get) => ({
     // 2. Fetch my hand - get user's seat_no first
     const { data: { user } } = await supabase.auth.getUser()
     let mySeatNo: number | undefined
+    let myUid: string | undefined
 
     if (user?.id) {
+      myUid = user.id
       // Get my seat from room_members
       const { data: memberData } = await supabase
         .from('room_members')
@@ -329,41 +331,39 @@ export const useGameStore = create<GameState>((set, get) => ({
       mySeatNo = memberData?.seat_no
     }
 
-    // Fetch hands with seat_no filter
+    // Fetch hands using uid (primary key lookup - most efficient)
     let handQuery = supabase
       .from('game_hands')
-      .select('hand, seat_no')
+      .select('hand')
       .eq('game_id', game.id)
 
-    // Filter by seat_no if we have it
-    if (mySeatNo !== undefined && mySeatNo !== null) {
-      handQuery = handQuery.eq('seat_no', mySeatNo)
+    // Filter by uid if we have it (primary key lookup)
+    if (myUid) {
+      handQuery = handQuery.eq('uid', myUid)
     }
 
     const { data: hands, error: handsError } = await handQuery
 
-    if (isDev()) devLog('[fetchGame] Hands query result:', { handsCount: hands?.length || 0, hasError: !!handsError, mySeatNo })
+    if (isDev()) devLog('[fetchGame] Hands query result:', { handsCount: hands?.length || 0, hasError: !!handsError, myUid, mySeatNo })
 
     if (handsError) {
       devError('Fetch hands error:', handsError)
     } else if (hands && hands.length > 0) {
-      // Find the correct hand
-      const handData = mySeatNo !== undefined && mySeatNo !== null
-        ? hands.find(h => h.seat_no === mySeatNo)
-        : hands[0]
+      // Get the first (and should be only) hand for this user
+      const handData = hands[0]
 
       if (handData && handData.hand) {
         // Cast JSONB to Card[]
         const myHand = handData.hand as unknown as Card[]
-        if (isDev()) devLog('[fetchGame] Setting myHand:', { cardsCount: myHand?.length || 0, seatNo: handData.seat_no })
+        if (isDev()) devLog('[fetchGame] Setting myHand:', { cardsCount: myHand?.length || 0, seatNo: mySeatNo })
         // Sort hand
         myHand.sort((a, b) => {
           if (a.val !== b.val) return b.val - a.val
-          return a.suit.localeCompare(b.suit)
+          return b.suit.localeCompare(b.suit)
         })
         set({ myHand })
       } else {
-        if (isDev()) devLog('[fetchGame] Hand data not found for seatNo:', mySeatNo)
+        if (isDev()) devLog('[fetchGame] Hand data not found for uid:', myUid)
       }
     } else {
       if (isDev()) devLog('[fetchGame] No hands found, skipping myHand set')

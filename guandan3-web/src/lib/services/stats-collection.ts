@@ -200,17 +200,10 @@ export class StatsCollectionService {
 
     try {
       const { error } = await supabase.from('game_events').insert(events)
-      // 如果表不存在或其他可选功能错误，静默忽略（统计功能可选）
-      // PGRST116 = 表不存在, PGRST205 = 找不到表, 404 = Not Found
       if (error) {
-        const isIgnorableError =
-          error.code === 'PGRST116' ||
-          error.code === 'PGRST205' ||
-          error.message?.includes('404') ||
-          error.message?.includes('Not Found')
-        if (!isIgnorableError) {
-          console.error('[stats] Failed to flush game events:', error)
-        }
+        console.error('[stats] Failed to flush game events:', error)
+        // 保留事件以便重试
+        this.eventBuffer.unshift(...events)
       }
     } catch (error: unknown) {
       // 只在非404/表不存在错误时才保留事件重试
