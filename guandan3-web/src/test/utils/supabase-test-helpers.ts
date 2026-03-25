@@ -6,13 +6,24 @@
 import { vi } from 'vitest'
 import { supabase } from '@/lib/supabase/client'
 
+// 允许的 Supabase 查询方法白名单，用于安全检查
+const ALLOWED_QUERY_METHODS = new Set([
+  'select', 'insert', 'update', 'delete',
+  'eq', 'neq', 'in', 'not', 'or', 'and',
+  'gt', 'gte', 'lt', 'lte',
+  'like', 'ilike', 'is', 'filter',
+  'order', 'limit', 'range',
+  'single', 'maybeSingle',
+  'then', 'catch', 'finally'
+])
+
 /**
  * 创建链式查询 mock
  * @param returnValue - single/maybeSingle 返回的值
  * @returns 链式调用 mock 对象
  */
-export function createQueryMock<T = { data: any; error: any }>(returnValue: T) {
-  const chain: any = {
+export function createQueryMock<T = { data: unknown; error: unknown }>(returnValue: T) {
+  const chain: Record<string, unknown> = {
     single: vi.fn(() => Promise.resolve(returnValue)),
     maybeSingle: vi.fn(() => Promise.resolve(returnValue)),
   }
@@ -91,7 +102,7 @@ export function resetSupabaseFromMock() {
  * @param finalValue - 最终返回值 (由 single/maybeSingle 返回)
  * @param defaultValue - 直接 await 链时的默认返回值（用于 .in() 等非终结方法的 await）
  */
-export function createNestedQueryMock<T = { data: any; error: any }>(
+export function createNestedQueryMock<T = { data: unknown; error: unknown }>(
   finalValue: T,
   defaultValue?: T
 ) {
@@ -103,29 +114,35 @@ export function createNestedQueryMock<T = { data: any; error: any }>(
   // 创建 Proxy 来拦截所有属性访问
   const handler: ProxyHandler<any> = {
     get(target, prop) {
-      // 如果访问 then 方法，返回 Promise 的 then
+      const propStr = String(prop)
+
+      // Promise thenable 支持
       if (prop === 'then') {
-        return (onfulfilled: any, onrejected: any) =>
-          Promise.resolve(value).then(onfulfilled, onrejected)
+        return (onFulfilled: any, onRejected: any) =>
+          Promise.resolve(value).then(onFulfilled, onRejected)
       }
-      // 如果访问 catch/finally
       if (prop === 'catch') {
-        return (onrejected: any) => Promise.resolve(value).catch(onrejected)
+        return (onRejected: any) => Promise.resolve(value).catch(onRejected)
       }
       if (prop === 'finally') {
-        return (onfinally: any) => Promise.resolve(value).finally(onfinally)
+        return (onFinally: any) => Promise.resolve(value).finally(onFinally)
       }
+
       // 终结方法返回 Promise
       if (prop === 'single' || prop === 'maybeSingle') {
         return () => Promise.resolve(finalValue)
       }
-      if (prop === 'data') {
-        return () => Promise.resolve({ data: [], error: null })
+
+      // 所有其他方法 - 安全检查：只允许已知的查询方法
+      // 在开发模式下警告未知方法访问
+      if (process.env.NODE_ENV === 'development' && !ALLOWED_QUERY_METHODS.has(propStr)) {
+        // 允许 Symbol 和内部属性
+        if (typeof prop !== 'symbol' && !propStr.startsWith('_')) {
+          console.warn(`[Mock] Unexpected property access on query chain: ${propStr}`)
+        }
       }
-      if (prop === 'count') {
-        return () => Promise.resolve({ count: 0, error: null })
-      }
-      // 所有其他方法返回函数，调用时返回 proxy 本身
+
+      // 返回函数，调用时返回 proxy 本身以支持链式调用
       return vi.fn(() => proxy)
     }
   }

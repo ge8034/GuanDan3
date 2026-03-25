@@ -179,6 +179,9 @@ export function wrapLazyComponent(Component: React.ComponentType<any>): React.Co
 
 // ==================== Mock Fetch ====================
 function setupMockFetch() {
+  // 保存原始实现
+  originalFetch = global.fetch
+
   global.fetch = vi.fn(() =>
     Promise.resolve({
       ok: true,
@@ -186,11 +189,16 @@ function setupMockFetch() {
       text: async () => '{}',
     } as Response)
   ) as any
+  ;(global.fetch as any)._isMock = true
 }
 
+// 保存原始 fetch 实现
+let originalFetch: typeof fetch | undefined = undefined
+
 function cleanupMockFetch() {
-  if (typeof global.fetch !== 'function' || (global.fetch as any)._isMock) {
-    delete (global as any).fetch
+  // 只清理我们创建的 mock，恢复原始实现
+  if ((global.fetch as any)?._isMock && originalFetch) {
+    global.fetch = originalFetch
   }
 }
 
@@ -300,12 +308,33 @@ export async function testComponentLoad(
       category,
     }
   } catch (error) {
+    // 区分不同类型的错误
+    const errorObj = error as Error
+    let errorMessage = error instanceof Error ? error.message : String(error)
+    let errorType = 'UnknownError'
+
+    if (error instanceof Error) {
+      // 检测特定错误类型
+      if (errorMessage.includes('Cannot find module')) {
+        errorType = 'ModuleNotFoundError'
+      } else if (errorMessage.includes('Unexpected token')) {
+        errorType = 'SyntaxError'
+      } else if (errorMessage.includes('is not defined')) {
+        errorType = 'ReferenceError'
+      } else if (errorMessage.includes('Failed to fetch')) {
+        errorType = 'NetworkError'
+      } else {
+        errorType = errorObj.constructor.name
+      }
+    }
+
     return {
       path: componentPath,
       name: componentName,
       passed: false,
       category,
-      error: error instanceof Error ? error.message : String(error),
+      error: errorMessage,
+      errorType,
     }
   } finally {
     if (needsMockFetch) {
@@ -314,14 +343,20 @@ export async function testComponentLoad(
   }
 }
 
+// ==================== 常量定义 ====================
+const DEFAULT_DEAL_SPEED = 100  // ms per card
+const TEST_CARD_COUNT = 3
+const TEST_MESSAGE_ID = 'test-id'
+const TEST_USER_ID = 'test-user'
+
 // ==================== 为需要 props 的组件提供默认值 ====================
 function getDefaultProps(componentPath: string): any {
   // ChatMessage 需要 message prop
   if (componentPath.endsWith('ChatMessage.tsx')) {
     return {
       message: {
-        message_id: 'test-id',
-        sender_uid: 'test-user',
+        message_id: TEST_MESSAGE_ID,
+        sender_uid: TEST_USER_ID,
         content: 'Test message',
         is_read: false,
         created_at: new Date().toISOString(),
@@ -339,7 +374,7 @@ function getDefaultProps(componentPath: string): any {
         { suit: '♥', rank: 'K' },
         { suit: '♦', rank: 'Q' },
       ],
-      dealSpeed: 100,
+      dealSpeed: DEFAULT_DEAL_SPEED,
     }
   }
 
