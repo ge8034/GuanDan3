@@ -87,13 +87,12 @@ export default function RoomPage() {
   })
   
   const { debugLog, addDebugLog, agentStatuses } = useRoomAI(
-    roomId, 
-    isOwner, 
-    gameStatus, 
-    currentSeat, 
-    turnNo, 
-    members, 
-    getMemberBySeat,
+    roomId,
+    isOwner,
+    gameStatus,
+    currentSeat,
+    turnNo,
+    members,
     difficulty
   )
 
@@ -120,19 +119,19 @@ export default function RoomPage() {
       !gameId // 没有游戏ID
 
     // DEBUG: 打印自动开始条件
-    if (currentRoom) {
-      console.log('[AutoStart] 检查自动开始条件:', {
-        mode: currentRoom?.mode,
-        expectedMode: 'pve1v3',
-        gameStatus,
-        expectedStatus: 'deal',
-        roomLoaded,
-        isOwner,
-        autoStartStarted: autoStartStartedRef.current,
-        gameId,
-        shouldStart: shouldAutoStart
-      })
-    }
+    console.log('[AutoStart] 检查自动开始条件:', {
+      currentRoomExists: !!currentRoom,
+      mode: currentRoom?.mode,
+      expectedMode: 'pve1v3',
+      gameStatus,
+      expectedStatus: 'deal',
+      roomLoaded,
+      isOwner,
+      autoStartStarted: autoStartStartedRef.current,
+      gameId,
+      shouldStart: shouldAutoStart,
+      roomId
+    })
 
     if (shouldAutoStart) {
       console.log('[AutoStart] 满足所有条件，准备自动开始游戏')
@@ -628,6 +627,7 @@ export default function RoomPage() {
             mySeat={mySeat}
             gameStatus={gameStatus}
             getRankTitle={getRankTitle}
+            canPass={!!lastAction} // 第一个出牌的玩家不能过牌
           />
           
         </div>

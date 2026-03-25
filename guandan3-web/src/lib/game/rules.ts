@@ -43,6 +43,8 @@ export function analyzeMove(cards: Card[], levelRank: number): Move | null {
   const uniqueValues = Array.from(new Set(values))
   const rawVals = cards.map(c => c.val).sort((a, b) => a - b)
   const uniqueRawVals = Array.from(new Set(rawVals))
+  const ranks = cards.map(c => c.rank)
+  const uniqueRanks = Array.from(new Set(ranks))
   const hasJoker = cards.some(c => c.suit === 'J')
   const hasLevel = cards.some(c => c.val === levelRank)
 
@@ -69,8 +71,8 @@ export function analyzeMove(cards: Card[], levelRank: number): Move | null {
     return { type: 'bomb', cards, primaryValue: 1000 * cards.length + values[0] }
   }
 
-  // 王炸 - 双王炸弹，最大的炸弹
-  if (cards.length === 2 && hasJoker && uniqueValues.length === 2) {
+  // 王炸 - 四张王牌组成的炸弹，最大的炸弹
+  if (cards.length === 4 && hasJoker && uniqueRanks.length >= 2) {
     // 王炸是最大的炸弹，使用特殊的高值
     return { type: 'bomb', cards, primaryValue: 10000 }
   }

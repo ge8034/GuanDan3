@@ -90,6 +90,20 @@ export class UserSecurity {
 
     this.loginAttempts.set(userId, recentAttempts)
 
+    // 记录登录尝试为安全事件
+    this.logSecurityEvent({
+      id: dataSecurity.generateNonce(),
+      type: success ? 'login' : 'suspicious_activity',
+      timestamp: now,
+      userId,
+      details: {
+        ip,
+        success,
+        recentFailedAttempts: recentAttempts.filter(a => !a.success).length
+      },
+      severity: success ? 'low' : 'medium'
+    })
+
     if (!success) {
       const failedAttempts = recentAttempts.filter(a => !a.success).length
       if (failedAttempts >= this.config.maxLoginAttempts) {

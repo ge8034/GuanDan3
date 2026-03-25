@@ -1,15 +1,16 @@
 import { Task, TaskId, AgentConfig, AgentStatus, Message, AgentId } from '../core/types';
+import { devLog } from '@/lib/utils/devLog';
 
 // 2. Task Decomposition Engine
 export class TaskPlanner {
   // Simple recursive decomposition logic
   public decompose(task: Task): Task[] {
     const subtasks: Task[] = [];
-    
+
     // Example logic:
     // "PlayGame" -> ["DealCards", "PlayTurn", "EndGame"]
     // "AnalyzeHand" -> ["CountCards", "FindCombinations", "EvaluateStrength"]
-    
+
     if (task.type === 'PlayGame') {
       subtasks.push({
         id: `${task.id}-deal`,
@@ -20,7 +21,7 @@ export class TaskPlanner {
         status: 'PENDING',
         createdAt: Date.now()
       });
-      
+
       subtasks.push({
         id: `${task.id}-play`,
         type: 'PlayTurn',
@@ -30,7 +31,7 @@ export class TaskPlanner {
         status: 'PENDING',
         createdAt: Date.now()
       });
-      
+
       subtasks.push({
         id: `${task.id}-end`,
         type: 'EndGame',
@@ -52,11 +53,12 @@ export class TaskPlanner {
         status: 'PENDING',
         createdAt: Date.now()
       });
+      devLog(`[TaskPlanner] GuanDanTurn 分解为 DecideMove`);
     } else {
       // Atomic task, no decomposition needed
       return [task];
     }
-    
+
     return subtasks;
   }
 }

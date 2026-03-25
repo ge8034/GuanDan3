@@ -60,15 +60,11 @@ export default function RulesPage() {
               <ul className="space-y-3 text-gray-700 dark:text-gray-300">
                 <li className="flex items-start">
                   <span className="text-blue-500 mr-2">•</span>
-                  <span>每人发27张牌，剩余6张作为底牌</span>
+                  <span>每人发27张牌，没有剩余底牌</span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-blue-500 mr-2">•</span>
-                  <span>底牌由庄家（第一个出牌的人）获得</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-blue-500 mr-2">•</span>
-                  <span>庄家由上一局获胜方担任</span>
+                  <span>庄家（第一个出牌的人）由上一局获胜方担任</span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-blue-500 mr-2">•</span>
@@ -102,7 +98,11 @@ export default function RulesPage() {
                 </li>
                 <li className="flex items-start">
                   <span className="text-green-500 mr-2">•</span>
-                  <span>王炸（双王）是最大的牌型，可以压过任何牌</span>
+                  <span>王炸（四王）是最大的牌型，可以压过任何牌</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-green-500 mr-2">•</span>
+                  <span>双王、三王不是炸弹</span>
                 </li>
               </ul>
             </div>
@@ -171,8 +171,9 @@ export default function RulesPage() {
                 </div>
                 <div className="border-l-4 border-yellow-500 pl-4">
                   <h4 className="font-semibold text-yellow-900 dark:text-yellow-100 mb-2">王炸</h4>
-                  <p className="text-gray-700 dark:text-gray-300">大王 + 小王</p>
+                  <p className="text-gray-700 dark:text-gray-300">四张王（两张大王 + 两张小王）</p>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">王炸是最大的牌型，可以压过任何牌</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">注意：双王、三王不是炸弹</p>
                 </div>
                 <div className="border-l-4 border-emerald-500 pl-4">
                   <h4 className="font-semibold text-emerald-900 dark:text-emerald-100 mb-2">逢人配</h4>
@@ -194,14 +195,16 @@ export default function RulesPage() {
                   <h4 className="font-semibold text-red-900 dark:text-red-100 mb-2">进贡条件</h4>
                   <ul className="space-y-2 text-red-800 dark:text-red-200">
                     <li>• 失败方需要向获胜方进贡</li>
-                    <li>• 每人进贡一张最大的牌</li>
-                    <li>• 不能进贡级牌或王</li>
+                    <li>• 每人进贡一张最大的牌（且必须≥10）</li>
+                    <li>• 不能进贡王或逢人配（红桃级牌）</li>
+                    <li>• 级牌可以进贡（非红桃级牌）</li>
+                    <li>• 只向胜方头游、二游进贡，不向三游进贡</li>
                   </ul>
                 </div>
                 <div className="bg-green-50 dark:bg-green-900/30 p-4 rounded-lg">
                   <h4 className="font-semibold text-green-900 dark:text-green-100 mb-2">抗贡条件</h4>
                   <ul className="space-y-2 text-green-800 dark:text-green-200">
-                    <li>• 如果失败方手中有双王，可以抗贡</li>
+                    <li>• 如果失败方手中有双大王，可以抗贡</li>
                     <li>• 抗贡后不需要进贡</li>
                     <li>• 抗贡是失败方的权利，可以选择是否使用</li>
                   </ul>
@@ -342,7 +345,7 @@ export default function RulesPage() {
                 <div className="bg-red-50 dark:bg-red-900/30 p-4 rounded-lg">
                   <h4 className="font-semibold text-red-900 dark:text-red-100 mb-2">抗贡条件</h4>
                   <ul className="space-y-2 text-red-800 dark:text-red-200">
-                    <li>• 必须拥有双王（大王+小王）才能抗贡</li>
+                    <li>• 必须拥有双大王（两张红王）才能抗贡</li>
                     <li>• 抗贡是失败方的权利，可以选择是否使用</li>
                     <li>• 抗贡后不需要进贡，直接开始新游戏</li>
                   </ul>
@@ -367,7 +370,10 @@ export default function RulesPage() {
                 <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg">
                   <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">进贡策略</h4>
                   <ul className="space-y-2 text-blue-800 dark:text-blue-200">
-                    <li>• 进贡最大的牌（排除王和级牌）</li>
+                    <li>• 进贡最大的牌（必须≥10）</li>
+                    <li>• 不能进贡王或逢人配（红桃级牌）</li>
+                    <li>• 级牌可以进贡（非红桃级牌）</li>
+                    <li>• 只向胜方头游、二游进贡</li>
                     <li>• 如果有多个相同点数的牌，优先进贡花色较小的</li>
                     <li>• 花色优先级：黑桃 &gt; 红桃 &gt; 梅花 &gt; 方块</li>
                   </ul>

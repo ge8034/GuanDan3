@@ -10,9 +10,9 @@ export default function HelpPage() {
       description: '了解如何开始游戏',
       icon: Zap,
       items: [
-        { title: '注册账号', href: '#register' },
         { title: '开始游戏', href: '#start' },
-        { title: '基本操作', href: '#operations' }
+        { title: '基本操作', href: '#operations' },
+        { title: '房间说明', href: '#room-info' }
       ]
     },
     {

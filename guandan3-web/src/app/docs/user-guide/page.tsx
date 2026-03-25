@@ -76,20 +76,20 @@ export default function UserGuidePage() {
                 <li><strong>三连</strong>：两个或更多连续的三张</li>
                 <li><strong>三连带二</strong>：连续的三张 + 相同数量的对子</li>
                 <li><strong>炸弹</strong>：四张或更多相同点数的牌</li>
-                <li><strong>王炸</strong>：两张王（大王+小王）</li>
+                <li><strong>王炸</strong>：四张王（两张大王+两张小王）- 注意：双王、三王不是炸弹</li>
                 <li><strong>逢人配</strong>：红桃级牌可以当作任意牌使用</li>
               </ol>
 
               <h3>牌型大小</h3>
               <ul>
-                <li>王炸 {'>'} 六张炸弹 {'>'} 五张炸弹 {'>'} 四张炸弹</li>
+                <li>王炸（四王）{'>'} 六张炸弹 {'>'} 五张炸弹 {'>'} 四张炸弹</li>
                 <li>同类型牌型比较最大牌的点数</li>
-                <li>级牌（当前回合的级数）最大</li>
+                <li>级牌（当前回合的级数）大于A</li>
               </ul>
 
               <h3>游戏流程</h3>
               <ol>
-                <li><strong>发牌</strong>：每人27张牌</li>
+                <li><strong>发牌</strong>：每人27张牌，没有底牌</li>
                 <li><strong>叫主</strong>：第一轮由持有红桃级牌的玩家叫主</li>
                 <li><strong>出牌</strong>：按逆时针顺序出牌</li>
                 <li><strong>跟牌</strong>：必须跟出相同类型的牌，没有则可以出任意牌</li>
@@ -98,10 +98,10 @@ export default function UserGuidePage() {
 
               <h3>升级规则</h3>
               <ul>
-                <li>获胜方根据剩余牌数升级</li>
-                <li>对方未出牌：升3级</li>
-                <li>对方剩余1-5张：升2级</li>
-                <li>对方剩余6-10张：升1级</li>
+                <li>双人获胜（头游+二游同队）：升3级</li>
+                <li>三人获胜（头游+三游同队）：升2级</li>
+                <li>单人获胜（头游+末游同队）：升1级</li>
+                <li>末游玩家所在队伍不降级</li>
                 <li>先升到A级的一方获胜</li>
               </ul>
 

@@ -1,0 +1,25 @@
+Loading env from: D:\Learn-Claude\GuanDan3\guandan3-web\.env.local
+Playwright Config: hasSupabaseEnv (Forced) = true
+SyntaxError: D:\Learn-Claude\GuanDan3\guandan3-web\tests\e2e\full-gameplay.spec.ts: Identifier 'handArea' has already been declared. (74:10)
+
+[0m [90m 72 |[39m     [90m// 5. 验证初始手牌[39m
+ [90m 73 |[39m     console[33m.[39mlog([32m'=== 步骤5: 验证初始手牌 ==='[39m)[33m;[39m
+[31m[1m>[22m[39m[90m 74 |[39m     [36mconst[39m handArea [33m=[39m page[33m.[39mlocator([32m'[data-testid="room-hand"]'[39m)[33m;[39m
+ [90m    |[39m           [31m[1m^[22m[39m
+ [90m 75 |[39m     [36mawait[39m expect(handArea)[33m.[39mtoBeVisible({ timeout[33m:[39m [35m10000[39m })[33m;[39m
+ [90m 76 |[39m
+ [90m 77 |[39m     [36mconst[39m cards [33m=[39m page[33m.[39mlocator([32m'[data-testid="room-hand"] [data-card-id]'[39m)[33m;[39m[0m
+
+   at full-gameplay.spec.ts:74
+
+  72 |     // 5. 验证初始手牌
+  73 |     console.log('=== 步骤5: 验证初始手牌 ===');
+> 74 |     const handArea = page.locator('[data-testid="room-hand"]');
+     |          ^
+  75 |     await expect(handArea).toBeVisible({ timeout: 10000 });
+  76 |
+  77 |     const cards = page.locator('[data-testid="room-hand"] [data-card-id]');
+Error: No tests found.
+Make sure that arguments are regular expressions matching test files.
+You may need to escape symbols like "$" or "*" and quote the arguments.
+

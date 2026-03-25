@@ -1,6 +1,7 @@
 import { Task, TaskId, AgentId, Capability, AgentStatus, Message } from '../core/types';
 import { TeamManager } from './TeamManager';
 import { MessageBus } from '../core/MessageBus';
+import { devLogCat, LogCategory } from '@/lib/utils/devLog';
 
 // 3. SendMessage Task Assignment
 export class TaskDispatcher {
@@ -12,7 +13,7 @@ export class TaskDispatcher {
   constructor(teamManager: TeamManager) {
     this.teamManager = teamManager;
     this.messageBus = MessageBus.getInstance();
-    
+
     // Subscribe to task results
     this.messageBus.subscribe('SYSTEM', this.handleTaskResult.bind(this));
   }
@@ -20,33 +21,54 @@ export class TaskDispatcher {
   // Add tasks to queue and process
   public async submitTasks(tasks: Task[]): Promise<void> {
     this.taskQueue.push(...tasks);
+devLogCat(LogCategory.AGENT, `[TaskDispatcher] 提交 ${tasks.length} 个任务，队列长度: ${this.taskQueue.length}`)
     await this.processQueue();
   }
 
-  // Intelligent Matching (Capability + Load)
+  // Intelligent Matching (Capability + Seat + Load)
   private async processQueue(): Promise<void> {
     if (this.taskQueue.length === 0) return;
 
-    // Always fetch the latest IDLE agents
-    const availableAgents = Array.from(this.teamManager.getAgentsInTeam('guandan-table-1') || [])
-      .concat(Array.from(this.teamManager.getAgentsInTeam('main_team') || []))
-      .filter(a => a.status === AgentStatus.IDLE);
+    // Get all idle agents from TeamManager
+    const availableAgents = this.teamManager.getAllAgentsByStatus(AgentStatus.IDLE);
+devLogCat(LogCategory.AGENT, `[TaskDispatcher] 可用 agents: ${availableAgents.length}`);
 
-    // For demonstration, assume single capability matching for now
-    // Iterate queue using a copy or index carefuly
+    // Helper to extract seat number from agent ID
+    // Agent ID format: ai-agent-${roomId}-seat-${seatNo}
+    const getAgentSeatNo = (agentId: string): number | null => {
+      const match = agentId.match(/-seat-(\d+)$/);
+      return match ? parseInt(match[1], 10) : null;
+    };
+
+    // Iterate queue using a copy or index carefully
     for (let i = 0; i < this.taskQueue.length; i++) {
       const task = this.taskQueue[i];
-      
+
       // Check dependencies
       if (task.dependencies && task.dependencies.length > 0) {
         const allDepsMet = task.dependencies.every(depId => this.completedTasks.has(depId));
-        if (!allDepsMet) continue; // Skip this task until dependencies are met
+        if (!allDepsMet) {
+          continue; // Skip this task until dependencies are met
+        }
       }
 
-      // Find best agent for this task
-      const agentIndex = availableAgents.findIndex(a => 
-        a.config.capabilities.some(c => c.type === task.type && c.level >= (task.priority || 1))
-      );
+      // Get target seat from task payload
+      const targetSeatNo = task.payload?.seatNo;
+
+      // Find agent for this task: first try matching seat, then fallback to capability
+      let agentIndex = -1;
+
+      if (typeof targetSeatNo === 'number') {
+        // Priority 1: Match by seat number
+        agentIndex = availableAgents.findIndex(a => getAgentSeatNo(a.id) === targetSeatNo);
+      }
+
+      // Priority 2: Fallback to capability matching (if seat match failed)
+      if (agentIndex === -1) {
+        agentIndex = availableAgents.findIndex(a =>
+          a.config.capabilities.some((c: Capability) => c.type === task.type && c.level >= (task.priority || 1))
+        );
+      }
 
       if (agentIndex > -1) {
         const agent = availableAgents[agentIndex];
@@ -54,7 +76,7 @@ export class TaskDispatcher {
         // Remove task from queue and assign
         this.taskQueue.splice(i, 1);
         i--;
-        
+
         // Assign task via MessageBus
         const assignMsg: Message = {
           id: crypto.randomUUID(),
@@ -64,12 +86,15 @@ export class TaskDispatcher {
           payload: task,
           timestamp: Date.now()
         };
-        
+
         this.messageBus.publish(assignMsg);
         agent.updateStatus(AgentStatus.BUSY); // Optimistically update status
-        
+
         // Remove agent from available pool for this cycle
         availableAgents.splice(agentIndex, 1);
+    devLogCat(LogCategory.AGENT, `[TaskDispatcher] 任务 ${task.id} (座位 ${targetSeatNo}) 已分配给 ${agent.id}`);
+      } else {
+    devLogCat(LogCategory.AGENT, `[TaskDispatcher] 未找到合适的 agent 处理任务 ${task.id} (座位 ${targetSeatNo})`);
       }
     }
   }
@@ -78,39 +103,42 @@ export class TaskDispatcher {
     if (message.type === 'TASK_RESULT') {
       const result = message.payload;
       this.completedTasks.set(result.taskId, result);
-      
+
       // Check if more tasks can be processed now that an agent is free
       this.processQueue();
     }
   }
-  
+
   public getTaskResult(taskId: TaskId): any {
     return this.completedTasks.get(taskId);
   }
 
   // Helper to subscribe to specific task completion
-  public waitForTaskResult(taskId: TaskId, timeoutMs = 30000): Promise<any> {
+  public waitForTaskResult(taskId: TaskId, timeoutMs = 10000): Promise<any> {
     return new Promise((resolve, reject) => {
-      const check = () => {
-        const res = this.completedTasks.get(taskId);
-        if (res) resolve(res);
-        else return false;
-        return true;
+      // Check if task is already completed
+      const existingResult = this.completedTasks.get(taskId);
+      if (existingResult) {
+        resolve(existingResult);
+        return;
       }
 
-      if (check()) return;
+      let resolved = false;
 
       const timer = setTimeout(() => {
-        clearInterval(interval);
-        reject(new Error('Task timeout'));
+        if (!resolved) {
+          resolved = true;
+          clearInterval(interval);
+          reject(new Error(`Task ${taskId} timeout after ${timeoutMs}ms`));
+        }
       }, timeoutMs);
 
-      // Use a more efficient polling interval or event emitter
-      // For now, increasing timeout default and polling interval is a quick fix
-      // Ideally, MessageBus should support once('taskId') or similar
       const interval = setInterval(() => {
+        if (resolved) return;
+
         const res = this.completedTasks.get(taskId);
         if (res) {
+          resolved = true;
           clearInterval(interval);
           clearTimeout(timer);
           resolve(res);

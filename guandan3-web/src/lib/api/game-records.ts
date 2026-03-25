@@ -102,10 +102,16 @@ export async function getPlayerStats(userId: string): Promise<PlayerDetailedStat
       .eq('user_id', userId)
       .single()
 
-    if (error) throw error
+    if (error) {
+      // Log but don't throw - stats are non-critical
+      if (error.code !== 'PGRST116' && error.code !== '406') {
+        console.warn('[getPlayerStats] Error (non-critical):', error.message)
+      }
+      return null
+    }
     return data
   } catch (error) {
-    console.error('Error getting player stats:', error)
+    console.warn('[getPlayerStats] Exception:', error)
     return null
   }
 }
@@ -235,10 +241,15 @@ export async function getPlayerRank(userId: string): Promise<number | null> {
       .eq('user_id', userId)
       .single()
 
-    if (error) throw error
+    if (error) {
+      if (error.code !== 'PGRST116' && error.code !== '406') {
+        console.warn('[getPlayerRank] Error (non-critical):', error.message)
+      }
+      return null
+    }
     return data.current_rank
   } catch (error) {
-    console.error('Error getting player rank:', error)
+    console.warn('[getPlayerRank] Exception:', error)
     return null
   }
 }
@@ -263,10 +274,15 @@ export async function getTopPlayers(limit: number = 10): Promise<PlayerStats[]> 
       .order('total_rank_points', { ascending: false })
       .limit(limit)
 
-    if (error) throw error
+    if (error) {
+      if (error.code !== 'PGRST116' && error.code !== '406') {
+        console.warn('[getTopPlayers] Error (non-critical):', error.message)
+      }
+      return []
+    }
     return data || []
   } catch (error) {
-    console.error('Error getting top players:', error)
+    console.warn('[getTopPlayers] Exception:', error)
     return []
   }
 }

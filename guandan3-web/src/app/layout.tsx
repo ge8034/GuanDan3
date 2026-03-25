@@ -1,19 +1,12 @@
 import type { Metadata, Viewport } from 'next'
-import { Noto_Serif_SC } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/lib/theme/theme-context'
 import NoiseOverlay from '@/components/effects/NoiseOverlay'
 import Navigation from '@/components/Navigation'
 import { setupResourcePreloading, setupPerformanceObserver } from '@/lib/performance/resource-optimizer'
 import MonitoringComponents from '@/components/monitoring/MonitoringComponents'
-
-const notoSerifSC = Noto_Serif_SC({
-  weight: ['400', '600', '700'],
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-noto-serif-sc',
-  preload: false,
-})
+import ContextStatusBarPro from '@/components/ContextStatusBarPro'
+import { statusbarConfig } from '@/config/statusbar'
 
 export const metadata: Metadata = {
   title: '掼蛋 3',
@@ -46,17 +39,33 @@ export default function RootLayout({
 
   return (
     <html lang="zh-CN">
-      <body 
-        className={`${notoSerifSC.variable} font-serif antialiased`}
+      <body
+        className="font-sans antialiased"
         suppressHydrationWarning
       >
         <ThemeProvider>
           <Navigation />
           <NoiseOverlay />
           <MonitoringComponents />
-          <main className="pt-16">
+          <main className="pt-16 pb-16">
             {children}
           </main>
+
+          {/* 上下文状态栏 - 固定在底部 */}
+          <div className="fixed bottom-0 left-0 right-0 z-50">
+            <ContextStatusBarPro
+              theme={statusbarConfig.theme}
+              showRefresh={statusbarConfig.showRefresh}
+              showDiskUsage={statusbarConfig.showDiskUsage}
+              showStats={statusbarConfig.showStats}
+              showQuickActions={statusbarConfig.showQuickActions}
+              currentFile={statusbarConfig.currentFile}
+              fileContext={statusbarConfig.defaultFileContext}
+              modelContext={statusbarConfig.defaultModelContext}
+              tokensUsed={statusbarConfig.defaultTokensUsed}
+              totalTokens={statusbarConfig.defaultTotalTokens}
+            />
+          </div>
         </ThemeProvider>
       </body>
     </html>

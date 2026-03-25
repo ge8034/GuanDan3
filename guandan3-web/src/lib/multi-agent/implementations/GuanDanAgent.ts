@@ -3,6 +3,7 @@ import { AgentConfig, Task, AgentStatus, Message } from '../core/types';
 import { decideMove, AIDifficulty } from '@/lib/game/ai';
 import { Card } from '@/lib/store/game';
 import { CardCounter } from '@/lib/game/cardCounter';
+import { devError } from '@/lib/utils/devLog';
 
 interface GuanDanTaskPayload {
   hand: Card[];
@@ -29,7 +30,13 @@ export class GuanDanAgent extends WorkerAgent {
   // Override to handle game events for card counting
   public async receive(message: Message): Promise<void> {
     await super.receive(message);
-    
+
+    // Handle TASK_ASSIGN messages (task processing)
+    if (message.type === 'TASK_ASSIGN') {
+      await this.processTask(message.payload);
+      return; // TASK_ASSIGN handled by processTask, don't process as game event
+    }
+
     // Listen for game events (e.g., played cards)
     if (message.type === 'GAME_ACTION') {
        const { action, levelRank } = message.payload;
@@ -83,26 +90,24 @@ export class GuanDanAgent extends WorkerAgent {
     this.updateStatus(AgentStatus.BUSY);
 
     const payload = task.payload as GuanDanTaskPayload;
-    
+
     // Update internal card counts if provided in payload (source of truth)
     if (payload.playersCardCounts && payload.playersCardCounts.length === 4) {
       this.playersCardCounts = [...payload.playersCardCounts];
     }
-    
-    await this.logThinking(`收到任务: 思考出牌 (手牌: ${payload.hand.length}, 剩余: ${this.playersCardCounts.join(',')})`);
 
     // Ensure counter is initialized (fallback)
     if (!this.cardCounter) {
       this.cardCounter = new CardCounter(payload.levelRank);
     }
-    
-    // Simulate thinking time (random between 500ms and 1500ms)
-    const thinkingTime = Math.floor(Math.random() * 1000) + 500;
+
+    // Minimal thinking time for testing (0-50ms) - almost instant decisions
+    const thinkingTime = Math.floor(Math.random() * 50);
     await new Promise(resolve => setTimeout(resolve, thinkingTime));
 
     try {
-      await this.logThinking(`正在分析局势... 上家动作: ${payload.lastAction?.type || '无'}`);
-      
+      await this.logThinking(`收到任务: 思考出牌 (手牌: ${payload.hand.length}, 剩余: ${this.playersCardCounts.join(',')})`);
+
       // Execute existing AI logic with CardCounter and PlayerCardCounts
       const lastPlayCards = payload.lastAction?.type === 'play' ? payload.lastAction.cards || null : null;
       const isLeading = !payload.lastAction || payload.lastAction.type === 'pass';
@@ -115,7 +120,7 @@ export class GuanDanAgent extends WorkerAgent {
         isLeading
         // Note: teammateCards and teammateSituation are optional and not used in current implementation
       );
-      
+
       await this.logThinking(`决策完成: ${move.type === 'pass' ? '过牌' : `出牌 (${move.cards?.length}张)`}`);
 
       const result = {
@@ -130,7 +135,7 @@ export class GuanDanAgent extends WorkerAgent {
 
       await this.sendMessage('SYSTEM', 'TASK_RESULT', result);
     } catch (error) {
-      console.error('GuanDanAgent error:', error);
+      devError('[GuanDanAgent] processTask error:', error);
       await this.logThinking(`发生错误: ${String(error)}`);
       await this.sendMessage('SYSTEM', 'TASK_RESULT', {
         taskId: task.id,

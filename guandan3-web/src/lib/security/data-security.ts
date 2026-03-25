@@ -85,6 +85,14 @@ export class DataSecurity {
       .replace(/javascript:/gi, '')
       .replace(/on\w+=/gi, '')
       .replace(/data:/gi, '')
+      .replace(/alert\([^)]*\)/gi, '')
+      .replace(/confirm\([^)]*\)/gi, '')
+      .replace(/prompt\([^)]*\)/gi, '')
+      .replace(/eval\([^)]*\)/gi, '')
+      .replace(/document\./gi, '')
+      .replace(/window\./gi, '')
+      .replace(/\.innerHTML/gi, '')
+      .replace(/\.outerHTML/gi, '')
       .trim()
   }
 

@@ -19,11 +19,33 @@ export class StatsCollectionService {
   private rocketCount = 0
   private perfectRoundCount = 0
   private gameStartTime: number = 0
+  // 功能标志：统计表是否可用（默认禁用，避免网络错误）
+  private statsEnabled = false
+  private statsChecked = false
 
   private constructor() {
     this.flushInterval = setInterval(() => {
       this.flushEvents()
     }, 5000)
+  }
+
+  // 检查统计表是否可用
+  private async checkStatsAvailability(): Promise<void> {
+    if (this.statsChecked) return
+
+    try {
+      const { error } = await supabase
+        .from('player_stats')
+        .select('id')
+        .limit(1)
+      // 如果表不存在或其他错误，禁用统计功能
+      if (error) {
+        this.statsEnabled = false
+      }
+    } catch {
+      this.statsEnabled = false
+    }
+    this.statsChecked = true
   }
 
   static getInstance(): StatsCollectionService {
@@ -60,6 +82,9 @@ export class StatsCollectionService {
   }
 
   recordCardPlay(cardId: string, cardRank: string, cardSuit: string, position: number): void {
+    // 如果统计功能已禁用，直接返回
+    if (!this.statsEnabled) return
+
     if (!this.currentGameData) {
       console.warn('No active game to record card play')
       return
@@ -85,6 +110,8 @@ export class StatsCollectionService {
   }
 
   recordTrickWon(trickNumber: number, points: number): void {
+    if (!this.statsEnabled) return
+
     if (!this.currentGameData) {
       console.warn('No active game to record trick')
       return
@@ -108,6 +135,8 @@ export class StatsCollectionService {
   }
 
   recordBombUsed(): void {
+    if (!this.statsEnabled) return
+
     if (!this.currentGameData) {
       console.warn('No active game to record bomb')
       return
@@ -125,6 +154,8 @@ export class StatsCollectionService {
   }
 
   recordRocketUsed(): void {
+    if (!this.statsEnabled) return
+
     if (!this.currentGameData) {
       console.warn('No active game to record rocket')
       return
@@ -142,6 +173,8 @@ export class StatsCollectionService {
   }
 
   recordPerfectRound(): void {
+    if (!this.statsEnabled) return
+
     if (!this.currentGameData) {
       console.warn('No active game to record perfect round')
       return
@@ -195,6 +228,15 @@ export class StatsCollectionService {
       return
     }
 
+    // 检查统计表是否可用（延迟检查，避免影响启动）
+    if (!this.statsChecked) {
+      await this.checkStatsAvailability()
+    }
+    if (!this.statsEnabled) {
+      this.eventBuffer = []
+      return
+    }
+
     const events = [...this.eventBuffer]
     this.eventBuffer = []
 
@@ -223,6 +265,13 @@ export class StatsCollectionService {
 
   async saveGameStats(): Promise<void> {
     if (!this.currentGameData) {
+      return
+    }
+
+    // 检查统计表是否可用
+    await this.checkStatsAvailability()
+    if (!this.statsEnabled) {
+      this.currentGameData = null
       return
     }
 
@@ -265,10 +314,10 @@ export class StatsCollectionService {
         .from('player_stats')
         .select('*')
         .eq('user_id', this.currentGameData.user_id!)
-        .single()
+        .maybeSingle()
 
-      // 如果表不存在，静默返回
-      if (queryError && queryError.code === 'PGRST116') {
+      // 如果表不存在或其他错误（可选统计表），静默返回
+      if (queryError) {
         return
       }
 
@@ -381,10 +430,10 @@ export class StatsCollectionService {
           .eq('user_id', update.user_id)
           .eq('card_rank', update.card_rank)
           .eq('card_suit', update.card_suit)
-          .single()
+          .maybeSingle()
 
-        // 如果表不存在，跳过
-        if (queryError && queryError.code === 'PGRST116') {
+        // 如果表不存在或返回406（可选统计表），跳过
+        if (queryError && (queryError.code === 'PGRST116' || queryError.message?.includes('406'))) {
           return
         }
 
@@ -433,10 +482,10 @@ export class StatsCollectionService {
         .eq('user_id', this.currentGameData.user_id!)
         .eq('hour', hour)
         .eq('day_of_week', dayOfWeek)
-        .single()
+        .maybeSingle()
 
-      // 如果表不存在，跳过
-      if (queryError && queryError.code === 'PGRST116') {
+      // 如果表不存在或其他错误（可选统计表），静默返回
+      if (queryError) {
         return
       }
 

@@ -17,14 +17,22 @@ export abstract class BaseAgent implements IAgent {
     this.messageBus.subscribe(this.id, this.handleMessage.bind(this));
   }
 
-  // Handle incoming messages (Actor Model)
+  // Handle incoming messages from MessageBus subscription
   private async handleMessage(message: Message): Promise<void> {
+    console.log(`[BaseAgent:${this.id}] handleMessage 收到消息: type=${message.type}, msgId=${message.id}, from=${message.from}, to=${message.to}`)
+    // 委托给 receive 方法，允许子类扩展消息处理
+    await this.receive(message);
+  }
+
+  // 直接接收消息（由 TeamManager 或其他调用）
+  public async receive(message: Message): Promise<void> {
+    // 处理 TASK_ASSIGN 消息
     if (message.type === 'TASK_ASSIGN') {
+      console.log(`[BaseAgent:${this.id}] 准备调用 processTask`)
       await this.processTask(message.payload);
-    } else if (message.type === 'STATUS_UPDATE') {
-      // Handle status updates from other agents if needed
+      console.log(`[BaseAgent:${this.id}] processTask 完成`)
     }
-    // ... extend message handling logic
+    // 其他消息类型由子类处理
   }
 
   // Send message to another agent or team
@@ -40,16 +48,14 @@ export abstract class BaseAgent implements IAgent {
     this.messageBus.publish(msg);
   }
 
-  // Abstract method for task processing logic (to be implemented by subclasses)
-  protected abstract processTask(task: any): Promise<void>;
+  // 默认 processTask 实现 - 子类可以覆盖
+  protected async processTask(task: any): Promise<void> {
+    // 默认实现：子类可以覆盖
+    console.warn(`[${this.id}] processTask 未被实现，跳过任务:`, task.id);
+  }
 
   public updateStatus(status: AgentStatus): void {
     this.status = status;
     this.sendMessage('SYSTEM', 'STATUS_UPDATE', { agentId: this.id, status });
-  }
-
-  public async receive(message: Message): Promise<void> {
-    // Direct call for testing if needed, otherwise handled by subscription
-    await this.handleMessage(message);
   }
 }

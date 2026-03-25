@@ -1,0 +1,1339 @@
+Loading env from: D:\Learn-Claude\GuanDan3\guandan3-web\.env.local
+Playwright Config: hasSupabaseEnv (Forced) = true
+
+Running 1 test using 1 worker
+
+Loading env from: D:\Learn-Claude\GuanDan3\guandan3-web\.env.local
+Playwright Config: hasSupabaseEnv (Forced) = [33mtrue[39m
+=== 步骤1: 访问首页 ===
+=== 步骤2: 创建练习房 ===
+=== 步骤3: 等待进入房间 ===
+房间ID: b1471202-2ebd-4cb9-9614-c2df4b04dee3
+=== 步骤4: 等待游戏自动开始 ===
+等待"座位："文本出现...
+找到"座位："文本
+等待手牌区域出现...
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: deal isOwner: false currentSeat: 0 members count: 0
+[控制台日志] [useRoomAI] 跳过：游戏状态不是playing, 而是 deal
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: deal isOwner: false currentSeat: 0 members count: 0
+[控制台日志] [useRoomAI] 跳过：游戏状态不是playing, 而是 deal
+等待10秒确保游戏状态同步...
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: false, dispatcher: false, planner: false
+[控制台日志] [useRoomAI] 初始化新的 Agent 系统...
+[控制台日志] [useRoomAI] 开始创建 Agents...
+[控制台日志] [useRoomAI] 创建 Agent 0: ai-agent-b1471202-2ebd-4cb9-9614-c2df4b04dee3-seat-0
+[控制台日志] [useRoomAI] 创建 Agent 1: ai-agent-b1471202-2ebd-4cb9-9614-c2df4b04dee3-seat-1
+[控制台日志] [useRoomAI] 创建 Agent 2: ai-agent-b1471202-2ebd-4cb9-9614-c2df4b04dee3-seat-2
+[控制台日志] [useRoomAI] 创建 Agent 3: ai-agent-b1471202-2ebd-4cb9-9614-c2df4b04dee3-seat-3
+[控制台日志] [useRoomAI] 创建了 4 个 Agents
+[控制台日志] [useRoomAI] 开始创建 Team - teamName: room-b1471202-2ebd-4cb9-9614-c2df4b04dee3
+[控制台日志] [useRoomAI] Team 创建成功
+[控制台日志] [useRoomAI] Agent 系统初始化完成
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: deal isOwner: true currentSeat: 0 members count: 0
+[控制台日志] [useRoomAI] 跳过：游戏状态不是playing, 而是 deal
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: deal isOwner: true currentSeat: 0 members count: 4
+[控制台日志] [useRoomAI] 跳过：游戏状态不是playing, 而是 deal
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 0 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 0 成员: {id: fc473629-aedb-4d02-8ff0-2d6e40c84cff, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: 7fb2c037-a76a-41be-a9fb-98c1f704c129, seat_no: 0, ready: true} 成员类型: human
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 0 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 0 成员: {id: fc473629-aedb-4d02-8ff0-2d6e40c84cff, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: 7fb2c037-a76a-41be-a9fb-98c1f704c129, seat_no: 0, ready: true} 成员类型: human
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 0 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 0 成员: {id: fc473629-aedb-4d02-8ff0-2d6e40c84cff, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: 7fb2c037-a76a-41be-a9fb-98c1f704c129, seat_no: 0, ready: true} 成员类型: human
+=== 步骤5: 验证初始手牌 ===
+初始手牌数量: 27
+=== 步骤6: 人类玩家出牌 ===
+过牌按钮不可用，尝试出牌
+已点击第一张牌
+已点击出牌按钮
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: false
+[控制台日志] [useRoomAI] 开始执行AI逻辑...
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] task.payload.hand.length: 27
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] planner.decompose() 返回: [Object]
+[控制台日志] [useRoomAI] planner.decompose() 返回数量: 1
+[控制台日志] [useRoomAI] 子任务 0: turn-29cd3c59-9ebc-4d92-8933-a6067ef806c4-1-1-decide DecideMove payload: {hand: Array(27), lastAction: null, levelRank: 2, seatNo: 1, playersCardCounts: Array(4)}
+[控制台日志] [useRoomAI] 准备调用dispatcher.submitTasks()
+[控制台日志] [useRoomAI] dispatcher.submitTasks() 完成
+[控制台日志] [useRoomAI] AI手牌获取成功，张数: 27
+人类玩家行动完成
+=== 步骤6: 开始游戏循环 ===
+[1] 座位0→-1, 手牌: 26
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台错误] [useRoomAI] 任务分解/调度异常: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] 异常堆栈: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] AI 异常: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] AI 异常信息: Task timeout
+[控制台错误] [useRoomAI] AI 异常堆栈: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: false
+[控制台日志] [useRoomAI] 开始执行AI逻辑...
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] task.payload.hand.length: 27
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] planner.decompose() 返回: [Object]
+[控制台日志] [useRoomAI] planner.decompose() 返回数量: 1
+[控制台日志] [useRoomAI] 子任务 0: turn-29cd3c59-9ebc-4d92-8933-a6067ef806c4-1-1-decide DecideMove payload: {hand: Array(27), lastAction: Object, levelRank: 2, seatNo: 1, playersCardCounts: Array(4)}
+[控制台日志] [useRoomAI] 准备调用dispatcher.submitTasks()
+[控制台日志] [useRoomAI] dispatcher.submitTasks() 完成
+[控制台日志] [useRoomAI] AI手牌获取成功，张数: 27
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台错误] [useRoomAI] 任务分解/调度异常: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] 异常堆栈: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] AI 异常: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] AI 异常信息: Task timeout
+[控制台错误] [useRoomAI] AI 异常堆栈: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: false
+[控制台日志] [useRoomAI] 开始执行AI逻辑...
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] task.payload.hand.length: 27
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] planner.decompose() 返回: [Object]
+[控制台日志] [useRoomAI] planner.decompose() 返回数量: 1
+[控制台日志] [useRoomAI] 子任务 0: turn-29cd3c59-9ebc-4d92-8933-a6067ef806c4-1-1-decide DecideMove payload: {hand: Array(27), lastAction: Object, levelRank: 2, seatNo: 1, playersCardCounts: Array(4)}
+[控制台日志] [useRoomAI] 准备调用dispatcher.submitTasks()
+[控制台日志] [useRoomAI] dispatcher.submitTasks() 完成
+[控制台日志] [useRoomAI] AI手牌获取成功，张数: 27
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台错误] [useRoomAI] 任务分解/调度异常: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] 异常堆栈: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] AI 异常: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] AI 异常信息: Task timeout
+[控制台错误] [useRoomAI] AI 异常堆栈: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: false
+[控制台日志] [useRoomAI] 开始执行AI逻辑...
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] task.payload.hand.length: 27
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] planner.decompose() 返回: [Object]
+[控制台日志] [useRoomAI] planner.decompose() 返回数量: 1
+[控制台日志] [useRoomAI] 子任务 0: turn-29cd3c59-9ebc-4d92-8933-a6067ef806c4-1-1-decide DecideMove payload: {hand: Array(27), lastAction: Object, levelRank: 2, seatNo: 1, playersCardCounts: Array(4)}
+[控制台日志] [useRoomAI] 准备调用dispatcher.submitTasks()
+[控制台日志] [useRoomAI] dispatcher.submitTasks() 完成
+[控制台日志] [useRoomAI] AI手牌获取成功，张数: 27
+[50] 我的座位: 0, 当前活跃: -1, 手牌: 26, 出牌: false
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台错误] [useRoomAI] 任务分解/调度异常: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] 异常堆栈: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] AI 异常: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] AI 异常信息: Task timeout
+[控制台错误] [useRoomAI] AI 异常堆栈: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: false
+[控制台日志] [useRoomAI] 开始执行AI逻辑...
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] task.payload.hand.length: 27
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] planner.decompose() 返回: [Object]
+[控制台日志] [useRoomAI] planner.decompose() 返回数量: 1
+[控制台日志] [useRoomAI] 子任务 0: turn-29cd3c59-9ebc-4d92-8933-a6067ef806c4-1-1-decide DecideMove payload: {hand: Array(27), lastAction: Object, levelRank: 2, seatNo: 1, playersCardCounts: Array(4)}
+[控制台日志] [useRoomAI] 准备调用dispatcher.submitTasks()
+[控制台日志] [useRoomAI] dispatcher.submitTasks() 完成
+[控制台日志] [useRoomAI] AI手牌获取成功，张数: 27
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台错误] [useRoomAI] 任务分解/调度异常: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] 异常堆栈: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] AI 异常: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] AI 异常信息: Task timeout
+[控制台错误] [useRoomAI] AI 异常堆栈: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: false
+[控制台日志] [useRoomAI] 开始执行AI逻辑...
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] task.payload.hand.length: 27
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] planner.decompose() 返回: [Object]
+[控制台日志] [useRoomAI] planner.decompose() 返回数量: 1
+[控制台日志] [useRoomAI] 子任务 0: turn-29cd3c59-9ebc-4d92-8933-a6067ef806c4-1-1-decide DecideMove payload: {hand: Array(27), lastAction: Object, levelRank: 2, seatNo: 1, playersCardCounts: Array(4)}
+[控制台日志] [useRoomAI] 准备调用dispatcher.submitTasks()
+[控制台日志] [useRoomAI] dispatcher.submitTasks() 完成
+[控制台日志] [useRoomAI] AI手牌获取成功，张数: 27
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台错误] [useRoomAI] 任务分解/调度异常: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] 异常堆栈: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] AI 异常: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] AI 异常信息: Task timeout
+[控制台错误] [useRoomAI] AI 异常堆栈: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: false
+[控制台日志] [useRoomAI] 开始执行AI逻辑...
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] task.payload.hand.length: 27
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] planner.decompose() 返回: [Object]
+[控制台日志] [useRoomAI] planner.decompose() 返回数量: 1
+[控制台日志] [useRoomAI] 子任务 0: turn-29cd3c59-9ebc-4d92-8933-a6067ef806c4-1-1-decide DecideMove payload: {hand: Array(27), lastAction: Object, levelRank: 2, seatNo: 1, playersCardCounts: Array(4)}
+[控制台日志] [useRoomAI] 准备调用dispatcher.submitTasks()
+[控制台日志] [useRoomAI] dispatcher.submitTasks() 完成
+[控制台日志] [useRoomAI] AI手牌获取成功，张数: 27
+[100] 我的座位: 0, 当前活跃: -1, 手牌: 26, 出牌: false
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台错误] [useRoomAI] 任务分解/调度异常: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] 异常堆栈: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] AI 异常: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] AI 异常信息: Task timeout
+[控制台错误] [useRoomAI] AI 异常堆栈: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: false
+[控制台日志] [useRoomAI] 开始执行AI逻辑...
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] task.payload.hand.length: 27
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] planner.decompose() 返回: [Object]
+[控制台日志] [useRoomAI] planner.decompose() 返回数量: 1
+[控制台日志] [useRoomAI] 子任务 0: turn-29cd3c59-9ebc-4d92-8933-a6067ef806c4-1-1-decide DecideMove payload: {hand: Array(27), lastAction: Object, levelRank: 2, seatNo: 1, playersCardCounts: Array(4)}
+[控制台日志] [useRoomAI] 准备调用dispatcher.submitTasks()
+[控制台日志] [useRoomAI] dispatcher.submitTasks() 完成
+[控制台日志] [useRoomAI] AI手牌获取成功，张数: 27
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台错误] [useRoomAI] 任务分解/调度异常: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] 异常堆栈: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] AI 异常: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] AI 异常信息: Task timeout
+[控制台错误] [useRoomAI] AI 异常堆栈: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: false
+[控制台日志] [useRoomAI] 开始执行AI逻辑...
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] task.payload.hand.length: 27
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] planner.decompose() 返回: [Object]
+[控制台日志] [useRoomAI] planner.decompose() 返回数量: 1
+[控制台日志] [useRoomAI] 子任务 0: turn-29cd3c59-9ebc-4d92-8933-a6067ef806c4-1-1-decide DecideMove payload: {hand: Array(27), lastAction: Object, levelRank: 2, seatNo: 1, playersCardCounts: Array(4)}
+[控制台日志] [useRoomAI] 准备调用dispatcher.submitTasks()
+[控制台日志] [useRoomAI] dispatcher.submitTasks() 完成
+[控制台日志] [useRoomAI] AI手牌获取成功，张数: 27
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: false, dispatcher: false, planner: false
+[控制台日志] [useRoomAI] 初始化新的 Agent 系统...
+[控制台日志] [useRoomAI] 开始创建 Agents...
+[控制台日志] [useRoomAI] 创建 Agent 0: ai-agent-b1471202-2ebd-4cb9-9614-c2df4b04dee3-seat-0
+[控制台日志] [useRoomAI] 创建 Agent 1: ai-agent-b1471202-2ebd-4cb9-9614-c2df4b04dee3-seat-1
+[控制台日志] [useRoomAI] 创建 Agent 2: ai-agent-b1471202-2ebd-4cb9-9614-c2df4b04dee3-seat-2
+[控制台日志] [useRoomAI] 创建 Agent 3: ai-agent-b1471202-2ebd-4cb9-9614-c2df4b04dee3-seat-3
+[控制台日志] [useRoomAI] 创建了 4 个 Agents
+[控制台日志] [useRoomAI] 开始创建 Team - teamName: room-b1471202-2ebd-4cb9-9614-c2df4b04dee3
+[控制台日志] [useRoomAI] Team 创建成功
+[控制台日志] [useRoomAI] Agent 系统初始化完成
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台错误] [useRoomAI] 任务分解/调度异常: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] 异常堆栈: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] AI 异常: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] AI 异常信息: Task timeout
+[控制台错误] [useRoomAI] AI 异常堆栈: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: false
+[控制台日志] [useRoomAI] 开始执行AI逻辑...
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] task.payload.hand.length: 27
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] planner.decompose() 返回: [Object]
+[控制台日志] [useRoomAI] planner.decompose() 返回数量: 1
+[控制台日志] [useRoomAI] 子任务 0: turn-29cd3c59-9ebc-4d92-8933-a6067ef806c4-1-1-decide DecideMove payload: {hand: Array(27), lastAction: Object, levelRank: 2, seatNo: 1, playersCardCounts: Array(4)}
+[控制台日志] [useRoomAI] 准备调用dispatcher.submitTasks()
+[控制台日志] [useRoomAI] dispatcher.submitTasks() 完成
+[控制台日志] [useRoomAI] AI手牌获取成功，张数: 27
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[150] 我的座位: 0, 当前活跃: -1, 手牌: 26, 出牌: false
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台错误] [useRoomAI] 任务分解/调度异常: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] 异常堆栈: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] AI 异常: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] AI 异常信息: Task timeout
+[控制台错误] [useRoomAI] AI 异常堆栈: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: false
+[控制台日志] [useRoomAI] 开始执行AI逻辑...
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] task.payload.hand.length: 27
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] planner.decompose() 返回: [Object]
+[控制台日志] [useRoomAI] planner.decompose() 返回数量: 1
+[控制台日志] [useRoomAI] 子任务 0: turn-29cd3c59-9ebc-4d92-8933-a6067ef806c4-1-1-decide DecideMove payload: {hand: Array(27), lastAction: Object, levelRank: 2, seatNo: 1, playersCardCounts: Array(4)}
+[控制台日志] [useRoomAI] 准备调用dispatcher.submitTasks()
+[控制台日志] [useRoomAI] dispatcher.submitTasks() 完成
+[控制台日志] [useRoomAI] AI手牌获取成功，张数: 27
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台错误] [useRoomAI] 任务分解/调度异常: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] 异常堆栈: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] AI 异常: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] AI 异常信息: Task timeout
+[控制台错误] [useRoomAI] AI 异常堆栈: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: false
+[控制台日志] [useRoomAI] 开始执行AI逻辑...
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] task.payload.hand.length: 27
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] planner.decompose() 返回: [Object]
+[控制台日志] [useRoomAI] planner.decompose() 返回数量: 1
+[控制台日志] [useRoomAI] 子任务 0: turn-29cd3c59-9ebc-4d92-8933-a6067ef806c4-1-1-decide DecideMove payload: {hand: Array(27), lastAction: Object, levelRank: 2, seatNo: 1, playersCardCounts: Array(4)}
+[控制台日志] [useRoomAI] 准备调用dispatcher.submitTasks()
+[控制台日志] [useRoomAI] dispatcher.submitTasks() 完成
+[控制台日志] [useRoomAI] AI手牌获取成功，张数: 27
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台错误] [useRoomAI] 任务分解/调度异常: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] 异常堆栈: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] AI 异常: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] AI 异常信息: Task timeout
+[控制台错误] [useRoomAI] AI 异常堆栈: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: false
+[控制台日志] [useRoomAI] 开始执行AI逻辑...
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] task.payload.hand.length: 27
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] planner.decompose() 返回: [Object]
+[控制台日志] [useRoomAI] planner.decompose() 返回数量: 1
+[控制台日志] [useRoomAI] 子任务 0: turn-29cd3c59-9ebc-4d92-8933-a6067ef806c4-1-1-decide DecideMove payload: {hand: Array(27), lastAction: Object, levelRank: 2, seatNo: 1, playersCardCounts: Array(4)}
+[控制台日志] [useRoomAI] 准备调用dispatcher.submitTasks()
+[控制台日志] [useRoomAI] dispatcher.submitTasks() 完成
+[控制台日志] [useRoomAI] AI手牌获取成功，张数: 27
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[200] 我的座位: 0, 当前活跃: -1, 手牌: 26, 出牌: false
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台错误] [useRoomAI] 任务分解/调度异常: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] 异常堆栈: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] AI 异常: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] AI 异常信息: Task timeout
+[控制台错误] [useRoomAI] AI 异常堆栈: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: false
+[控制台日志] [useRoomAI] 开始执行AI逻辑...
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] task.payload.hand.length: 27
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] planner.decompose() 返回: [Object]
+[控制台日志] [useRoomAI] planner.decompose() 返回数量: 1
+[控制台日志] [useRoomAI] 子任务 0: turn-29cd3c59-9ebc-4d92-8933-a6067ef806c4-1-1-decide DecideMove payload: {hand: Array(27), lastAction: Object, levelRank: 2, seatNo: 1, playersCardCounts: Array(4)}
+[控制台日志] [useRoomAI] 准备调用dispatcher.submitTasks()
+[控制台日志] [useRoomAI] dispatcher.submitTasks() 完成
+[控制台日志] [useRoomAI] AI手牌获取成功，张数: 27
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台错误] [useRoomAI] 任务分解/调度异常: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] 异常堆栈: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] AI 异常: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] AI 异常信息: Task timeout
+[控制台错误] [useRoomAI] AI 异常堆栈: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: false
+[控制台日志] [useRoomAI] 开始执行AI逻辑...
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] task.payload.hand.length: 27
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] planner.decompose() 返回: [Object]
+[控制台日志] [useRoomAI] planner.decompose() 返回数量: 1
+[控制台日志] [useRoomAI] 子任务 0: turn-29cd3c59-9ebc-4d92-8933-a6067ef806c4-1-1-decide DecideMove payload: {hand: Array(27), lastAction: Object, levelRank: 2, seatNo: 1, playersCardCounts: Array(4)}
+[控制台日志] [useRoomAI] 准备调用dispatcher.submitTasks()
+[控制台日志] [useRoomAI] dispatcher.submitTasks() 完成
+[控制台日志] [useRoomAI] AI手牌获取成功，张数: 27
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台错误] [useRoomAI] 任务分解/调度异常: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] 异常堆栈: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] AI 异常: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台错误] [useRoomAI] AI 异常信息: Task timeout
+[控制台错误] [useRoomAI] AI 异常堆栈: Error: Task timeout
+    at http://localhost:3000/_next/static/chunks/src_a547fb0d._.js:4325:24
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: false
+[控制台日志] [useRoomAI] 开始执行AI逻辑...
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] task.payload.hand.length: 27
+[控制台日志] [useRoomAI] 准备调用planner.decompose()
+[控制台日志] [useRoomAI] planner.decompose() 返回: [Object]
+[控制台日志] [useRoomAI] planner.decompose() 返回数量: 1
+[控制台日志] [useRoomAI] 子任务 0: turn-29cd3c59-9ebc-4d92-8933-a6067ef806c4-1-1-decide DecideMove payload: {hand: Array(27), lastAction: Object, levelRank: 2, seatNo: 1, playersCardCounts: Array(4)}
+[控制台日志] [useRoomAI] 准备调用dispatcher.submitTasks()
+[控制台日志] [useRoomAI] dispatcher.submitTasks() 完成
+[控制台日志] [useRoomAI] AI手牌获取成功，张数: 27
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[250] 我的座位: 0, 当前活跃: -1, 手牌: 26, 出牌: false
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[控制台日志] [useRoomAI] 触发检查 - gameStatus: playing isOwner: true currentSeat: 1 members count: 4
+[控制台日志] [useRoomAI] 当前座位: 1 成员: {id: 9b37fb93-6494-4b86-9e5d-ebab5f8209d2, room_id: b1471202-2ebd-4cb9-9614-c2df4b04dee3, uid: null, seat_no: 1, ready: true} 成员类型: ai
+[控制台日志] [useRoomAI] AI回合，座位: 1
+[控制台日志] [useRoomAI] ensureAgentSystem 被调用 - roomId: b1471202-2ebd-4cb9-9614-c2df4b04dee3, difficulty: medium
+[控制台日志] [useRoomAI] 当前 teamManager 状态: true, dispatcher: true, planner: true
+[控制台日志] [useRoomAI] Agent 系统已存在，直接返回
+[控制台日志] [useRoomAI] 返回 dispatcher: true, planner: true
+[控制台日志] [useRoomAI] dispatcher: true planner: true isSubmittingRef: true
+[控制台日志] [useRoomAI] 跳过：正在提交中
+[31mTimed out waiting 600s for the test suite to run[39m
+[31mTimed out waiting 600s for the teardown for test suite to run[39m
+
+  1 did not run

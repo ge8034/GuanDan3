@@ -1,6 +1,7 @@
 import { AgentId, AgentConfig, AgentStatus, TeamId, TaskId, Task } from '../core/types';
 import { WorkerAgent } from '../core/WorkerAgent';
 import { GuanDanAgent } from '../implementations/GuanDanAgent';
+import { devLog } from '@/lib/utils/devLog';
 
 export class TeamManager {
   private teams: Map<TeamId, Set<AgentId>> = new Map();
@@ -44,8 +45,18 @@ export class TeamManager {
     return this.agents.get(agentId);
   }
 
+  public getAllAgents(): WorkerAgent[] {
+    return Array.from(this.agents.values());
+  }
+
+  public getAllAgentsByStatus(status: AgentStatus): WorkerAgent[] {
+    return Array.from(this.agents.values()).filter(a => a.status === status);
+  }
+
   public async broadcastToTeam(teamId: TeamId, message: any): Promise<void> {
     const agents = this.getAgentsInTeam(teamId);
+    devLog(`[TeamManager] broadcastToTeam: teamId=${teamId}, agentCount=${agents.length}, msgType=${message.type}, msgId=${message.id}`);
     await Promise.all(agents.map(agent => agent.receive(message)));
+    devLog(`[TeamManager] broadcastToTeam complete: msgId=${message.id}`);
   }
 }

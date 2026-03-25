@@ -276,13 +276,14 @@ export const useGameStore = create<GameState>((set, get) => ({
   fetchGame: async (roomId) => {
     if (isDev()) devLog('[fetchGame] Called for room:', roomId)
     // 1. Fetch active game
-    const { data: game, error: gameError } = await supabase
+    const { data: games, error: gamesError } = await supabase
       .from('games')
-      .select('id,room_id,status,turn_no,current_seat,state_public')
+      .select('id,room_id,status,turn_no,current_seat,state_public,state_private')
       .eq('room_id', roomId)
       .in('status', ['playing', 'paused', 'finished'])
-      .limit(1)
-      .maybeSingle()
+
+    const game = games && games.length > 0 ? games[0] : null
+    const gameError = gamesError
 
     if (isDev()) devLog('[fetchGame] Game query result:', { hasGame: !!game, gameError })
 
@@ -331,42 +332,55 @@ export const useGameStore = create<GameState>((set, get) => ({
       mySeatNo = memberData?.seat_no
     }
 
-    // Fetch hands using uid (primary key lookup - most efficient)
-    let handQuery = supabase
-      .from('game_hands')
-      .select('hand')
-      .eq('game_id', game.id)
+    // Try to get hand from state_private first (primary source)
+    const statePrivate = game.state_private as any
+    let myHand: Card[] | null = null
 
-    // Filter by uid if we have it (primary key lookup)
-    if (myUid) {
-      handQuery = handQuery.eq('uid', myUid)
+    // 回退：如果没有找到座位号，尝试使用第一个可用座位（练习模式）
+    if (mySeatNo === undefined && statePrivate?.hands) {
+      // 明确的座位选择优先级：优先座位0（练习模式默认）
+      mySeatNo = statePrivate.hands['0'] ? 0
+        : statePrivate.hands['1'] ? 1
+        : statePrivate.hands['2'] ? 2
+        : statePrivate.hands['3'] ? 3
+        : undefined;
+      if (mySeatNo !== undefined) {
+        if (isDev()) devLog('[fetchGame] Using fallback seat_no:', mySeatNo)
+      }
     }
 
-    const { data: hands, error: handsError } = await handQuery
-
-    if (isDev()) devLog('[fetchGame] Hands query result:', { handsCount: hands?.length || 0, hasError: !!handsError, myUid, mySeatNo })
-
-    if (handsError) {
-      devError('Fetch hands error:', handsError)
-    } else if (hands && hands.length > 0) {
-      // Get the first (and should be only) hand for this user
-      const handData = hands[0]
-
-      if (handData && handData.hand) {
-        // Cast JSONB to Card[]
-        const myHand = handData.hand as unknown as Card[]
-        if (isDev()) devLog('[fetchGame] Setting myHand:', { cardsCount: myHand?.length || 0, seatNo: mySeatNo })
-        // Sort hand
-        myHand.sort((a, b) => {
-          if (a.val !== b.val) return b.val - a.val
-          return b.suit.localeCompare(b.suit)
-        })
-        set({ myHand })
-      } else {
-        if (isDev()) devLog('[fetchGame] Hand data not found for uid:', myUid)
+    if (statePrivate?.hands && mySeatNo !== undefined) {
+      const handData = statePrivate.hands[String(mySeatNo)] || statePrivate.hands[mySeatNo]
+      if (handData && Array.isArray(handData)) {
+        myHand = handData as Card[]
+        if (isDev()) devLog('[fetchGame] Got hand from state_private:', { cardsCount: myHand.length, seatNo: mySeatNo })
       }
+    }
+
+    // Fallback: try game_hands table
+    if (!myHand && myUid) {
+      const { data: hands } = await supabase
+        .from('game_hands')
+        .select('hand')
+        .eq('game_id', game.id)
+        .eq('uid', myUid)
+        .maybeSingle()
+
+      if (hands?.hand) {
+        myHand = hands.hand as Card[]
+        if (isDev()) devLog('[fetchGame] Got hand from game_hands table:', { cardsCount: myHand.length, seatNo: mySeatNo })
+      }
+    }
+
+    if (myHand) {
+      // 使用 toSorted 创建新的排序数组，遵循不可变性原则
+      const sortedHand = myHand.toSorted((a, b) => {
+        if (a.val !== b.val) return b.val - a.val
+        return b.suit.localeCompare(a.suit) // 统一降序排序
+      })
+      set({ myHand: sortedHand })
     } else {
-      if (isDev()) devLog('[fetchGame] No hands found, skipping myHand set')
+      if (isDev()) devLog('[fetchGame] No hand data found for seatNo:', mySeatNo, 'state_private:', statePrivate)
     }
 
     // 3. Fetch last action

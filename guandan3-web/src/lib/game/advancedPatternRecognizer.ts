@@ -271,6 +271,8 @@ export class AdvancedPatternRecognizer {
     const values = cards.map(c => getCardValue(c, this.levelRank)).sort((a, b) => a - b)
     const uniqueValues = Array.from(new Set(values))
     const rawVals = cards.map(c => c.val).sort((a, b) => a - b)
+    const ranks = cards.map(c => c.rank)
+    const uniqueRanks = Array.from(new Set(ranks))
     const hasJoker = cards.some(c => c.suit === 'J')
 
     // 普通炸弹（4张及以上）
@@ -285,8 +287,8 @@ export class AdvancedPatternRecognizer {
       })
     }
 
-    // 王炸
-    if (cards.length === 2 && hasJoker && uniqueValues.length === 2) {
+    // 王炸 - 四张王牌组成的炸弹
+    if (cards.length === 4 && hasJoker && uniqueRanks.length >= 2) {
       patterns.push({
         type: 'rocket',
         cards,

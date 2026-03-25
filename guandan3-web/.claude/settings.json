@@ -1,5 +1,11 @@
 {
   "enabledPlugins": {
     "coderabbit@claude-plugins-official": true
+  },
+  "extraKnownMarketplaces": {
+    "everything-claude-code": {
+      "source": "directory",
+      "path": "C:\\Users\\Administrator\\.claude\\plugins\\marketplaces\\everything-claude-code"
+    }
   }
 }
