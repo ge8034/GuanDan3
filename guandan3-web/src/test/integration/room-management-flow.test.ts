@@ -8,8 +8,11 @@ describe('房间管理流程集成测试', () => {
   let mockRoomStore: ReturnType<typeof useRoomStore.getState>
 
   beforeEach(() => {
-    // 不要清除所有 mock，因为这会清除我们的 mockImplementation
-    // vi.clearAllMocks()
+    // 清除 mock 调用记录，但保留实现
+    vi.clearAllMocks()
+    // 重置 store 状态
+    useRoomStore.getState().setRoom(null)
+    useRoomStore.getState().setMembers([])
     mockRoomStore = useRoomStore.getState()
   })
 

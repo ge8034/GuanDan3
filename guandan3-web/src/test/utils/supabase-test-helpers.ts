@@ -17,6 +17,17 @@ const ALLOWED_QUERY_METHODS = new Set([
   'then', 'catch', 'finally'
 ])
 
+// Promise 和 JavaScript 内置属性白名单
+const PROXY_SAFE_PROPERTIES = new Set([
+  // Promise thenable
+  'then', 'catch', 'finally',
+  // Object.prototype
+  'toString', 'valueOf', 'toLocaleString',
+  // 常见 Symbol
+  'constructor', Symbol.toStringTag, Symbol.isConcatSpreadable,
+  Symbol.toPrimitive, Symbol.hasInstance
+])
+
 /**
  * 创建链式查询 mock
  * @param returnValue - single/maybeSingle 返回的值
@@ -133,13 +144,16 @@ export function createNestedQueryMock<T = { data: unknown; error: unknown }>(
         return () => Promise.resolve(finalValue)
       }
 
-      // 所有其他方法 - 安全检查：只允许已知的查询方法
-      // 在开发模式下警告未知方法访问
-      if (process.env.NODE_ENV === 'development' && !ALLOWED_QUERY_METHODS.has(propStr)) {
-        // 允许 Symbol 和内部属性
-        if (typeof prop !== 'symbol' && !propStr.startsWith('_')) {
-          console.warn(`[Mock] Unexpected property access on query chain: ${propStr}`)
-        }
+      // 安全检查：验证属性访问
+      const isAllowed = ALLOWED_QUERY_METHODS.has(propStr)
+      const isSafeProp = PROXY_SAFE_PROPERTIES.has(prop)
+      const isInternalProp = typeof prop === 'symbol' || propStr.startsWith('_')
+
+      if (!isAllowed && !isSafeProp && !isInternalProp) {
+        // 在所有环境中记录未授权的属性访问
+        console.error(`[Mock Security] Blocked unauthorized property access: ${propStr}`)
+        // 返回 undefined 拒绝访问
+        return undefined
       }
 
       // 返回函数，调用时返回 proxy 本身以支持链式调用

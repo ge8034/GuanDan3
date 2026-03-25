@@ -272,20 +272,29 @@ describe('游戏状态同步集成测试', () => {
   })
 
   describe('游戏状态订阅', () => {
-    it('应该能够订阅游戏状态变化', () => {
-      const mockChannel = vi.fn().mockReturnValue({
-        on: vi.fn().mockReturnThis(),
-        subscribe: vi.fn().mockReturnValue({
-          unsubscribe: vi.fn()
-        })
-      })
+    afterEach(() => {
+      // 确保每个测试后清理订阅
+      vi.restoreAllMocks()
+    })
 
-      vi.mocked(supabase.channel).mockReturnValue(mockChannel())
+    it('应该能够订阅游戏状态变化', () => {
+      const mockRemoveChannel = vi.fn()
+      const mockChannel = {
+        on: vi.fn().mockReturnThis(),
+        subscribe: vi.fn().mockReturnValue({})
+      }
+
+      vi.mocked(supabase.channel).mockReturnValue(mockChannel)
+      vi.mocked(supabase.removeChannel).mockImplementation(mockRemoveChannel)
 
       const unsubscribe = mockGameStore.subscribeGame('room-123')
 
       expect(unsubscribe).toBeDefined()
       expect(typeof unsubscribe).toBe('function')
+
+      // 清理订阅
+      unsubscribe()
+      expect(mockRemoveChannel).toHaveBeenCalled()
     })
 
     it('应该能够取消订阅游戏状态', () => {
@@ -305,22 +314,28 @@ describe('游戏状态同步集成测试', () => {
     })
 
     it('应该能够接收订阅状态回调', () => {
-      const mockChannel = vi.fn().mockReturnValue({
+      const mockRemoveChannel = vi.fn()
+      const mockChannel = {
         on: vi.fn().mockReturnThis(),
         subscribe: vi.fn().mockImplementation((callback) => {
           callback('SUBSCRIBED')
-          return { unsubscribe: vi.fn() }
+          return {}
         })
-      })
+      }
 
-      vi.mocked(supabase.channel).mockReturnValue(mockChannel())
+      vi.mocked(supabase.channel).mockReturnValue(mockChannel)
+      vi.mocked(supabase.removeChannel).mockImplementation(mockRemoveChannel)
 
       const statusCallback = vi.fn()
-      mockGameStore.subscribeGame('room-123', {
+      const unsubscribe = mockGameStore.subscribeGame('room-123', {
         onStatus: statusCallback
       })
 
       expect(statusCallback).toHaveBeenCalledWith('SUBSCRIBED')
+
+      // 清理订阅
+      unsubscribe()
+      expect(mockRemoveChannel).toHaveBeenCalled()
     })
   })
 
