@@ -172,11 +172,13 @@ describe('Advanced Pattern Recognizer', () => {
     it('should recognize rocket (王炸)', () => {
       const recognizer = new AdvancedPatternRecognizer(2)
       const cards = [
-        createCard('J', 'hr', 15),
-        createCard('J', 'bk', 14)
+        createCard('J', 'hr', 200),
+        createCard('J', 'hr', 200),
+        createCard('J', 'sb', 100),
+        createCard('J', 'sb', 100)
       ]
       const result = recognizer.analyzeCards(cards)
-      
+
       const rocketPattern = result.patterns.find(p => p.type === 'rocket')
       expect(rocketPattern).toBeDefined()
       expect(rocketPattern?.primaryValue).toBe(10000)
@@ -250,10 +252,12 @@ describe('Advanced Pattern Recognizer', () => {
 
     it('should calculate higher strength for rocket than regular bomb', () => {
       const recognizer = new AdvancedPatternRecognizer(2)
-      
+
       const rocketCards = [
-        createCard('J', 'hr', 15),
-        createCard('J', 'bk', 14)
+        createCard('J', 'hr', 200),
+        createCard('J', 'hr', 200),
+        createCard('J', 'sb', 100),
+        createCard('J', 'sb', 100)
       ]
       const bombCards = [
         createCard('S', '3', 3),
@@ -261,7 +265,7 @@ describe('Advanced Pattern Recognizer', () => {
         createCard('D', '3', 3),
         createCard('C', '3', 3)
       ]
-      
+
       const rocketAnalysis = recognizer.analyzeCards(rocketCards)
       const bombAnalysis = recognizer.analyzeCards(bombCards)
       

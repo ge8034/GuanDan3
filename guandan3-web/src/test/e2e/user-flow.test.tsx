@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { useAuthStore } from '@/lib/store/auth'
 
-vi.mock('@/lib/supabase/client', () => ({
-  supabase: {
-    from: vi.fn(),
-    channel: vi.fn(),
+vi.mock('@/lib/supabase/client', () => {
+  const { createSupabaseMock } = require('../utils/supabase-mock')
+  return {
+    supabase: createSupabaseMock(),
   }
-}))
+})
 
 describe('端到端用户流程测试', () => {
   beforeEach(() => {

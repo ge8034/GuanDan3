@@ -1,13 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { supabase } from '@/lib/supabase/client'
 
-vi.mock('@/lib/supabase/client', () => ({
-  supabase: {
-    from: vi.fn(),
-    channel: vi.fn(),
-  }
-}))
-
 describe('数据库集成测试', () => {
   beforeEach(() => {
     vi.clearAllMocks()

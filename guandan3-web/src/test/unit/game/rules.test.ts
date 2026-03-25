@@ -70,7 +70,13 @@ describe('rules', () => {
   })
 
   it('analyzeMove：王炸/四带二/飞机/飞机带翅膀', () => {
-    const jokerBomb = analyzeMove([c({ id: 1, suit: 'J', rank: 'hr', val: 0 }), c({ id: 2, suit: 'J', rank: 'sb', val: 0 })], 2)
+    // 王炸需要4张王牌（红大王x2 + 黑小王x2）
+    const jokerBomb = analyzeMove([
+      c({ id: 1, suit: 'J', rank: 'hr', val: 200 }),
+      c({ id: 2, suit: 'J', rank: 'hr', val: 200 }),
+      c({ id: 3, suit: 'J', rank: 'sb', val: 100 }),
+      c({ id: 4, suit: 'J', rank: 'sb', val: 100 })
+    ], 2)
     expect(jokerBomb?.type).toBe('bomb')
 
     const quadWithTwo = analyzeMove(

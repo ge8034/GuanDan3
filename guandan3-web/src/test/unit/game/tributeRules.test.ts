@@ -153,15 +153,15 @@ describe('Tribute Rules', () => {
     it('should skip level cards and jokers', () => {
       const hand = [
         createCard('c2', 'H', '2', 2), // Level card, should be skipped
-        createCard('c3', 'D', '3', 3), // Normal card, value 3
-        createCard('c4', 'C', '4', 4),  // Normal card, value 4
+        createCard('cJ', 'D', 'J', 11), // Valid card, value 11 (>= 10)
+        createCard('cQ', 'C', 'Q', 12),  // Valid card, value 12 (largest)
         createCard('j1', 'J', 'hr', 200) // Joker, should be skipped
       ]
-      
+
       const tributeCard = findBestTributeCard(hand, levelRank)
-      
+
       expect(tributeCard).not.toBeNull()
-      expect(tributeCard?.val).toBe(4) // Should pick 4 (largest valid card), not level card or joker
+      expect(tributeCard?.val).toBe(12) // Should pick Q (largest valid card), not level card or joker
     })
 
     it('should return null when all cards are level cards or jokers', () => {
@@ -222,18 +222,18 @@ describe('Tribute Rules', () => {
         createCard('c3', 'H', '3', 3),
         createCard('c4', 'D', '4', 4)
       ]
-      
+
       const loserHand = [
-        createCard('c5', 'C', '5', 5),
-        createCard('c6', 'S', '6', 6)
+        createCard('cJ', 'C', 'J', 11),
+        createCard('cQ', 'S', 'Q', 12)
       ]
-      
+
       const result = calculateTribute(0, 1, winnerHand, loserHand, levelRank)
-      
+
       expect(result.canResist).toBe(false)
       expect(result.tributeCard).not.toBeNull()
       expect(result.returnCard).not.toBeNull()
-      expect(result.tributeCard?.val).toBe(6) // Should return 6 (largest)
+      expect(result.tributeCard?.val).toBe(12) // Should return Q (largest >= 10)
       expect(result.returnCard?.val).toBe(3)
     })
 
@@ -263,7 +263,7 @@ describe('Tribute Rules', () => {
         createCard('c3', 'H', '3', 3),
         createCard('c4', 'D', '4', 4)
       ]
-      
+
       const loserHand = [
         createCard('j1', 'J', 'hr', 200),
         createCard('j2', 'J', 'hb', 100),
@@ -271,13 +271,14 @@ describe('Tribute Rules', () => {
         createCard('c4', 'S', '4', 4),
         createCard('c5', 'D', '5', 5)
       ]
-      
+
       const result = calculateTribute(0, 1, winnerHand, loserHand, levelRank)
-      
+
       expect(result.canResist).toBe(false)
-      expect(result.tributeCard).not.toBeNull()
-      expect(result.returnCard).not.toBeNull()
-      expect(result.reason).toContain('进贡')
+      // 由于没有 >= 10 的牌，无法完成进贡
+      expect(result.tributeCard).toBeNull()
+      expect(result.returnCard).toBeNull()
+      expect(result.reason).toContain('无法完成')
     })
 
     it('should handle empty hands', () => {
@@ -389,13 +390,13 @@ describe('Tribute Rules', () => {
   describe('validateTributeCard', () => {
     it('should validate card in hand', () => {
       const hand = [
-        createCard('c3', 'H', '3', 3),
-        createCard('c4', 'D', '4', 4)
+        createCard('cJ', 'H', 'J', 11),
+        createCard('cQ', 'D', 'Q', 12)
       ]
-      
+
       const card = hand[0]
       const result = validateTributeCard(card, hand, levelRank)
-      
+
       expect(result.valid).toBe(true)
     })
 

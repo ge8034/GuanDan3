@@ -1,29 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-
-vi.mock('@/lib/supabase/client', () => {
-  const channelObj = {
-    on: vi.fn().mockReturnThis(),
-    subscribe: vi.fn().mockReturnThis(),
-  }
-
-  const supabase: any = {
-    rpc: vi.fn(),
-    from: vi.fn(() => ({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi.fn(),
-      order: vi.fn().mockReturnThis(),
-    })),
-    channel: vi.fn(() => channelObj),
-    removeChannel: vi.fn(),
-    auth: {
-      getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }),
-    },
-  }
-
-  return { supabase }
-})
-
 import { supabase } from '@/lib/supabase/client'
 import { useRoomStore } from '@/lib/store/room'
 import { useGameStore } from '@/lib/store/game'

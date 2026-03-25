@@ -1,13 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { supabase } from '@/lib/supabase/client'
-
-vi.mock('@/lib/supabase/client', () => ({
-  supabase: {
-    from: vi.fn(),
-    channel: vi.fn(),
-    rpc: vi.fn()
-  }
-}))
+import { createNestedQueryMock } from '@/test/utils/supabase-test-helpers'
 
 describe('数据库操作集成测试', () => {
   beforeEach(() => {
@@ -727,24 +720,11 @@ describe('数据库操作集成测试', () => {
     })
 
     it('应该能够执行聚合查询', async () => {
-      const mockSelect = vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          single: vi.fn().mockResolvedValue({
-            data: {
-              count: 5
-            },
-            error: null
-          })
-        })
-      })
+      vi.mocked(supabase.from).mockReturnValue(
+        createNestedQueryMock({ data: { count: 5 }, error: null })
+      )
 
-      const mockFrom = vi.fn().mockReturnValue({
-        select: mockSelect
-      })
-
-      vi.mocked(supabase.from).mockReturnValue(mockFrom())
-
-      const result = await mockFrom('rooms')
+      const result = await supabase.from('rooms')
         .select('*', { count: 'exact' })
         .eq('status', 'open')
 
@@ -754,37 +734,28 @@ describe('数据库操作集成测试', () => {
 
   describe('事务和批量操作', () => {
     it('应该能够处理批量插入', async () => {
-      const mockInsert = vi.fn().mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          single: vi.fn().mockResolvedValue({
-            data: [
-              {
-                id: 'member-1',
-                room_id: 'room-123',
-                uid: 'user-1',
-                seat_no: 0,
-                ready: true,
-                member_type: 'human'
-              },
-              {
-                id: 'member-2',
-                room_id: 'room-123',
-                uid: 'user-2',
-                seat_no: 1,
-                ready: false,
-                member_type: 'human'
-              }
-            ],
-            error: null
-          })
-        })
-      })
+      const mockMembers = [
+        {
+          id: 'member-1',
+          room_id: 'room-123',
+          uid: 'user-1',
+          seat_no: 0,
+          ready: true,
+          member_type: 'human'
+        },
+        {
+          id: 'member-2',
+          room_id: 'room-123',
+          uid: 'user-2',
+          seat_no: 1,
+          ready: false,
+          member_type: 'human'
+        }
+      ]
 
-      const mockFrom = vi.fn().mockReturnValue({
-        insert: mockInsert
-      })
-
-      vi.mocked(supabase.from).mockReturnValue(mockFrom())
+      vi.mocked(supabase.from).mockReturnValue(
+        createNestedQueryMock({ data: mockMembers, error: null })
+      )
 
       const members = [
         {
@@ -803,33 +774,18 @@ describe('数据库操作集成测试', () => {
         }
       ]
 
-      const result = await mockFrom('room_members').insert(members).select()
+      const result = await supabase.from('room_members').insert(members).select()
 
       expect(result.data).toBeDefined()
       expect(result.data?.length).toBe(2)
     })
 
     it('应该能够处理批量更新', async () => {
-      const mockUpdate = vi.fn().mockReturnValue({
-        in: vi.fn().mockReturnValue({
-          select: vi.fn().mockReturnValue({
-            single: vi.fn().mockResolvedValue({
-              data: {
-                count: 3
-              },
-              error: null
-            })
-          })
-        })
-      })
+      vi.mocked(supabase.from).mockReturnValue(
+        createNestedQueryMock({ data: { count: 3 }, error: null })
+      )
 
-      const mockFrom = vi.fn().mockReturnValue({
-        update: mockUpdate
-      })
-
-      vi.mocked(supabase.from).mockReturnValue(mockFrom())
-
-      const result = await mockFrom('room_members')
+      const result = await supabase.from('room_members')
         .update({ online: false })
         .in('id', ['member-1', 'member-2', 'member-3'])
         .select()

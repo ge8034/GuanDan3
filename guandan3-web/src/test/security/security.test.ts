@@ -3,12 +3,12 @@ import { useAuthStore } from '@/lib/store/auth'
 import { analyzeMove, canBeat } from '@/lib/game/rules'
 import { analyzeHand } from '@/lib/game/ai-pattern-recognition'
 
-vi.mock('@/lib/supabase/client', () => ({
-  supabase: {
-    from: vi.fn(),
-    channel: vi.fn(),
+vi.mock('@/lib/supabase/client', () => {
+  const { createSupabaseMock } = require('../utils/supabase-mock')
+  return {
+    supabase: createSupabaseMock(),
   }
-}))
+})
 
 describe('安全测试', () => {
   describe('输入验证安全', () => {

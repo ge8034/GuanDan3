@@ -228,18 +228,21 @@ describe('AI Strategy - Guard & Difficulty', () => {
 
   it('模式识别可识别王炸与四带二', () => {
     const cards: Card[] = [
-      c({ id: 1, suit: 'J', rank: 'hr', val: 0 }),
-      c({ id: 2, suit: 'J', rank: 'sb', val: 0 }),
-      c({ id: 3, suit: 'S', rank: '7', val: 7 }),
-      c({ id: 4, suit: 'D', rank: '7', val: 7 }),
-      c({ id: 5, suit: 'C', rank: '7', val: 7 }),
-      c({ id: 6, suit: 'H', rank: '7', val: 7 }),
-      c({ id: 7, suit: 'S', rank: '9', val: 9 }),
-      c({ id: 8, suit: 'D', rank: '10', val: 10 }),
+      c({ id: 1, suit: 'J', rank: 'hr', val: 200 }),
+      c({ id: 2, suit: 'J', rank: 'hr', val: 200 }),
+      c({ id: 3, suit: 'J', rank: 'sb', val: 100 }),
+      c({ id: 4, suit: 'J', rank: 'sb', val: 100 }),
+      c({ id: 5, suit: 'S', rank: '7', val: 7 }),
+      c({ id: 6, suit: 'D', rank: '7', val: 7 }),
+      c({ id: 7, suit: 'C', rank: '7', val: 7 }),
+      c({ id: 8, suit: 'H', rank: '7', val: 7 }),
+      c({ id: 9, suit: 'S', rank: '9', val: 9 }),
+      c({ id: 10, suit: 'D', rank: '10', val: 10 }),
     ]
 
     const bombs = findBombs(cards, 2)
-    expect(bombs.some(b => b.length === 2 && b.every(x => x.suit === 'J'))).toBe(true)
+    // 王炸需要4张王牌
+    expect(bombs.some(b => b.length === 4 && b.every(x => x.suit === 'J'))).toBe(true)
 
     const quadsWithTwo = findQuadWithTwo(cards, 2)
     expect(quadsWithTwo.some(m => m.length === 6)).toBe(true)

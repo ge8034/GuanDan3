@@ -1,31 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-
-vi.mock('@/lib/supabase/client', () => {
-  const chain = () => {
-    const api: any = {}
-    api.select = vi.fn(() => api)
-    api.eq = vi.fn(() => api)
-    api.in = vi.fn(() => api)
-    api.order = vi.fn(() => api)
-    api.limit = vi.fn(() => api)
-    api.maybeSingle = vi.fn()
-    api.single = vi.fn()
-    return api
-  }
-
-  const supabase: any = {
-    rpc: vi.fn(),
-    from: vi.fn(() => chain()),
-    channel: vi.fn(() => ({
-      on: vi.fn().mockReturnThis(),
-      subscribe: vi.fn().mockReturnThis(),
-    })),
-    removeChannel: vi.fn(),
-  }
-
-  return { supabase }
-})
-
 import { supabase } from '@/lib/supabase/client'
 import { useGameStore, type Card } from '@/lib/store/game'
 import { withNodeEnv } from '@/test/utils/withNodeEnv'
@@ -260,40 +233,55 @@ describe('useGameStore.fetchGame', () => {
     const gameQuery = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
-      in: vi.fn().mockReturnThis(),
-      order: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockReturnThis(),
-      maybeSingle: vi.fn().mockResolvedValue({
-        data: {
-          id: 'g-finished',
-          status: 'finished',
-          turn_no: 9,
-          current_seat: 2,
-          state_public: { counts: [0, 1, 2, 3], rankings: [0, 1, 2, 3] },
-        },
-        error: null,
-      }),
-    }
-
-    const handQuery = {
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockResolvedValue({
+      in: vi.fn().mockResolvedValue({
         data: [
           {
-            hand: [
-              makeCard({ id: 1, suit: 'H', rank: '2', val: 2 }),
-              makeCard({ id: 2, suit: 'S', rank: 'A', val: 14 }),
-              makeCard({ id: 3, suit: 'D', rank: 'K', val: 13 }),
-            ],
+            id: 'g-finished',
+            status: 'finished',
+            turn_no: 9,
+            current_seat: 2,
+            state_public: { counts: [0, 1, 2, 3], rankings: [0, 1, 2, 3] },
+            state_private: {
+              hands: {
+                '0': [  // 座位0的手牌
+                  makeCard({ id: 1, suit: 'H', rank: '2', val: 2 }),
+                  makeCard({ id: 2, suit: 'S', rank: 'A', val: 14 }),
+                  makeCard({ id: 3, suit: 'D', rank: 'K', val: 13 }),
+                ]
+              }
+            },
           },
         ],
         error: null,
       }),
     }
 
+    // room_members 查询（返回 null，会使用 state_private 的 fallback）
+    const memberQuery = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      maybeSingle: vi.fn().mockResolvedValue({
+        data: null,
+        error: null,
+      }),
+    }
+
+    // turns 查询（fetchLastTrickPlay）
+    const turnsQuery = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockResolvedValue({
+        data: [],
+        error: null,
+      }),
+    }
+
+    // 注意：由于 state_private 有手牌数据，game_hands 查询不会被执行
     ;(supabase.from as any)
-      .mockImplementationOnce(() => gameQuery)
-      .mockImplementationOnce(() => handQuery)
+      .mockImplementationOnce(() => gameQuery)      // games
+      .mockImplementationOnce(() => memberQuery)    // room_members
+      .mockImplementationOnce(() => turnsQuery)     // turns (fetchLastTrickPlay)
 
     await useGameStore.getState().fetchGame('room-1')
 
@@ -311,40 +299,67 @@ describe('useGameStore.fetchGame', () => {
     const gameQuery = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
-      in: vi.fn().mockReturnThis(),
-      order: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockReturnThis(),
-      maybeSingle: vi.fn().mockResolvedValue({
-        data: {
-          id: 'g-1',
-          status: 'playing',
-          turn_no: 1,
-          current_seat: 0,
-          state_public: { counts: [27, 27, 27, 27], rankings: [] },
-        },
-        error: null,
-      }),
-    }
-    const handQuery = {
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockResolvedValue({
+      in: vi.fn().mockResolvedValue({
         data: [
           {
-            hand: [
-              makeCard({ id: 1, suit: 'S', rank: '10', val: 10 }),
-              makeCard({ id: 2, suit: 'H', rank: '10', val: 10 }),
-              makeCard({ id: 3, suit: 'D', rank: 'J', val: 11 }),
-            ],
+            id: 'g-1',
+            status: 'playing',
+            turn_no: 1,
+            current_seat: 0,
+            state_public: { counts: [27, 27, 27, 27], rankings: [] },
           },
         ],
         error: null,
       }),
     }
+
+    // room_members 查询，返回 seat_no
+    const memberQuery = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      maybeSingle: vi.fn().mockResolvedValue({
+        data: { seat_no: 0 },
+        error: null,
+      }),
+    }
+
+    // game_hands 查询，返回手牌数据
+    const handQuery = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      maybeSingle: vi.fn().mockResolvedValue({
+        data: {
+          hand: [
+            makeCard({ id: 1, suit: 'S', rank: '10', val: 10 }),
+            makeCard({ id: 2, suit: 'H', rank: '10', val: 10 }),
+            makeCard({ id: 3, suit: 'D', rank: 'J', val: 11 }),
+          ],
+        },
+        error: null,
+      }),
+    }
+
+    // turns 查询（fetchLastTrickPlay）
+    const turnsQuery = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockResolvedValue({
+        data: [],
+        error: null,
+      }),
+    }
+
     ;(supabase.from as any)
-      .mockImplementationOnce(() => gameQuery)
-      .mockImplementationOnce(() => handQuery)
+      .mockImplementationOnce(() => gameQuery)      // games
+      .mockImplementationOnce(() => memberQuery)    // room_members
+      .mockImplementationOnce(() => handQuery)      // game_hands
+      .mockImplementationOnce(() => turnsQuery)     // turns
+
     await useGameStore.getState().fetchGame('room-1')
-    expect(useGameStore.getState().myHand.map(c => c.id)).toEqual([3, 2, 1])
+    // 排序逻辑：先按点数降序，点数相同按花色降序 (S > H > D)
+    // D-J (11) > S-10 (10, S) > H-10 (10, H)
+    expect(useGameStore.getState().myHand.map(c => c.id)).toEqual([3, 1, 2])
   })
 
   it('无对局时重置为deal', async () => {
@@ -358,10 +373,10 @@ describe('useGameStore.fetchGame', () => {
     const gameQuery = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
-      in: vi.fn().mockReturnThis(),
-      order: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockReturnThis(),
-      maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+      in: vi.fn().mockResolvedValue({
+        data: [],
+        error: null,
+      }),
     }
 
     ;(supabase.from as any).mockImplementationOnce(() => gameQuery)
@@ -380,10 +395,7 @@ describe('useGameStore.fetchGame', () => {
     const gameQuery = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
-      in: vi.fn().mockReturnThis(),
-      order: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockReturnThis(),
-      maybeSingle: vi.fn().mockResolvedValue({ data: null, error: new Error('game error') }),
+      in: vi.fn().mockResolvedValue({ data: null, error: new Error('game error') }),
     }
     ;(supabase.from as any).mockImplementationOnce(() => gameQuery)
     await useGameStore.getState().fetchGame('room-1')
@@ -396,21 +408,25 @@ describe('useGameStore.fetchGame', () => {
     const gameQuery = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
-      in: vi.fn().mockReturnThis(),
-      order: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockReturnThis(),
-      maybeSingle: vi.fn().mockResolvedValue({
-        data: { id: 'g-1', status: 'playing', turn_no: 1, current_seat: 0, state_public: { counts: [27, 27, 27, 27], rankings: [] } },
+      in: vi.fn().mockResolvedValue({
+        data: [{ id: 'g-1', status: 'playing', turn_no: 1, current_seat: 0, state_public: { counts: [27, 27, 27, 27], rankings: [] } }],
         error: null,
       }),
     }
     const handQuery = {
       select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockResolvedValue({ data: null, error: new Error('hands error') }),
+      eq: vi.fn().mockReturnThis(),
+      maybeSingle: vi.fn().mockResolvedValue({ data: null, error: new Error('hands error') }),
+    }
+    const gameHandsQuery = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      maybeSingle: vi.fn().mockResolvedValue({ data: null, error: new Error('game_hands error') }),
     }
     ;(supabase.from as any)
       .mockImplementationOnce(() => gameQuery)
       .mockImplementationOnce(() => handQuery)
+      .mockImplementationOnce(() => gameHandsQuery)
     await useGameStore.getState().fetchGame('room-1')
     expect(useGameStore.getState().gameId).toBe('g-1')
     expect(useGameStore.getState().myHand).toEqual([])

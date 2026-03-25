@@ -5,6 +5,11 @@ import { resolve } from 'path'
 
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './src'),
+    },
+  },
   test: {
     environment: 'jsdom',
     globals: true,
@@ -21,9 +26,6 @@ export default defineConfig({
         functions: 90,
         branches: 85,
       },
-    },
-    alias: {
-      '@': resolve(__dirname, './src'),
     },
   },
 })

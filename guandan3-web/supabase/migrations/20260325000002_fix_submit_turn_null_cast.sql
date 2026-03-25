@@ -1,7 +1,9 @@
--- 20240311000007_game_finish_logic.sql
--- Handles game finishing logic, rankings, and skipping finished players.
+-- 20260325000002_fix_submit_turn_null_cast.sql
+-- 修复 submit_turn 函数中的 null 值类型转换错误
 
--- Drop existing function first because return type has changed
+-- 问题：当 v_counts 数组访问不存在的索引时返回 null，导致 ::int 转换失败
+-- 解决：使用 coalesce 处理 null 值，默认为 27（初始手牌数）
+
 drop function if exists public.submit_turn(uuid, uuid, int, jsonb);
 
 create or replace function public.submit_turn(
@@ -33,8 +35,8 @@ declare
   v_new_counts int[];
 begin
   -- 1. Lock game and get state
-  select 
-    g.room_id, g.current_seat, g.turn_no, g.status, 
+  select
+    g.room_id, g.current_seat, g.turn_no, g.status,
     coalesce(g.state_public->'rankings', '[]'::jsonb),
     coalesce(g.state_public->'counts', '[27,27,27,27]'::jsonb)
     into v_room_id, v_current_seat, v_turn_no, v_status, v_rankings, v_counts
@@ -56,11 +58,11 @@ begin
   end if;
 
   -- 3. Identify Actor
-  select 
-    member_type, 
+  select
+    member_type,
     uid,
     seat_no
-  into 
+  into
     v_member_type,
     v_member_uid,
     v_actor_seat
@@ -108,7 +110,7 @@ begin
       select jsonb_agg(h)
       from jsonb_array_elements(hand) h
       where not exists (
-        select 1 from played_cards p 
+        select 1 from played_cards p
         where (p.card->>'id')::int = (h->>'id')::int
       )
     )
@@ -124,14 +126,14 @@ begin
     end if;
   end if;
 
-  -- 7. Update Counts (for UI)
+  -- 7. Update Counts (for UI) - 修复 null 值处理
   select array_agg(cnt) into v_new_counts
   from (
-    select 
-      case 
-        when seat_no = v_current_seat then 
-           (select jsonb_array_length(hand) from public.game_hands where game_id = p_game_id and seat_no = v_current_seat)
-        else (v_counts->seat_no)::int
+    select
+      case
+        when seat_no = v_current_seat then
+           coalesce((select jsonb_array_length(hand) from public.game_hands where game_id = p_game_id and seat_no = v_current_seat), 27)
+        else coalesce((v_counts->seat_no)::int, 27)
       end as cnt
     from generate_series(0, 3) as seat_no
   ) t;
@@ -139,7 +141,7 @@ begin
   -- 8. Calculate Next Seat (Skip finished players)
   v_next_seat := v_current_seat;
   v_loop_count := 0;
-  
+
   loop
     -- Move to next physical seat (CCW: 0->1->2->3)
     v_next_seat := (v_next_seat + 1) % 4;
@@ -147,7 +149,7 @@ begin
 
     -- Safety break
     if v_loop_count > 4 then
-      exit; 
+      exit;
     end if;
 
     -- Check if v_next_seat is in rankings (finished)

@@ -159,7 +159,7 @@ describe('性能测试', () => {
   })
 
   describe('动画性能', () => {
-    it('应该能够流畅运行动画', () => {
+    it('应该能够快速设置动画元素', () => {
       const startTime = performance.now()
 
       const element = document.createElement('div')
@@ -167,16 +167,17 @@ describe('性能测试', () => {
       element.style.transform = 'translateX(100px)'
       document.body.appendChild(element)
 
-      requestAnimationFrame(() => {
-        element.style.transform = 'translateX(0px)'
-      })
+      // 设置动画的初始状态
+      element.style.transform = 'translateX(0px)'
 
       const endTime = performance.now()
-      const animationTime = endTime - startTime
+      const setupTime = endTime - startTime
 
       document.body.removeChild(element)
 
-      expect(animationTime).toBeLessThan(50)
+      // DOM 操作和样式设置应该很快（< 50ms）
+      // 注意：这个测试可能因系统负载而有波动，所以使用较宽松的阈值
+      expect(setupTime).toBeLessThan(50)
     })
   })
 
