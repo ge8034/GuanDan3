@@ -275,11 +275,14 @@ export async function setupGameMocks(page: Page, userId: string = 'mock-user-id'
     console.log('Mocking Start Game');
     const mockGameId = 'mock-game-id-' + Date.now();
     const roomId = route.request().postDataJSON()?.p_room_id;
-    
+
     // Store game info for later use
     (global as any).mockGameId = mockGameId;
     (global as any).mockRoomId = roomId;
-    
+
+    // Get current hand cards
+    const currentHandCards = (global as any).mockHandCards || handCards;
+
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -294,6 +297,11 @@ export async function setupGameMocks(page: Page, userId: string = 'mock-user-id'
           counts: [27, 27, 27, 27],
           rankings: [],
           levelRank: 2
+        },
+        state_private: {
+          hands: {
+            '0': currentHandCards  // 座位0的手牌
+          }
         },
         created_at: new Date().toISOString()
       }])
@@ -380,11 +388,13 @@ export async function setupGameMocks(page: Page, userId: string = 'mock-user-id'
       console.log('Mocking Get Games', url);
       if (url.includes('room_id=eq.')) {
         const roomId = url.split('room_id=eq.')[1]?.split('&')[0];
+        // Get current hand cards from global state
+        const currentHandCards = (global as any).mockHandCards || handCards;
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
           body: JSON.stringify([{
-            id: 'mock-game-id-' + Date.now(),
+            id: (global as any).mockGameId || 'mock-game-id-' + Date.now(),
             room_id: roomId,
             status: 'playing',
             turn_no: turnNo,
@@ -394,6 +404,11 @@ export async function setupGameMocks(page: Page, userId: string = 'mock-user-id'
               counts: [27, 27, 27, 27],
               rankings: [],
               levelRank: 2
+            },
+            state_private: {
+              hands: {
+                '0': currentHandCards  // 座位0的手牌
+              }
             },
             created_at: new Date().toISOString()
           }])
@@ -463,7 +478,9 @@ export async function setupGameMocks(page: Page, userId: string = 'mock-user-id'
           body: JSON.stringify([{
             id: 'hand-1',
             game_id: actualGameId,
-            hand: currentHandCards
+            uid: userId,  // 添加 uid 字段
+            hand: currentHandCards,
+            updated_at: new Date().toISOString()
           }])
         });
       } else {

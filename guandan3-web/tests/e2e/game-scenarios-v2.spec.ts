@@ -15,6 +15,37 @@ async function setupMocks(page: Page) {
   let mockTurnNo = 0;
   let mockCurrentSeat = 0;
 
+  // 定义手牌数据
+  const mockHandCards = [
+    { id: 1, suit: 'S', rank: 'A', val: 14 },
+    { id: 2, suit: 'S', rank: 'K', val: 13 },
+    { id: 3, suit: 'S', rank: 'Q', val: 12 },
+    { id: 4, suit: 'S', rank: 'J', val: 11 },
+    { id: 5, suit: 'S', rank: '10', val: 10 },
+    { id: 6, suit: 'S', rank: '9', val: 9 },
+    { id: 7, suit: 'S', rank: '8', val: 8 },
+    { id: 8, suit: 'S', rank: '7', val: 7 },
+    { id: 9, suit: 'S', rank: '6', val: 6 },
+    { id: 10, suit: 'S', rank: '5', val: 5 },
+    { id: 11, suit: 'S', rank: '4', val: 4 },
+    { id: 12, suit: 'S', rank: '3', val: 3 },
+    { id: 13, suit: 'S', rank: '2', val: 2 },
+    { id: 14, suit: 'H', rank: 'A', val: 14 },
+    { id: 15, suit: 'H', rank: 'K', val: 13 },
+    { id: 16, suit: 'H', rank: 'Q', val: 12 },
+    { id: 17, suit: 'H', rank: 'J', val: 11 },
+    { id: 18, suit: 'H', rank: '10', val: 10 },
+    { id: 19, suit: 'H', rank: '9', val: 9 },
+    { id: 20, suit: 'H', rank: '8', val: 8 },
+    { id: 21, suit: 'H', rank: '7', val: 7 },
+    { id: 22, suit: 'H', rank: '6', val: 6 },
+    { id: 23, suit: 'H', rank: '5', val: 5 },
+    { id: 24, suit: 'H', rank: '4', val: 4 },
+    { id: 25, suit: 'H', rank: '3', val: 3 },
+    { id: 26, suit: 'H', rank: '2', val: 2 },
+    { id: 27, suit: 'D', rank: 'A', val: 14 }
+  ];
+
   await page.route('**/auth/v1/signup', async route => {
     console.log('Mocking Auth Signup');
     await route.fulfill({
@@ -211,6 +242,11 @@ async function setupMocks(page: Page) {
               rankings: [],
               levelRank: 2
             },
+            state_private: {
+              hands: {
+                '0': mockHandCards  // 座位0的手牌
+              }
+            },
             created_at: new Date().toISOString()
           }])
         });
@@ -247,35 +283,9 @@ async function setupMocks(page: Page) {
           body: JSON.stringify([{
             id: 'hand-1',
             game_id: gameId,
-            hand: [
-              { id: 1, suit: 'S', rank: 'A', val: 14 },
-              { id: 2, suit: 'S', rank: 'K', val: 13 },
-              { id: 3, suit: 'S', rank: 'Q', val: 12 },
-              { id: 4, suit: 'S', rank: 'J', val: 11 },
-              { id: 5, suit: 'S', rank: '10', val: 10 },
-              { id: 6, suit: 'S', rank: '9', val: 9 },
-              { id: 7, suit: 'S', rank: '8', val: 8 },
-              { id: 8, suit: 'S', rank: '7', val: 7 },
-              { id: 9, suit: 'S', rank: '6', val: 6 },
-              { id: 10, suit: 'S', rank: '5', val: 5 },
-              { id: 11, suit: 'S', rank: '4', val: 4 },
-              { id: 12, suit: 'S', rank: '3', val: 3 },
-              { id: 13, suit: 'S', rank: '2', val: 2 },
-              { id: 14, suit: 'H', rank: 'A', val: 14 },
-              { id: 15, suit: 'H', rank: 'K', val: 13 },
-              { id: 16, suit: 'H', rank: 'Q', val: 12 },
-              { id: 17, suit: 'H', rank: 'J', val: 11 },
-              { id: 18, suit: 'H', rank: '10', val: 10 },
-              { id: 19, suit: 'H', rank: '9', val: 9 },
-              { id: 20, suit: 'H', rank: '8', val: 8 },
-              { id: 21, suit: 'H', rank: '7', val: 7 },
-              { id: 22, suit: 'H', rank: '6', val: 6 },
-              { id: 23, suit: 'H', rank: '5', val: 5 },
-              { id: 24, suit: 'H', rank: '4', val: 4 },
-              { id: 25, suit: 'H', rank: '3', val: 3 },
-              { id: 26, suit: 'H', rank: '2', val: 2 },
-              { id: 27, suit: 'D', rank: 'A', val: 14 }
-            ]
+            uid: 'mock-user-id',  // 添加 uid 字段
+            hand: mockHandCards,
+            updated_at: new Date().toISOString()
           }])
         });
       } else {
