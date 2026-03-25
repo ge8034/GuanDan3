@@ -61,6 +61,7 @@ export type ComponentTestResult = {
   name: string
   passed: boolean
   error?: string
+  errorType?: string
   category: string
 }
 

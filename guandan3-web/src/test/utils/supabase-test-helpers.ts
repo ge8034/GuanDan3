@@ -33,8 +33,8 @@ const PROXY_SAFE_PROPERTIES = new Set([
  * @param returnValue - single/maybeSingle 返回的值
  * @returns 链式调用 mock 对象
  */
-export function createQueryMock<T = { data: unknown; error: unknown }>(returnValue: T) {
-  const chain: Record<string, unknown> = {
+export function createQueryMock<T = { data: unknown; error: unknown }>(returnValue: T): any {
+  const chain: any = {
     single: vi.fn(() => Promise.resolve(returnValue)),
     maybeSingle: vi.fn(() => Promise.resolve(returnValue)),
   }
@@ -64,7 +64,7 @@ export function createQueryMock<T = { data: unknown; error: unknown }>(returnVal
 export function createArrayQueryMock<T = any[]>(
   returnValue: { data: T; error: any },
   terminalMethods: string[] = []
-) {
+): any {
   const chain: any = {}
 
   const methods = [
@@ -116,7 +116,7 @@ export function resetSupabaseFromMock() {
 export function createNestedQueryMock<T = { data: unknown; error: unknown }>(
   finalValue: T,
   defaultValue?: T
-) {
+): any {
   const value = defaultValue ?? finalValue
 
   // 创建基础对象（将被代理）
