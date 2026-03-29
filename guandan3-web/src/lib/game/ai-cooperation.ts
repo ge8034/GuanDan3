@@ -183,24 +183,8 @@ export function findCooperativeMove(
         validMoves.push({ type: 'play', cards: bomb })
       }
     })
-    
-    myAnalysis.sequenceTriplesWithWings.forEach(move => {
-      const m = analyzeMove(move, context.levelRank)
-      if (m && canBeat(m, lastMove)) {
-        validMoves.push({ type: 'play', cards: move })
-      }
-    })
   }
-  
-  if (validMoves.length === 0) {
-    myAnalysis.fullHouses.forEach(move => {
-      const m = analyzeMove(move, context.levelRank)
-      if (m && canBeat(m, lastMove)) {
-        validMoves.push({ type: 'play', cards: move })
-      }
-    })
-  }
-  
+
   if (validMoves.length === 0) {
     myAnalysis.sequenceTriples.forEach(move => {
       const m = analyzeMove(move, context.levelRank)
@@ -259,11 +243,7 @@ export function findCooperativeMove(
     if (moveAnalysis?.type === 'bomb') {
       score += 30
     }
-    
-    if (moveAnalysis?.type === 'sequenceTriplesWithWings') {
-      score += 25
-    }
-    
+
     const cardsPlayed = moveCards.length
     score += cardsPlayed * 5
     

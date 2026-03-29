@@ -3,10 +3,11 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useRoomStore } from '@/lib/store/room'
-import { useGameStore } from '@/lib/store/game'
+import { useGameStore, type Card } from '@/lib/store/game'
 import { useSound } from '@/lib/hooks/useSound'
 import { useToast } from '@/lib/hooks/useToast'
 import { mapSupabaseErrorToMessage } from '@/lib/utils/supabaseErrors'
+import { devError, devLog } from '@/lib/utils/devLog'
 import { analyzeMove, canBeat } from '@/lib/game/rules'
 
 import { useRoomGameDerived } from '@/lib/hooks/useRoomGameDerived'
@@ -47,26 +48,38 @@ export default function RoomPage() {
   
   // Stores (Actions & State)
   const { currentRoom, members, joinRoom, addAI, toggleReady, leaveRoom, heartbeatRoomMember } = useRoomStore()
-  const { 
+  const {
     gameId, status: gameStatus, turnNo, currentSeat, levelRank, myHand, lastAction,
-    startGame, submitTurn, counts, rankings, fetchLastTrickPlay, fetchGame,
+    submitTurn, counts, rankings, fetchLastTrickPlay, fetchGame,
     pauseGame, resumeGame, pausedBy, pausedAt, pauseReason
   } = useGameStore()
 
+  // 使用 ref 存储 startGame 以避免依赖循环
+  const startGameRef = useRef(useGameStore.getState().startGame)
+  startGameRef.current = useGameStore.getState().startGame
+
   // Derived State
   const {
+    userId: derivedUserId,
     myMember,
     mySeat,
     seatText,
     isOwner,
+    isMember,
     isMyTurn,
     getRankTitle,
     getMemberBySeat,
     currentPlayerType,
     isOnline,
   } = useRoomGameDerived()
-  
-  const isMember = !!myMember
+
+  // 调试：监控 currentRoom 变化
+  useEffect(() => {
+    console.log('[RoomPage] currentRoom changed:', currentRoom)
+    console.log('[RoomPage] derivedUserId:', derivedUserId)
+    console.log('[RoomPage] isOwner:', isOwner)
+  }, [currentRoom, derivedUserId, isOwner])
+
 
   // Hooks (Controller Logic)
   const { authReady } = useRoomAuth()
@@ -97,7 +110,6 @@ export default function RoomPage() {
   )
 
   // Performance Monitoring
-  usePerformanceMonitor('RoomPage')
   const fps = useFPSMonitor()
   const { isOnline: networkOnline, effectiveType } = useNetworkStatus()
   const { playSound } = useSound()
@@ -118,42 +130,58 @@ export default function RoomPage() {
       !autoStartStartedRef.current && // 未尝试过自动开始
       !gameId // 没有游戏ID
 
-    // DEBUG: 打印自动开始条件
-    console.log('[AutoStart] 检查自动开始条件:', {
-      currentRoomExists: !!currentRoom,
-      mode: currentRoom?.mode,
-      expectedMode: 'pve1v3',
+    // 调试日志 - 同时使用 console.log 和 devLog 确保输出
+    const debugInfo = {
+      currentRoom: currentRoom,
+      derivedUserId,
       gameStatus,
-      expectedStatus: 'deal',
       roomLoaded,
       isOwner,
       autoStartStarted: autoStartStartedRef.current,
       gameId,
-      shouldStart: shouldAutoStart,
-      roomId
-    })
+      shouldAutoStart,
+      'currentRoom?.mode': currentRoom?.mode,
+      'currentRoom?.owner_uid': currentRoom?.owner_uid,
+      'owner_uid === derivedUserId': currentRoom?.owner_uid === derivedUserId
+    }
+    console.log('[AutoStart] 检查条件:', debugInfo)
+    devLog('[AutoStart] 检查条件:', JSON.stringify(debugInfo, null, 2))
 
     if (shouldAutoStart) {
-      console.log('[AutoStart] 满足所有条件，准备自动开始游戏')
+      console.log('[AutoStart] 触发自动开始')
+      devLog('[AutoStart] 触发自动开始')
       autoStartStartedRef.current = true
       const timer = setTimeout(async () => {
         try {
-          console.log('[AutoStart] 调用 startGame')
-          await startGame(roomId)
-          console.log('[AutoStart] startGame 完成')
+          console.log('[AutoStart] 调用startGame')
+          devLog('[AutoStart] 调用startGame')
+          await startGameRef.current(roomId)
+          console.log('[AutoStart] startGame完成')
+          devLog('[AutoStart] startGame完成')
         } catch (e) {
           console.error('[AutoStart] Failed to start practice game:', e)
+          devError('[AutoStart] Failed to start practice game:', e)
         }
       }, 1000) // 延迟1秒确保房间状态已同步
       return () => clearTimeout(timer)
+    } else {
+      console.log('[AutoStart] 跳过自动开始，条件不满足:', debugInfo)
+      devLog('[AutoStart] 跳过自动开始，条件不满足:', JSON.stringify({
+        mode: currentRoom?.mode,
+        gameStatus,
+        roomLoaded,
+        isOwner,
+        autoStartStarted: autoStartStartedRef.current,
+        gameId
+      }, null, 2))
     }
-  }, [currentRoom?.mode, gameStatus, roomLoaded, isOwner, gameId, roomId, startGame])
+  }, [currentRoom?.id, currentRoom?.mode, gameStatus, roomLoaded, isOwner, gameId, roomId]) // 监听 currentRoom.id 和 currentRoom.mode
 
   const [isDebugVisible, setIsDebugVisible] = useState(false)
   const [showDealAnimation, setShowDealAnimation] = useState(false)
   const [showPlayAnimation, setShowPlayAnimation] = useState(false)
   const previousStatusRef = useRef<string | null>(null)
-  const [playAnimationCards, setPlayAnimationCards] = useState<any[]>([])
+  const [playAnimationCards, setPlayAnimationCards] = useState<Card[]>([])
   const [playAnimationFromSeat, setPlayAnimationFromSeat] = useState(0)
   const [playAnimationToSeat, setPlayAnimationToSeat] = useState(0)
   const [showVictoryEffect, setShowVictoryEffect] = useState(false)
@@ -169,18 +197,21 @@ export default function RoomPage() {
     }
   }, [difficulty])
 
-  // Sound Effects Logic
+  // Sound Effects Logic - 使用 ref 避免 playSound 依赖变化
+  const playSoundRef = useRef(playSound)
+  playSoundRef.current = playSound
+
   useEffect(() => {
     if (isMyTurn) {
-      playSound('turn')
+      playSoundRef.current('turn')
     }
-  }, [isMyTurn, playSound])
+  }, [isMyTurn]) // 移除 playSound 依赖
 
   useEffect(() => {
     if (gameStatus === 'finished') {
-      playSound('win')
+      playSoundRef.current('win')
     }
-  }, [gameStatus, playSound])
+  }, [gameStatus]) // 移除 playSound 依赖
 
   useEffect(() => {
     if (previousStatusRef.current === 'deal' && gameStatus === 'playing') {
@@ -266,7 +297,7 @@ export default function RoomPage() {
   
   const handleStart = useCallback(async () => {
     try {
-      await startGame(roomId)
+      await startGameRef.current(roomId)
     } catch (e) {
       showToast({
         message: '开始失败（请查看控制台）',
@@ -274,12 +305,12 @@ export default function RoomPage() {
         action: {
           label: '重试',
           onClick: () => {
-            startGame(roomId).catch(() => {})
+            startGameRef.current(roomId).catch(() => {})
           }
         }
       })
     }
-  }, [roomId, showToast, startGame])
+  }, [roomId, showToast]) // 移除 startGame 依赖
 
   const copyRoomLink = useCallback(async () => {
     const url = `${window.location.origin}/room/${roomId}`
@@ -294,7 +325,7 @@ export default function RoomPage() {
   const handleOverlayJoin = () => {
     joinRoom(roomId)
       .then(() => heartbeatRoomMember(roomId).catch(() => {}))
-      .catch((e: any) => {
+      .catch((e: unknown) => {
         showToast({
           message: mapSupabaseErrorToMessage(e, '加入失败'),
           kind: 'error',
@@ -336,8 +367,9 @@ export default function RoomPage() {
       }
     }
     const result = await submitTurn('play', selectedCards)
-    if (result?.error) {
-      showToast({ message: `出牌失败: ${result.error.message}`, kind: 'error' })
+    if (result && typeof result === 'object' && 'error' in result && result.error) {
+      const errorMessage = result.error instanceof Error ? result.error.message : String(result.error)
+      showToast({ message: `出牌失败: ${errorMessage}`, kind: 'error' })
     } else {
       playSound('play')
       setSelectedCardIds([])
@@ -346,8 +378,9 @@ export default function RoomPage() {
 
   const handlePass = async () => {
     const result = await submitTurn('pass')
-    if (result?.error) {
-      showToast({ message: `过牌失败: ${result.error.message}`, kind: 'error' })
+    if (result && typeof result === 'object' && 'error' in result && result.error) {
+      const errorMessage = result.error instanceof Error ? result.error.message : String(result.error)
+      showToast({ message: `过牌失败: ${errorMessage}`, kind: 'error' })
     } else {
       setSelectedCardIds([])
     }
@@ -357,8 +390,9 @@ export default function RoomPage() {
     try {
       await pauseGame('玩家主动暂停')
       showToast({ message: '游戏已暂停', kind: 'success' })
-    } catch (e: any) {
-      showToast({ message: `暂停失败: ${e.message}`, kind: 'error' })
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : '未知错误'
+      showToast({ message: `暂停失败: ${message}`, kind: 'error' })
     }
   }
 
@@ -366,8 +400,9 @@ export default function RoomPage() {
     try {
       await resumeGame()
       showToast({ message: '游戏已恢复', kind: 'success' })
-    } catch (e: any) {
-      showToast({ message: `恢复失败: ${e.message}`, kind: 'error' })
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : '未知错误'
+      showToast({ message: `恢复失败: ${message}`, kind: 'error' })
     }
   }
 
@@ -398,7 +433,7 @@ export default function RoomPage() {
         onCancelBack={() => window.history.back()}
       />
 
-      <SpecialEffects lastAction={lastAction as any} />
+      <SpecialEffects lastAction={lastAction} />
 
       {/* DEBUG INFO TOGGLE */}
       <RippleEffect className="relative inline-block">
@@ -505,7 +540,7 @@ export default function RoomPage() {
             try {
               await leaveRoom(roomId)
               router.push('/lobby')
-            } catch (e: any) {
+            } catch (e: unknown) {
               showToast({ message: mapSupabaseErrorToMessage(e, '离开房间失败'), kind: 'error' })
             }
           }
@@ -573,7 +608,7 @@ export default function RoomPage() {
             membersCount={members.length}
             myMemberReady={myMember ? myMember.ready : null}
             onToggleReady={(nextReady) => toggleReady(roomId, nextReady)}
-            lastAction={lastAction as any}
+            lastAction={lastAction}
             mySeat={mySeat}
           />
         </div>

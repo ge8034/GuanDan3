@@ -38,6 +38,8 @@ export const useRoomGameDerived = () => {
     [members, currentSeat]
   )
 
+  const isMember = !!myMember
+
   return {
     userId,
     currentRoom,
@@ -49,6 +51,7 @@ export const useRoomGameDerived = () => {
     mySeat,
     seatText,
     isOwner,
+    isMember,
     isMyTurn,
     currentPlayerType,
     getRankTitle: getRankTitleForSeat,

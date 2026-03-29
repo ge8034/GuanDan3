@@ -29,9 +29,23 @@ export const ensureAuthed = async (options: EnsureAuthedOptions = {}): Promise<{
       try {
         const { data, error } = await supabase.auth.signInAnonymously()
         if (error) throw error
-        if (data.user) {
+
+        // 确保user和session都存在
+        if (data.user && data.session) {
           useAuthStore.getState().setUser(data.user)
+          // 等待一小段时间确保session被保存到localStorage并准备好用于后续请求
+          // 这对于RPC调用需要auth.uid()正常工作很重要
+          await sleep(100)
           return { ok: true, user: data.user }
+        }
+
+        // 如果user存在但session不存在，尝试获取session
+        if (data.user && !data.session) {
+          const { data: sessionData } = await supabase.auth.getSession()
+          if (sessionData.session) {
+            useAuthStore.getState().setUser(data.user)
+            return { ok: true, user: data.user }
+          }
         }
       } catch (e) {
         if (attempt >= retries - 1) throw e

@@ -106,29 +106,11 @@ export function findBestSupportMove(
       }
     })
   }
-  
-  if (validMoves.length === 0) {
-    analysis.sequenceTriplesWithWings.forEach(move => {
-      const m = analyzeMove(move, levelRank)
-      if (m && canBeat(m, lastMove)) {
-        validMoves.push({ type: 'play', cards: move })
-      }
-    })
-  }
-  
-  if (validMoves.length === 0) {
-    analysis.fullHouses.forEach(move => {
-      const m = analyzeMove(move, levelRank)
-      if (m && canBeat(m, lastMove)) {
-        validMoves.push({ type: 'play', cards: move })
-      }
-    })
-  }
-  
+
   if (validMoves.length === 0) {
     return { type: 'pass' }
   }
-  
+
   return validMoves[Math.floor(Math.random() * validMoves.length)]
 }
 
@@ -149,7 +131,7 @@ export function evaluateMove(
       reasoning: 'No valid moves available'
     }
   }
-  
+
   const moveCards = move.cards!
   const analysis = analyzeMove(moveCards, levelRank)
   const distribution = analyzeCardDistribution(hand, levelRank)
@@ -159,67 +141,78 @@ export function evaluateMove(
     distribution.hasJokers,
     levelRank
   )
-  
+
   let score = 0
   let risk = 0
   let benefit = 0
   const reasoning: string[] = []
-  
+
   const handStrength = calculateHandStrength(
     hand.length,
     moveCards.reduce((sum, card) => sum + getCardValue(card, levelRank), 0),
     analysis?.type || 'unknown'
   )
-  
+
+  // 领出 vs 跟牌的不同评分策略
   if (isLeading) {
     score += 20
     reasoning.push('Leading play')
+
+    // 领出时：鼓励出小牌、多张牌（保留大牌和炸弹）
+    if (analysis && analysis.primaryValue) {
+      score += 500 - analysis.primaryValue * 5  // 主值越小分数越高
+      reasoning.push(`Primary value bonus: ${500 - analysis.primaryValue * 5}`)
+    }
+
+    // 非炸弹多张牌加分
+    if (analysis?.type !== 'bomb') {
+      score += moveCards.length * 10  // 鼓励出多张牌
+      reasoning.push(`Cards played bonus: ${moveCards.length * 10}`)
+    }
+  } else {
+    // 跟牌时：鼓励用最小的能压过的牌（掼蛋策略）
+    // 使用主值的负数作为基础分，主值越小分数越高
+    if (analysis && analysis.primaryValue) {
+      score += 1000 - analysis.primaryValue * 10  // 主值越小分数越高
+      reasoning.push(`Primary value penalty: -${analysis.primaryValue * 10}`)
+    }
+
+    // 跟牌时：多张牌稍微加分，但炸弹要扣分
+    const cardsPlayed = moveCards.length
+    if (analysis?.type !== 'bomb') {
+      score += cardsPlayed * 2  // 非炸弹才加分
+    }
+    reasoning.push(`Cards played: ${cardsPlayed}`)
   }
-  
-  const moveValue = moveCards.reduce((sum, card) => sum + getCardValue(card, levelRank), 0)
-  score += moveValue * 2
-  reasoning.push(`Move value: ${moveValue}`)
-  
-  const cardsPlayed = moveCards.length
-  score += cardsPlayed * 5
-  reasoning.push(`Cards played: ${cardsPlayed}`)
-  
+
   const riskAssessment = assessRisk(moveCards, hand, levelRank, isLeading)
   risk = riskAssessment
   score -= risk * 0.5
   reasoning.push(`Risk: ${riskAssessment}`)
-  
+
   const estimatedMoves = estimateMovesToClear(hand, levelRank)
   benefit = estimatedMoves * 3
   reasoning.push(`Estimated moves to clear: ${estimatedMoves}`)
-  
+
+  // 领出时炸弹要大幅扣分（保留炸弹到最后），跟牌时炸弹也要扣分
   if (analysis?.type === 'bomb') {
-    score += 30
-    reasoning.push('Bomb play')
+    score -= 800  // 炸弹大幅扣分，除非迫不得已不要用
+    reasoning.push('Bomb penalty - save for later')
   }
-  
-  if (analysis?.type === 'sequenceTriplesWithWings') {
-    score += 25
-    reasoning.push('Sequence triple with wing')
-  }
-  
-  if (analysis?.type === 'bomb' && moveCards.length === 6) {
-    score += 20
-    reasoning.push('Quad with two')
-  }
-  
-  const remainingCards = hand.length - cardsPlayed
+
+  // 接近结束时加分
+  const remainingCards = hand.length - moveCards.length
   if (remainingCards <= 5) {
     score += 15
     reasoning.push('Near end of hand')
   }
-  
+
   if (difficulty === 'easy') {
     score *= 0.7
   } else if (difficulty === 'medium') {
     score *= 0.85
   }
-  
+
   return {
     move,
     score: Math.max(0, score),
@@ -247,11 +240,8 @@ export function findOptimalMove(
     ...analysis.triples,
     ...analysis.bombs,
     ...analysis.straights,
-    ...analysis.fullHouses,
     ...analysis.sequencePairs,
     ...analysis.sequenceTriples,
-    ...analysis.sequenceTriplesWithWings,
-    ...analysis.quadsWithTwo
   ]
   
   allPossibleMoves.forEach(move => {
@@ -261,7 +251,12 @@ export function findOptimalMove(
       validMoves.push({ type: 'play', cards: move })
       return
     }
-    if (canBeat(m, lastMove)) validMoves.push({ type: 'play', cards: move })
+    const canBeatResult = canBeat(m, lastMove)
+    // 调试日志
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[AI] 检查出牌: my=${m.type}(${move.length}张) vs last=${lastMove.type}(${lastMove.cards.length}张), canBeat=${canBeatResult}`)
+    }
+    if (canBeatResult) validMoves.push({ type: 'play', cards: move })
   })
   
   if (validMoves.length === 0) {

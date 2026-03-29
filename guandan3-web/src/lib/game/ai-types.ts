@@ -23,11 +23,8 @@ export interface HandAnalysis {
   triples: Card[][]
   bombs: Card[][]
   straights: Card[][]
-  fullHouses: Card[][]
   sequencePairs: Card[][]
   sequenceTriples: Card[][]
-  sequenceTriplesWithWings: Card[][]
-  quadsWithTwo: Card[][]
 }
 
 export interface CardDistribution {

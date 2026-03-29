@@ -33,7 +33,7 @@ test.describe('Complete Game Flow (Fixed)', () => {
 
     // 1. 访问首页
     console.log('=== 步骤1: 访问首页 ===');
-    await page.goto('/');
+    await page.goto('http://localhost:3000');
     await expect(page).toHaveTitle(/掼蛋 3/i);
 
     // 2. 点击练习房按钮
@@ -185,7 +185,7 @@ test.describe('Complete Game Flow (Fixed)', () => {
     });
 
     // 1. 创建练习房
-    await page.goto('/');
+    await page.goto('http://localhost:3000');
     const practiceBtn = page.getByRole('button', { name: /练习/i });
     await practiceBtn.click();
 

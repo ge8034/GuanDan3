@@ -245,7 +245,7 @@ test.describe('Lifecycle & Performance Test', () => {
     page.on('requestfailed', req => console.log(`[Request Failed] ${req.url()} - ${req.failure()?.errorText}`));
 
     const startTime = Date.now();
-    await page.goto('/');
+    await page.goto('http://localhost:3000');
     const loadTime = Date.now() - startTime;
     console.log(`Page Load Time: ${loadTime}ms`);
     

@@ -25,6 +25,14 @@ export default function Home() {
 
   useEffect(() => {
     setIsClient(true)
+    // 设置全局调试变量
+    ;(window as any).DEBUG = {
+      supabase,
+      useAuthStore,
+      getSession: () => supabase.auth.getSession(),
+      getUser: () => useAuthStore.getState().user
+    }
+    console.log('[DEBUG] 全局变量已设置，使用 window.DEBUG 访问')
   }, [])
 
   const handleLobbyEnter = async () => {
@@ -44,14 +52,34 @@ export default function Home() {
   const createPracticeRoom = async () => {
     setIsLoading(true)
     try {
-      const storeUser = useAuthStore.getState().user
+      console.log('[DEBUG] 开始创建练习房间')
+
+      // 确保认证
+      let storeUser = useAuthStore.getState().user
+      console.log('[DEBUG] storeUser:', storeUser)
+
       if (!storeUser) {
-        const { ok } = await ensureAuthed({ onError: msg => showToast({ message: msg, kind: 'error' }) })
-        if (!ok) return
+        console.log('[DEBUG] 用户未认证，调用ensureAuthed')
+        const { ok, user } = await ensureAuthed({ onError: msg => showToast({ message: msg, kind: 'error' }) })
+        console.log('[DEBUG] ensureAuthed结果:', { ok, user })
+        if (!ok || !user) return
+        storeUser = user
       }
 
+      // 确保用户ID存在
+      const userId = storeUser.id
+      if (!userId) {
+        console.error('[DEBUG] 用户ID不存在:', storeUser)
+        showToast({ message: '用户认证信息异常，请重试', kind: 'error' })
+        return
+      }
+
+      console.log('[DEBUG] 用户ID:', userId)
+
+      // 明确传递用户ID作为参数
       const { data, error } = await supabase.rpc('create_practice_room', {
-        p_visibility: 'private'
+        p_visibility: 'private',
+        p_user_id: userId
       })
 
       if (error) {

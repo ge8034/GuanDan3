@@ -22,7 +22,7 @@ import {
   calculateControlScore,
   assessRisk
 } from './ai-utils'
-import { 
+import {
   analyzeHand,
   findSingles,
   findPairs,
@@ -32,7 +32,6 @@ import {
   findFullHouses,
   findSequencePairs,
   findSequenceTriples,
-  findSequenceTriplesWithWings,
   findQuadWithTwo
 } from './ai-pattern-recognition'
 import { 
@@ -73,7 +72,6 @@ export {
   findFullHouses,
   findSequencePairs,
   findSequenceTriples,
-  findSequenceTriplesWithWings,
   findQuadWithTwo,
   recordDecisionMetrics,
   getPerformanceStats,

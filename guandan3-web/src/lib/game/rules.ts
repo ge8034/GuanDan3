@@ -1,7 +1,7 @@
 
 import { Card } from '@/lib/store/game'
 
-export type HandType = 'single' | 'pair' | 'triple' | 'straight' | 'sequencePairs' | 'sequenceTriples' | 'sequenceTriplesWithWings' | 'fullhouse' | 'bomb' | 'pass'
+export type HandType = 'single' | 'pair' | 'triple' | 'straight' | 'sequencePairs' | 'sequenceTriples' | 'bomb' | 'pass'
 
 export interface Move {
   type: HandType
@@ -77,37 +77,8 @@ export function analyzeMove(cards: Card[], levelRank: number): Move | null {
     return { type: 'bomb', cards, primaryValue: 10000 }
   }
 
-  // 四带二 - 四张相同牌带两张单牌或一对
-  if (cards.length === 6 && !hasJoker && !hasLevel) {
-    const counts: Record<number, number> = {}
-    for (const v of rawVals) counts[v] = (counts[v] || 0) + 1
-    
-    // 找到四张的牌
-    const quadVals = Object.keys(counts)
-      .map(v => Number(v))
-      .filter(v => counts[v] === 4)
-    
-    if (quadVals.length === 1) {
-      // 剩余两张可以是单牌或一对
-      const remainingVals = Object.keys(counts)
-        .map(v => Number(v))
-        .filter(v => counts[v] !== 4)
-      
-      if (remainingVals.length === 2 || (remainingVals.length === 1 && counts[remainingVals[0]] === 2)) {
-        return { type: 'bomb', cards, primaryValue: 1000 * 4 + quadVals[0] }
-      }
-    }
-  }
 
   if (!hasJoker && !hasLevel) {
-    if (cards.length === 5 && uniqueRawVals.length === 2) {
-      const countsByVal = uniqueRawVals
-        .map(v => ({ v, c: rawVals.filter(x => x === v).length }))
-        .sort((a, b) => b.c - a.c)
-      if (countsByVal[0].c === 3 && countsByVal[1].c === 2) {
-        return { type: 'fullhouse', cards, primaryValue: countsByVal[0].v }
-      }
-    }
 
     if (cards.length >= 5 && uniqueRawVals.length === cards.length) {
       let isStraight = true
@@ -142,7 +113,7 @@ export function analyzeMove(cards: Card[], levelRank: number): Move | null {
       }
     }
 
-    // Sequence Triples (飞机) - 2+ consecutive triples
+    // Sequence Triples (飞机) - 2+ consecutive triples (最多6张)
     if (cards.length >= 6 && cards.length % 3 === 0) {
       const counts: Record<number, number> = {}
       for (const v of rawVals) counts[v] = (counts[v] || 0) + 1
@@ -150,7 +121,7 @@ export function analyzeMove(cards: Card[], levelRank: number): Move | null {
         .map(v => Number(v))
         .filter(v => counts[v] === 3)
         .sort((a, b) => a - b)
-      
+
       if (tripleVals.length >= 2 && tripleVals.length * 3 === cards.length) {
         let isSeq = true
         for (let i = 1; i < tripleVals.length; i++) {
@@ -164,80 +135,32 @@ export function analyzeMove(cards: Card[], levelRank: number): Move | null {
         }
       }
     }
-
-    // Sequence Triples with Wings (飞机带翅膀)
-    // Format: 2+ consecutive triples + same number of wings (singles or pairs)
-    if (cards.length >= 8) {
-      const counts: Record<number, number> = {}
-      for (const v of rawVals) counts[v] = (counts[v] || 0) + 1
-      const tripleVals = Object.keys(counts)
-        .map(v => Number(v))
-        .filter(v => counts[v] === 3)
-        .sort((a, b) => a - b)
-      
-      if (tripleVals.length >= 2) {
-        let isSeq = true
-        for (let i = 1; i < tripleVals.length; i++) {
-          if (tripleVals[i] !== tripleVals[i - 1] + 1) {
-            isSeq = false
-            break
-          }
-        }
-        
-        if (isSeq) {
-          const tripleCount = tripleVals.length
-          const expectedWings = tripleCount
-          const actualWings = cards.length - tripleCount * 3
-          
-          // Wings can be singles or pairs
-          if (actualWings === expectedWings || actualWings === expectedWings * 2) {
-            // Check if wings are valid (not part of triples)
-            const wingVals = Object.keys(counts)
-              .map(v => Number(v))
-              .filter(v => counts[v] !== 3)
-            
-            // For singles: each wing should be a single card
-            // For pairs: each wing should be a pair
-            if (actualWings === expectedWings) {
-              // Singles wings
-              if (wingVals.length === expectedWings) {
-                return { type: 'sequenceTriplesWithWings', cards, primaryValue: tripleVals[tripleVals.length - 1] }
-              }
-            } else if (actualWings === expectedWings * 2) {
-              // Pairs wings
-              const pairWings = wingVals.filter(v => counts[v] === 2)
-              if (pairWings.length === expectedWings) {
-                return { type: 'sequenceTriplesWithWings', cards, primaryValue: tripleVals[tripleVals.length - 1] }
-              }
-            }
-          }
-        }
-      }
-    }
   }
 
   return null
 }
 
 // Check if move A beats move B
+// 掼蛋规则：
+// 1. 炸弹可以压任何非炸弹牌型
+// 2. 同牌型必须张数相同（炸弹除外）且主值更大
+// 3. 更大的炸弹可以压更小的炸弹
 export function canBeat(moveA: Move, moveB: Move): boolean {
   if (moveA.type === 'pass') return false
-  if (moveB.type === 'pass') return true // Any move beats pass? No, pass is skipping.
+  if (moveB.type === 'pass') return true
 
-  // Bomb beats non-bomb
+  // 炸弹压非炸弹
   if (moveA.type === 'bomb' && moveB.type !== 'bomb') return true
   if (moveA.type !== 'bomb' && moveB.type === 'bomb') return false
 
-  // Same type comparison
+  // 同牌型比较
   if (moveA.type === moveB.type) {
     if (moveA.type === 'bomb') {
-      // Compare bomb count first, then value (simplified)
-      // Our primaryValue for bomb already encodes count.
+      // 炸弹：张数多的大，或张数相同时主值大
       return moveA.primaryValue > moveB.primaryValue
     }
-    // Must have same number of cards for non-bombs (usually)
-    if (moveA.cards.length !== moveB.cards.length) return false
-    return moveA.primaryValue > moveB.primaryValue
+    // 非炸弹：必须张数相同且主值更大
+    return moveA.cards.length === moveB.cards.length && moveA.primaryValue > moveB.primaryValue
   }
 
   return false

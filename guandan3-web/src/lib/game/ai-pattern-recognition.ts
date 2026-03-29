@@ -218,47 +218,6 @@ export function findSequenceTriples(cards: Card[], levelRank: number): Card[][] 
   return sequenceTriples
 }
 
-export function findSequenceTriplesWithWings(cards: Card[], levelRank: number): Card[][] {
-  const sequenceTriplesWithWings: Card[][] = []
-  const valueMap = new Map<number, Card[]>()
-  
-  cards.forEach(card => {
-    const value = getCardValue(card, levelRank)
-    if (!valueMap.has(value)) {
-      valueMap.set(value, [])
-    }
-    valueMap.get(value)!.push(card)
-  })
-  
-  const tripleValues = Array.from(valueMap.entries())
-    .filter(([_, cs]) => cs.length >= 3)
-    .map(([v]) => v)
-    .sort((a, b) => a - b)
-  
-  for (let i = 0; i < tripleValues.length - 1; i++) {
-    const base = tripleValues[i]
-    const next = tripleValues[i + 1]
-    if (next !== base + 1) continue
-    
-    const sequenceValues = [base, next]
-    const perValueTriples = sequenceValues.map(v => generateCombinations(valueMap.get(v) || [], 3))
-    if (perValueTriples.some(x => x.length === 0)) continue
-    
-    const tripleSequences = generateCartesianProduct(perValueTriples).map(group => group.flat())
-    
-    const remainingCards = cards.filter(card => !sequenceValues.includes(getCardValue(card, levelRank)))
-    const wingCombinations = generateCombinations(remainingCards, 2)
-    
-    tripleSequences.forEach(tripleCombo => {
-      wingCombinations.forEach(wingCombo => {
-        sequenceTriplesWithWings.push([...tripleCombo, ...wingCombo])
-      })
-    })
-  }
-  
-  return sequenceTriplesWithWings
-}
-
 export function findQuadWithTwo(cards: Card[], levelRank: number): Card[][] {
   const quadsWithTwo: Card[][] = []
   const valueMap = new Map<number, Card[]>()
@@ -328,10 +287,7 @@ export function analyzeHand(cards: Card[], levelRank: number): HandAnalysis {
     triples: findTriples(cards, levelRank),
     bombs: findBombs(cards, levelRank),
     straights: findStraights(cards, levelRank),
-    fullHouses: findFullHouses(cards, levelRank),
     sequencePairs: findSequencePairs(cards, levelRank),
     sequenceTriples: findSequenceTriples(cards, levelRank),
-    sequenceTriplesWithWings: findSequenceTriplesWithWings(cards, levelRank),
-    quadsWithTwo: findQuadWithTwo(cards, levelRank)
   }
 }

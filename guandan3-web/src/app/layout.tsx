@@ -5,8 +5,9 @@ import NoiseOverlay from '@/components/effects/NoiseOverlay'
 import Navigation from '@/components/Navigation'
 import { setupResourcePreloading, setupPerformanceObserver } from '@/lib/performance/resource-optimizer'
 import MonitoringComponents from '@/components/monitoring/MonitoringComponents'
-import ContextStatusBarPro from '@/components/ContextStatusBarPro'
-import { statusbarConfig } from '@/config/statusbar'
+// 暂时禁用 ContextStatusBarPro 以修复 SSR 问题
+// import ContextStatusBarPro from '@/components/ContextStatusBarPro'
+// import { statusbarConfig } from '@/config/statusbar'
 
 export const metadata: Metadata = {
   title: '掼蛋 3',
@@ -50,22 +51,6 @@ export default function RootLayout({
           <main className="pt-16 pb-16">
             {children}
           </main>
-
-          {/* 上下文状态栏 - 固定在底部 */}
-          <div className="fixed bottom-0 left-0 right-0 z-50">
-            <ContextStatusBarPro
-              theme={statusbarConfig.theme}
-              showRefresh={statusbarConfig.showRefresh}
-              showDiskUsage={statusbarConfig.showDiskUsage}
-              showStats={statusbarConfig.showStats}
-              showQuickActions={statusbarConfig.showQuickActions}
-              currentFile={statusbarConfig.currentFile}
-              fileContext={statusbarConfig.defaultFileContext}
-              modelContext={statusbarConfig.defaultModelContext}
-              tokensUsed={statusbarConfig.defaultTokensUsed}
-              totalTokens={statusbarConfig.defaultTotalTokens}
-            />
-          </div>
         </ThemeProvider>
       </body>
     </html>

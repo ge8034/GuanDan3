@@ -48,7 +48,7 @@ test.describe('Real Supabase Integration', () => {
 
     // 1. 访问首页
     console.log('正在访问首页...');
-    await page.goto('/');
+    await page.goto('http://localhost:3000');
     await expect(page).toHaveTitle(/掼蛋 3/i);
 
     // 2. 点击练习房按钮

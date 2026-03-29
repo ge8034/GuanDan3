@@ -49,7 +49,7 @@ export default defineConfig({
   workers: 1,
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : [['list'], ['html', { open: 'never' }]],
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: 'http://localhost:3001',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: process.env.CI ? 'off' : 'retain-on-failure',
@@ -68,10 +68,11 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'], channel: process.platform === 'win32' ? 'msedge' : undefined },
     },
   ],
-  webServer: hasSupabaseEnv ? {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: true,
-    timeout: 120 * 1000,
-  } : undefined,
+  // 禁用自动启动 webServer，假设开发服务器已经在运行
+  // webServer: hasSupabaseEnv ? {
+  //   command: 'npm run dev',
+  //   url: 'http://localhost:3000',
+  //   reuseExistingServer: true,
+  //   timeout: 120 * 1000,
+  // } : undefined,
 });

@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { supabase } from '@/lib/supabase/client'
 import { throttle } from '@/lib/utils/throttle'
 import { useGameStore } from '@/lib/store/game'
+import { useAuthStore } from '@/lib/store/auth'
 import { devError } from '@/lib/utils/devLog'
 import { realtimeOptimizer, createOptimizedSubscription } from '@/lib/performance/realtime-optimizer'
 
@@ -136,8 +137,17 @@ export const useRoomStore = create<RoomState>((set, get) => ({
   },
 
   createPracticeRoom: async (visibility = 'private') => {
+    // 获取当前用户ID，明确传递给RPC避免auth.uid()返回NULL
+    const userId = useAuthStore.getState().user?.id
+    if (!userId) {
+      const error = new Error('用户未认证')
+      devError('Create practice room error:', error)
+      throw error
+    }
+
     const { data, error } = await supabase.rpc('create_practice_room', {
-      p_visibility: visibility
+      p_visibility: visibility,
+      p_user_id: userId
     })
     
     if (error) {
@@ -203,16 +213,26 @@ export const useRoomStore = create<RoomState>((set, get) => ({
   
   fetchRoom: async (roomId) => {
     // 1. Fetch Room
-    const { data: room, error: roomError } = await supabase
+    const response = await supabase
       .from('rooms')
       .select('id,name,mode,type,status,visibility,owner_uid,created_at')
       .eq('id', roomId)
       .single()
 
+    // 调试日志 - 输出到浏览器控制台
+    console.log('[fetchRoom] Supabase response:', response)
+    console.log('[fetchRoom] room:', response.data)
+    console.log('[fetchRoom] error:', response.error)
+
+    const { data: room, error: roomError } = response
+
     if (roomError) {
+      console.error('[fetchRoom] Error:', roomError)
       devError('Fetch room error:', roomError)
       return
     }
+
+    console.log('[fetchRoom] Setting currentRoom:', room)
     set({ currentRoom: room })
 
     // 2. Fetch Members

@@ -1,34 +1,34 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# 有关忽略文件的更多信息，请参见https://help.github.com/articles/ignoring-files/
 
-# dependencies
+# 依赖项
 /node_modules
 /.pnp
 .pnp.js
 .yarn/install-state.gz
 
-# testing
+# 测试
 /coverage
 
 # next.js
 /.next/
 /out/
 
-# production
+# 生产环境
 /build
 
-# misc
+# 其他
 .DS_Store
 *.pem
 
-# debug
+# 调试
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files
+# 本地环境文件
 .env*.local
 
-# local Claude settings
+# 本地Claude设置
 .claude/settings.local.json
 
 # vercel
@@ -38,11 +38,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# backups
+# 备份
 /backups
 /backups/*
 
-# logs
+# 日志
 /logs
 /logs/*
 

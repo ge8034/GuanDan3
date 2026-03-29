@@ -101,8 +101,18 @@ export class GuanDanAgent extends WorkerAgent {
       this.cardCounter = new CardCounter(payload.levelRank);
     }
 
-    // Minimal thinking time for testing (0-50ms) - almost instant decisions
-    const thinkingTime = Math.floor(Math.random() * 50);
+    // AI思考时间：根据难度设置不同的延迟，让游戏节奏更自然
+    // easy: 0.8-1.2秒, medium: 0.5-1秒, hard: 0.3-0.8秒
+    let minTime = 300;
+    let maxTime = 800;
+    if (this.difficulty === 'easy') {
+      minTime = 800;
+      maxTime = 1200;
+    } else if (this.difficulty === 'medium') {
+      minTime = 500;
+      maxTime = 1000;
+    }
+    const thinkingTime = Math.floor(Math.random() * (maxTime - minTime) + minTime);
     await new Promise(resolve => setTimeout(resolve, thinkingTime));
 
     try {

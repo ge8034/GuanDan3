@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { supabase } from '@/lib/supabase/client'
 import { useRoomStore } from '@/lib/store/room'
+import { useAuthStore } from '@/lib/store/auth'
 import { createRoomInvitation, acceptRoomInvitation, rejectRoomInvitation, getUserInvitations } from '@/lib/api/roomInvitation'
 import { createNestedQueryMock } from '@/test/utils/supabase-test-helpers'
 
@@ -14,6 +15,8 @@ describe('房间管理流程集成测试', () => {
     useRoomStore.getState().setRoom(null)
     useRoomStore.getState().setMembers([])
     mockRoomStore = useRoomStore.getState()
+    // Mock认证用户
+    useAuthStore.getState().setUser({ id: 'test-user-id' } as any)
   })
 
   afterEach(() => {

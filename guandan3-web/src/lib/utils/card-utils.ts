@@ -28,7 +28,6 @@ export function getCardTypeStrength(type: string): number {
     'straight': 4,
     'sequencePairs': 5,
     'sequenceTriples': 6,
-    'sequenceTriplesWithWings': 7,
     'fullhouse': 8,
     'bomb': 10,
     'pass': 0

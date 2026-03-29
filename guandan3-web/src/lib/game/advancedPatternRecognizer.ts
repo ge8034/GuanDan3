@@ -206,61 +206,6 @@ export class AdvancedPatternRecognizer {
           }
         }
       }
-
-      // 飞机带翅膀
-      if (cards.length >= 8) {
-        const counts: Record<number, number> = {}
-        for (const v of rawVals) counts[v] = (counts[v] || 0) + 1
-        const tripleVals = Object.keys(counts)
-          .map(v => Number(v))
-          .filter(v => counts[v] === 3)
-          .sort((a, b) => a - b)
-        
-        if (tripleVals.length >= 2) {
-          let isSeq = true
-          for (let i = 1; i < tripleVals.length; i++) {
-            if (tripleVals[i] !== tripleVals[i - 1] + 1) {
-              isSeq = false
-              break
-            }
-          }
-          
-          if (isSeq) {
-            const tripleCount = tripleVals.length
-            const expectedWings = tripleCount
-            const actualWings = cards.length - tripleCount * 3
-            
-            if (actualWings === expectedWings || actualWings === expectedWings * 2) {
-              const wingVals = Object.keys(counts)
-                .map(v => Number(v))
-                .filter(v => counts[v] !== 3)
-              
-              if (actualWings === expectedWings && wingVals.length === expectedWings) {
-                patterns.push({
-                  type: 'sequenceTriplesWithWings',
-                  cards,
-                  primaryValue: tripleVals[tripleVals.length - 1],
-                  complexity: tripleCount + 1,
-                  isWildCardUsed: false,
-                  wildCards: []
-                })
-              } else if (actualWings === expectedWings * 2) {
-                const pairWings = wingVals.filter(v => counts[v] === 2)
-                if (pairWings.length === expectedWings) {
-                  patterns.push({
-                    type: 'sequenceTriplesWithWings',
-                    cards,
-                    primaryValue: tripleVals[tripleVals.length - 1],
-                    complexity: tripleCount + 2,
-                    isWildCardUsed: false,
-                    wildCards: []
-                  })
-                }
-              }
-            }
-          }
-        }
-      }
     }
 
     return patterns
@@ -358,7 +303,7 @@ export class AdvancedPatternRecognizer {
     if (patterns.length === 0) return null
 
     // 优先级：炸弹 > 复杂牌型 > 简单牌型
-    const priorityOrder = ['rocket', 'bomb', 'bombWithTwo', 'sequenceTriplesWithWings', 'sequenceTriples', 'sequencePairs', 'straight', 'fullhouse', 'triple', 'pair', 'single']
+    const priorityOrder = ['rocket', 'bomb', 'bombWithTwo', 'sequenceTriples', 'sequencePairs', 'straight', 'fullhouse', 'triple', 'pair', 'single']
 
     for (const type of priorityOrder) {
       const pattern = patterns.find(p => p.type === type)
