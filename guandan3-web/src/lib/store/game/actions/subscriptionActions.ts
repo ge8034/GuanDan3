@@ -20,12 +20,12 @@ export function subscribeGame(
 ): () => void {
   const state = this;
 
-  // 节流的 fetchGame
+  // 节流的 fetchGame - 减少延迟以加快 AI 响应速度
   const fetchGameThrottled = throttle(() => {
     state.fetchGame(roomId).catch((err) => {
       devError('[fetchGameThrottled] Error:', err);
     });
-  }, 350);
+  }, 50);
 
   let turnsChannel: RealtimeChannel | null = null;
   let turnsGameId: string | null = null;

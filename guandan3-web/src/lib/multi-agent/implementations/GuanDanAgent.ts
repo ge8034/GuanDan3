@@ -22,7 +22,10 @@ export class GuanDanAgent extends WorkerAgent {
   constructor(config: AgentConfig) {
     super(config);
     // Set difficulty from config if provided
-    if (config.difficulty && ['easy', 'medium', 'hard'].includes(config.difficulty)) {
+    if (
+      config.difficulty &&
+      ['easy', 'medium', 'hard'].includes(config.difficulty)
+    ) {
       this.difficulty = config.difficulty as AIDifficulty;
     }
   }
@@ -39,36 +42,43 @@ export class GuanDanAgent extends WorkerAgent {
 
     // Listen for game events (e.g., played cards)
     if (message.type === 'GAME_ACTION') {
-       const { action, levelRank } = message.payload;
-       
-       // Update level if changed
-       if (levelRank && levelRank !== this.currentLevel) {
-         this.currentLevel = levelRank;
-         // Reset counter on level change (new game usually)
-         this.cardCounter = new CardCounter(this.currentLevel);
-         // Reset card counts
-         this.playersCardCounts = [27, 27, 27, 27];
-       }
+      const { action, levelRank } = message.payload;
 
-       // Initialize counter if needed
-       if (!this.cardCounter) {
-         this.cardCounter = new CardCounter(this.currentLevel);
-       }
+      // Update level if changed
+      if (levelRank && levelRank !== this.currentLevel) {
+        this.currentLevel = levelRank;
+        // Reset counter on level change (new game usually)
+        this.cardCounter = new CardCounter(this.currentLevel);
+        // Reset card counts
+        this.playersCardCounts = [27, 27, 27, 27];
+      }
 
-       // Record played cards and update counts
-       if (action && action.type === 'play' && action.cards) {
-         this.cardCounter.recordPlayedCards(action.cards);
-         
-         // Update card count for the player who played
-         if (typeof action.seatNo === 'number' && action.seatNo >= 0 && action.seatNo < 4) {
-           this.playersCardCounts[action.seatNo] = Math.max(0, this.playersCardCounts[action.seatNo] - action.cards.length);
-         }
-       }
+      // Initialize counter if needed
+      if (!this.cardCounter) {
+        this.cardCounter = new CardCounter(this.currentLevel);
+      }
+
+      // Record played cards and update counts
+      if (action && action.type === 'play' && action.cards) {
+        this.cardCounter.recordPlayedCards(action.cards);
+
+        // Update card count for the player who played
+        if (
+          typeof action.seatNo === 'number' &&
+          action.seatNo >= 0 &&
+          action.seatNo < 4
+        ) {
+          this.playersCardCounts[action.seatNo] = Math.max(
+            0,
+            this.playersCardCounts[action.seatNo] - action.cards.length
+          );
+        }
+      }
     } else if (message.type === 'GAME_START') {
-       const { levelRank } = message.payload;
-       this.currentLevel = levelRank || 2;
-       this.cardCounter = new CardCounter(this.currentLevel);
-       this.playersCardCounts = [27, 27, 27, 27];
+      const { levelRank } = message.payload;
+      this.currentLevel = levelRank || 2;
+      this.cardCounter = new CardCounter(this.currentLevel);
+      this.playersCardCounts = [27, 27, 27, 27];
     }
   }
 
@@ -77,7 +87,7 @@ export class GuanDanAgent extends WorkerAgent {
     await this.sendMessage('BROADCAST', 'AGENT_LOG', {
       agentId: this.id,
       message,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
@@ -101,26 +111,34 @@ export class GuanDanAgent extends WorkerAgent {
       this.cardCounter = new CardCounter(payload.levelRank);
     }
 
-    // AI思考时间：根据难度设置不同的延迟，让游戏节奏更自然
-    // easy: 0.8-1.2秒, medium: 0.5-1秒, hard: 0.3-0.8秒
-    let minTime = 300;
-    let maxTime = 800;
+    // AI思考时间：快速响应模式（测试/开发优化）
+    // easy: 0.1-0.2秒, medium: 0.05-0.1秒, hard: 0-0.05秒
+    let minTime = 0;
+    let maxTime = 50;
     if (this.difficulty === 'easy') {
-      minTime = 800;
-      maxTime = 1200;
+      minTime = 100;
+      maxTime = 200;
     } else if (this.difficulty === 'medium') {
-      minTime = 500;
-      maxTime = 1000;
+      minTime = 50;
+      maxTime = 100;
     }
-    const thinkingTime = Math.floor(Math.random() * (maxTime - minTime) + minTime);
-    await new Promise(resolve => setTimeout(resolve, thinkingTime));
+    const thinkingTime = Math.floor(
+      Math.random() * (maxTime - minTime) + minTime
+    );
+    await new Promise((resolve) => setTimeout(resolve, thinkingTime));
 
     try {
-      await this.logThinking(`收到任务: 思考出牌 (手牌: ${payload.hand.length}, 剩余: ${this.playersCardCounts.join(',')})`);
+      await this.logThinking(
+        `收到任务: 思考出牌 (手牌: ${payload.hand.length}, 剩余: ${this.playersCardCounts.join(',')})`
+      );
 
       // Execute existing AI logic with CardCounter and PlayerCardCounts
-      const lastPlayCards = payload.lastAction?.type === 'play' ? payload.lastAction.cards || null : null;
-      const isLeading = !payload.lastAction || payload.lastAction.type === 'pass';
+      const lastPlayCards =
+        payload.lastAction?.type === 'play'
+          ? payload.lastAction.cards || null
+          : null;
+      const isLeading =
+        !payload.lastAction || payload.lastAction.type === 'pass';
 
       const move = decideMove(
         payload.hand,
@@ -131,16 +149,18 @@ export class GuanDanAgent extends WorkerAgent {
         // Note: teammateCards and teammateSituation are optional and not used in current implementation
       );
 
-      await this.logThinking(`决策完成: ${move.type === 'pass' ? '过牌' : `出牌 (${move.cards?.length}张)`}`);
+      await this.logThinking(
+        `决策完成: ${move.type === 'pass' ? '过牌' : `出牌 (${move.cards?.length}张)`}`
+      );
 
       const result = {
         taskId: task.id,
         output: {
           move,
           agentId: this.id,
-          seatNo: payload.seatNo
+          seatNo: payload.seatNo,
         },
-        status: 'COMPLETED'
+        status: 'COMPLETED',
       };
 
       await this.sendMessage('SYSTEM', 'TASK_RESULT', result);
@@ -150,7 +170,7 @@ export class GuanDanAgent extends WorkerAgent {
       await this.sendMessage('SYSTEM', 'TASK_RESULT', {
         taskId: task.id,
         error: String(error),
-        status: 'FAILED'
+        status: 'FAILED',
       });
     } finally {
       this.updateStatus(AgentStatus.IDLE);
