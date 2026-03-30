@@ -97,7 +97,7 @@ export async function setupGameRpcMocks(
     // 存储游戏信息
     (global as any).mockGameId = mockGameId;
     (global as any).mockRoomId = roomId;
-    (global as any).currentSeat = 1; // 从 AI 座位开始
+    (global as any).currentSeat = 0; // 从人类玩家座位开始（座位0）
     (global as any).turnNo = 0;
 
     // 重置手牌
@@ -115,7 +115,7 @@ export async function setupGameRpcMocks(
           room_id: roomId,
           status: 'playing',
           turn_no: 0,
-          current_seat: 1, // 从 AI 座位开始，让 AI 立即接管
+          current_seat: 0, // 从人类玩家座位开始（座位0）
           level_rank: 2,
           state_public: {
             counts: [27, 27, 27, 27],
@@ -172,14 +172,18 @@ export async function setupGameRpcMocks(
     (global as any).turnNo = turnNo;
     (global as any).currentSeat = currentSeat;
 
+    // 返回数组格式，与实际 RPC 一致
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({
-        game_id: (global as any).mockGameId,
-        turn_no: turnNo,
-        current_seat: currentSeat,
-      }),
+      body: JSON.stringify([
+        {
+          turn_no: turnNo,
+          current_seat: currentSeat,
+          status: 'playing',
+          rankings: [],
+        },
+      ]),
     });
   });
 

@@ -37,8 +37,9 @@ export async function setupGameApiMocks(
         }
 
         const currentHandCards = getMockHandCards();
-        const currentSeat = (global as any).currentSeat || 0;
-        const turnNo = (global as any).turnNo || 0;
+        // 默认从人类玩家（座位0）开始
+        const currentSeat = (global as any).currentSeat ?? 0;
+        const turnNo = (global as any).turnNo ?? 0;
 
         console.log(
           `[Get Games] Returning game state: currentSeat=${currentSeat}, turnNo=${turnNo}`
@@ -52,8 +53,8 @@ export async function setupGameApiMocks(
               id: (global as any).mockGameId || generateMockId('game'),
               room_id: roomId,
               status: 'playing',
-              turn_no: (global as any).turnNo || 0,
-              current_seat: (global as any).currentSeat || 0,
+              turn_no: turnNo,
+              current_seat: currentSeat,
               level_rank: 2,
               state_public: {
                 counts: [27, 27, 27, 27],
