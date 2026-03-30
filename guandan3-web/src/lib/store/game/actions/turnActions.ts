@@ -1,12 +1,12 @@
-import { supabase } from '@/lib/supabase/client'
-import { devError, devLog, devWarn, isDev } from '@/lib/utils/devLog'
-import type { GameState, Card } from '../types'
+import { supabase } from '@/lib/supabase/client';
+import { devError, devLog, devWarn, isDev } from '@/lib/utils/devLog';
+import type { GameState, Card } from '../types';
 
 /**
  * 出牌动作（兼容旧版本）
  */
 export async function playTurn(this: GameState, cards: Card[]): Promise<void> {
-  await this.submitTurn('play', cards)
+  await this.submitTurn('play', cards);
 }
 
 /**
@@ -16,72 +16,99 @@ export async function submitTurn(
   this: GameState,
   type: 'play' | 'pass',
   cards: Card[] = []
-): Promise<{ error?: unknown; data?: unknown; refreshed?: boolean; newState?: unknown }> {
-  const state = this
-  if (!state.gameId) return { error: 'No game ID' }
+): Promise<{
+  error?: unknown;
+  data?: unknown;
+  refreshed?: boolean;
+  newState?: unknown;
+}> {
+  const state = this;
+  if (!state.gameId) return { error: 'No game ID' };
 
   // 保存之前状态用于回滚
-  const previousHand = state.myHand
+  const previousHand = state.myHand;
 
   // 乐观更新（仅针对出牌动作）
   const shouldOptimisticUpdate =
     type === 'play' &&
     cards.length > 0 &&
     state.myHand.length > 0 &&
-    cards.every(pc => state.myHand.some(c => c.id === pc.id))
+    cards.every((pc) => state.myHand.some((c) => c.id === pc.id));
 
   if (shouldOptimisticUpdate) {
-    state.updateHand(state.myHand.filter(c => !cards.some(pc => pc.id === c.id)))
+    state.updateHand(
+      state.myHand.filter((c) => !cards.some((pc) => pc.id === c.id))
+    );
   }
 
   const { data, error } = await supabase.rpc('submit_turn', {
     p_game_id: state.gameId,
     p_action_id: crypto.randomUUID(),
     p_expected_turn_no: state.turnNo,
-    p_payload: { type, cards }
-  })
+    p_payload: { type, cards },
+  });
 
   if (error) {
     // 回滚乐观更新
     if (shouldOptimisticUpdate) {
-      state.updateHand(previousHand)
+      state.updateHand(previousHand);
     }
 
-    const isTurnNoMismatch = error.code === 'P0001' && error.message.includes('turn_no_mismatch')
-    const isNotYourTurn = error.code === 'P0001' && error.message.includes('not_your_turn')
-    devError('Submit turn failed detailed:', JSON.stringify(error, null, 2))
+    const isTurnNoMismatch =
+      error.code === 'P0001' && error.message.includes('turn_no_mismatch');
+    const isNotYourTurn =
+      error.code === 'P0001' && error.message.includes('not_your_turn');
+
+    // 错误日志处理
+    if (!isTurnNoMismatch && !isNotYourTurn) {
+      // 未知错误：生产环境记录简要日志，开发环境记录详细日志
+      if (isDev()) {
+        devError(
+          'Submit turn failed detailed:',
+          JSON.stringify(error, null, 2)
+        );
+      } else {
+        console.error('Submit turn failed:', error.message || String(error));
+      }
+    }
 
     // 处理回合号不匹配错误
     if (isTurnNoMismatch) {
-      devWarn('Turn mismatch detected! Fetching fresh game state...')
+      devWarn('Turn mismatch detected! Fetching fresh game state...');
       const { data: freshGame } = await supabase
         .from('games')
         .select('id,room_id,status,turn_no,current_seat,state_public')
         .eq('id', state.gameId)
-        .single()
+        .single();
 
       if (freshGame) {
-        if (isDev()) devLog('State refreshed:', freshGame.turn_no, freshGame.current_seat)
+        if (isDev())
+          devLog('State refreshed:', freshGame.turn_no, freshGame.current_seat);
         state.setGame({
           turnNo: freshGame.turn_no,
           currentSeat: freshGame.current_seat,
-          status: freshGame.status
-        })
-        return { error, refreshed: true, newState: freshGame }
+          status: freshGame.status,
+        });
+        return { error, refreshed: true, newState: freshGame };
       }
     }
-    return { error }
+    return { error };
   } else {
     // 成功：更新本地状态
     if (data && data.length > 0) {
-      const result = data[0] as { turn_no: number; current_seat: number; status: string; rankings?: number[] }
+      const result = data[0] as {
+        turn_no: number;
+        current_seat: number;
+        status: string;
+        rankings?: number[];
+      };
       state.setGame({
         turnNo: result.turn_no,
         currentSeat: result.current_seat,
         status: result.status as 'deal' | 'playing' | 'paused' | 'finished',
-        rankings: result.rankings || state.rankings
-      })
+        rankings: result.rankings || state.rankings,
+      });
     }
-    return { data }
+    return { data };
   }
 }

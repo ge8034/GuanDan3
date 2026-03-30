@@ -1,25 +1,28 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { supabase } from '@/lib/supabase/client'
-import { useGameStore } from '@/lib/store/game'
-import type { Card } from '@/lib/store/game'
-import { createNestedQueryMock, createArrayQueryMock } from '@/test/utils/supabase-test-helpers'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { supabase } from '@/lib/supabase/client';
+import { useGameStore } from '@/lib/store/game';
+import type { Card } from '@/lib/store/game';
+import {
+  createNestedQueryMock,
+  createArrayQueryMock,
+} from '@/test/utils/supabase-test-helpers';
 
 describe('游戏状态同步集成测试', () => {
-  let mockGameStore: ReturnType<typeof useGameStore.getState>
+  let mockGameStore: ReturnType<typeof useGameStore.getState>;
 
   beforeEach(() => {
     // 清除所有 mock
-    vi.clearAllMocks()
+    vi.clearAllMocks();
 
     // 重置 store 状态，确保测试隔离
-    useGameStore.getState().resetGame()
+    useGameStore.getState().resetGame();
     // 获取 store 引用
-    mockGameStore = useGameStore.getState()
-  })
+    mockGameStore = useGameStore.getState();
+  });
 
   afterEach(() => {
-    vi.restoreAllMocks()
-  })
+    vi.restoreAllMocks();
+  });
 
   describe('游戏状态获取', () => {
     it('应该能够获取游戏状态', async () => {
@@ -35,41 +38,41 @@ describe('游戏状态同步集成测试', () => {
         state_public: {
           counts: [20, 25, 15, 30],
           rankings: [],
-          levelRank: 3
+          levelRank: 3,
         },
         paused_by: null,
         paused_at: null,
-        pause_reason: null
-      }
+        pause_reason: null,
+      };
 
       // 使用辅助函数创建链式 mock
       // fetchGame 使用 .in() 查询，返回数组
       const chain = createNestedQueryMock(
-        { data: mockGame, error: null },  // single/maybeSingle 返回值
-        { data: [mockGame], error: null }  // 直接 await 返回值
-      )
-      vi.mocked(supabase.from).mockImplementation(() => chain)
+        { data: mockGame, error: null }, // single/maybeSingle 返回值
+        { data: [mockGame], error: null } // 直接 await 返回值
+      );
+      vi.mocked(supabase.from).mockImplementation(() => chain);
 
-      await useGameStore.getState().fetchGame('room-123')
+      await useGameStore.getState().fetchGame('room-123');
 
       // 在 fetchGame 之后重新获取 store 状态
-      const state = useGameStore.getState()
-      expect(state.gameId).toBe('game-123')
-      expect(state.status).toBe('playing')
-      expect(state.turnNo).toBe(5)
-      expect(state.currentSeat).toBe(2)
-      expect(state.levelRank).toBe(3)
-    })
+      const state = useGameStore.getState();
+      expect(state.gameId).toBe('game-123');
+      expect(state.status).toBe('playing');
+      expect(state.turnNo).toBe(5);
+      expect(state.currentSeat).toBe(2);
+      expect(state.levelRank).toBe(3);
+    });
 
     it('应该能够处理游戏不存在的情况', async () => {
-      const chain = createNestedQueryMock({ data: null, error: null })
-      vi.mocked(supabase.from).mockReturnValue(chain)
+      const chain = createNestedQueryMock({ data: null, error: null });
+      vi.mocked(supabase.from).mockReturnValue(chain);
 
-      await mockGameStore.fetchGame('room-123')
+      await mockGameStore.fetchGame('room-123');
 
-      expect(mockGameStore.gameId).toBeNull()
-      expect(mockGameStore.status).toBe('deal')
-    })
+      expect(mockGameStore.gameId).toBeNull();
+      expect(mockGameStore.status).toBe('deal');
+    });
 
     it('应该能够获取暂停的游戏状态', async () => {
       const mockGame = {
@@ -81,33 +84,33 @@ describe('游戏状态同步集成测试', () => {
         state_public: {
           counts: [20, 25, 15, 30],
           rankings: [],
-          levelRank: 3
-        }
-      }
+          levelRank: 3,
+        },
+      };
 
       // 使用辅助函数创建链式 mock
       const chain = createNestedQueryMock(
         { data: mockGame, error: null },
         { data: [mockGame], error: null }
-      )
-      vi.mocked(supabase.from).mockImplementation(() => chain)
+      );
+      vi.mocked(supabase.from).mockImplementation(() => chain);
 
-      await mockGameStore.fetchGame('room-123')
+      await mockGameStore.fetchGame('room-123');
 
       // 获取更新后的 store 状态
-      const state = useGameStore.getState()
-      expect(state.status).toBe('paused')
+      const state = useGameStore.getState();
+      expect(state.status).toBe('paused');
       // fetchGame 将 pausedBy 等字段设置为 null，这是预期行为
-      expect(state.pausedBy).toBeNull()
-    })
-  })
+      expect(state.pausedBy).toBeNull();
+    });
+  });
 
   describe('游戏出牌同步', () => {
     it('应该能够提交出牌', async () => {
       const cards: Card[] = [
         { id: 1, suit: 'H', rank: '3', val: 3 },
-        { id: 2, suit: 'H', rank: '3', val: 3 }
-      ]
+        { id: 2, suit: 'H', rank: '3', val: 3 },
+      ];
 
       const mockSubmitTurn = vi.fn().mockResolvedValue({
         data: [
@@ -115,32 +118,33 @@ describe('游戏状态同步集成测试', () => {
             turn_no: 6,
             current_seat: 3,
             status: 'playing',
-            rankings: []
-          }
+            rankings: [],
+          },
         ],
-        error: null
-      })
+        error: null,
+      });
 
       useGameStore.setState({
         gameId: 'game-123',
         turnNo: 5,
         currentSeat: 2,
         myHand: cards,
-        status: 'playing'
-      })
+        status: 'playing',
+      });
 
       vi.mocked(supabase.rpc).mockImplementation((name) => {
         if (name === 'submit_turn') {
-          return mockSubmitTurn()
+          return mockSubmitTurn();
         }
-        return { data: null, error: null }
-      })
+        return { data: null, error: null };
+      });
 
-      const result = await mockGameStore.submitTurn('play', cards)
+      // 使用最新的 store 状态
+      const result = await useGameStore.getState().submitTurn('play', cards);
 
-      expect(result.data).toBeDefined()
-      expect(mockSubmitTurn).toHaveBeenCalled()
-    })
+      expect(result.data).toBeDefined();
+      expect(mockSubmitTurn).toHaveBeenCalled();
+    });
 
     it('应该能够提交过牌', async () => {
       const mockSubmitTurn = vi.fn().mockResolvedValue({
@@ -149,75 +153,76 @@ describe('游戏状态同步集成测试', () => {
             turn_no: 6,
             current_seat: 3,
             status: 'playing',
-            rankings: []
-          }
+            rankings: [],
+          },
         ],
-        error: null
-      })
+        error: null,
+      });
 
       useGameStore.setState({
         gameId: 'game-123',
         turnNo: 5,
         currentSeat: 2,
-        status: 'playing'
-      })
+        status: 'playing',
+      });
 
       vi.mocked(supabase.rpc).mockImplementation((name) => {
         if (name === 'submit_turn') {
-          return mockSubmitTurn()
+          return mockSubmitTurn();
         }
-        return { data: null, error: null }
-      })
+        return { data: null, error: null };
+      });
 
-      const result = await mockGameStore.submitTurn('pass')
+      // 使用最新的 store 状态
+      const result = await useGameStore.getState().submitTurn('pass');
 
-      expect(result.data).toBeDefined()
-      expect(mockSubmitTurn).toHaveBeenCalled()
-    })
+      expect(result.data).toBeDefined();
+      expect(mockSubmitTurn).toHaveBeenCalled();
+    });
 
     it('应该能够处理出牌失败并回滚', async () => {
       const cards: Card[] = [
         { id: 1, suit: 'H', rank: '3', val: 3 },
-        { id: 2, suit: 'H', rank: '3', val: 3 }
-      ]
+        { id: 2, suit: 'H', rank: '3', val: 3 },
+      ];
 
       const mockSubmitTurn = vi.fn().mockResolvedValue({
         data: null,
-        error: { code: 'P0001', message: 'not_your_turn' }
-      })
+        error: { code: 'P0001', message: 'not_your_turn' },
+      });
 
       useGameStore.setState({
         gameId: 'game-123',
         turnNo: 5,
         currentSeat: 2,
         myHand: cards,
-        status: 'playing'
-      })
+        status: 'playing',
+      });
 
       vi.mocked(supabase.rpc).mockImplementation((name) => {
         if (name === 'submit_turn') {
-          return mockSubmitTurn()
+          return mockSubmitTurn();
         }
-        return { data: null, error: null }
-      })
+        return { data: null, error: null };
+      });
 
-      const result = await mockGameStore.submitTurn('play', cards)
+      const result = await mockGameStore.submitTurn('play', cards);
 
-      expect(result.error).toBeDefined()
+      expect(result.error).toBeDefined();
       // 使用最新的 store 状态
-      expect(useGameStore.getState().myHand).toEqual(cards)
-    })
+      expect(useGameStore.getState().myHand).toEqual(cards);
+    });
 
     it('应该能够处理回合号不匹配并刷新状态', async () => {
       const cards: Card[] = [
         { id: 1, suit: 'H', rank: '3', val: 3 },
-        { id: 2, suit: 'H', rank: '3', val: 3 }
-      ]
+        { id: 2, suit: 'H', rank: '3', val: 3 },
+      ];
 
       const mockSubmitTurn = vi.fn().mockResolvedValue({
         data: null,
-        error: { code: 'P0001', message: 'turn_no_mismatch' }
-      })
+        error: { code: 'P0001', message: 'turn_no_mismatch' },
+      });
 
       // 使用辅助函数创建链式 mock
       const mockGame = {
@@ -232,112 +237,113 @@ describe('游戏状态同步集成测试', () => {
         state_public: {
           counts: [20, 25, 15, 30],
           rankings: [],
-          levelRank: 2
+          levelRank: 2,
         },
         paused_by: null,
         paused_at: null,
-        pause_reason: null
-      }
+        pause_reason: null,
+      };
 
       const chain = createNestedQueryMock(
         { data: mockGame, error: null },
         { data: [mockGame], error: null }
-      )
-      vi.mocked(supabase.from).mockImplementation(() => chain)
+      );
+      vi.mocked(supabase.from).mockImplementation(() => chain);
 
       useGameStore.setState({
         gameId: 'game-123',
         turnNo: 5,
         currentSeat: 2,
         myHand: cards,
-        status: 'playing'
-      })
+        status: 'playing',
+      });
 
       vi.mocked(supabase.rpc).mockImplementation((name) => {
         if (name === 'submit_turn') {
-          return mockSubmitTurn()
+          return mockSubmitTurn();
         }
-        return { data: null, error: null }
-      })
+        return { data: null, error: null };
+      });
 
-      const result = await mockGameStore.submitTurn('play', cards)
-
-      expect(result.error).toBeDefined()
-      expect(result.refreshed).toBe(true)
       // 使用最新的 store 状态
-      const state = useGameStore.getState()
-      expect(state.turnNo).toBe(7)
-      expect(state.currentSeat).toBe(3)
-    })
-  })
+      const result = await useGameStore.getState().submitTurn('play', cards);
+
+      expect(result.error).toBeDefined();
+      expect(result.refreshed).toBe(true);
+      // 使用最新的 store 状态
+      const state = useGameStore.getState();
+      expect(state.turnNo).toBe(7);
+      expect(state.currentSeat).toBe(3);
+    });
+  });
 
   describe('游戏状态订阅', () => {
     afterEach(() => {
       // 确保每个测试后清理订阅
-      vi.restoreAllMocks()
-    })
+      vi.restoreAllMocks();
+    });
 
     it('应该能够订阅游戏状态变化', () => {
-      const mockRemoveChannel = vi.fn()
+      const mockRemoveChannel = vi.fn();
       const mockChannel = {
         on: vi.fn().mockReturnThis(),
-        subscribe: vi.fn().mockReturnValue({})
-      }
+        subscribe: vi.fn().mockReturnValue({}),
+      };
 
-      vi.mocked(supabase.channel).mockReturnValue(mockChannel)
-      vi.mocked(supabase.removeChannel).mockImplementation(mockRemoveChannel)
+      vi.mocked(supabase.channel).mockReturnValue(mockChannel);
+      vi.mocked(supabase.removeChannel).mockImplementation(mockRemoveChannel);
 
-      const unsubscribe = mockGameStore.subscribeGame('room-123')
+      const unsubscribe = mockGameStore.subscribeGame('room-123');
 
-      expect(unsubscribe).toBeDefined()
-      expect(typeof unsubscribe).toBe('function')
+      expect(unsubscribe).toBeDefined();
+      expect(typeof unsubscribe).toBe('function');
 
       // 清理订阅
-      unsubscribe()
-      expect(mockRemoveChannel).toHaveBeenCalled()
-    })
+      unsubscribe();
+      expect(mockRemoveChannel).toHaveBeenCalled();
+    });
 
     it('应该能够取消订阅游戏状态', () => {
-      const mockRemoveChannel = vi.fn()
+      const mockRemoveChannel = vi.fn();
       const mockChannel = {
         on: vi.fn().mockReturnThis(),
-        subscribe: vi.fn().mockReturnValue({})
-      }
+        subscribe: vi.fn().mockReturnValue({}),
+      };
 
-      vi.mocked(supabase.channel).mockReturnValue(mockChannel)
-      vi.mocked(supabase.removeChannel).mockImplementation(mockRemoveChannel)
+      vi.mocked(supabase.channel).mockReturnValue(mockChannel);
+      vi.mocked(supabase.removeChannel).mockImplementation(mockRemoveChannel);
 
-      const unsubscribe = mockGameStore.subscribeGame('room-123')
-      unsubscribe()
+      const unsubscribe = mockGameStore.subscribeGame('room-123');
+      unsubscribe();
 
-      expect(mockRemoveChannel).toHaveBeenCalled()
-    })
+      expect(mockRemoveChannel).toHaveBeenCalled();
+    });
 
     it('应该能够接收订阅状态回调', () => {
-      const mockRemoveChannel = vi.fn()
+      const mockRemoveChannel = vi.fn();
       const mockChannel = {
         on: vi.fn().mockReturnThis(),
         subscribe: vi.fn().mockImplementation((callback) => {
-          callback('SUBSCRIBED')
-          return {}
-        })
-      }
+          callback('SUBSCRIBED');
+          return {};
+        }),
+      };
 
-      vi.mocked(supabase.channel).mockReturnValue(mockChannel)
-      vi.mocked(supabase.removeChannel).mockImplementation(mockRemoveChannel)
+      vi.mocked(supabase.channel).mockReturnValue(mockChannel);
+      vi.mocked(supabase.removeChannel).mockImplementation(mockRemoveChannel);
 
-      const statusCallback = vi.fn()
+      const statusCallback = vi.fn();
       const unsubscribe = mockGameStore.subscribeGame('room-123', {
-        onStatus: statusCallback
-      })
+        onStatus: statusCallback,
+      });
 
-      expect(statusCallback).toHaveBeenCalledWith('SUBSCRIBED')
+      expect(statusCallback).toHaveBeenCalledWith('SUBSCRIBED');
 
       // 清理订阅
-      unsubscribe()
-      expect(mockRemoveChannel).toHaveBeenCalled()
-    })
-  })
+      unsubscribe();
+      expect(mockRemoveChannel).toHaveBeenCalled();
+    });
+  });
 
   describe('游戏回合历史同步', () => {
     it('应该能够获取最近的回合', async () => {
@@ -345,199 +351,207 @@ describe('游戏状态同步集成测试', () => {
         {
           turn_no: 5,
           seat_no: 2,
-          payload: { type: 'play', cards: [{ id: 1, suit: 'H', rank: '3', val: 3 }] }
+          payload: {
+            type: 'play',
+            cards: [{ id: 1, suit: 'H', rank: '3', val: 3 }],
+          },
         },
         {
           turn_no: 4,
           seat_no: 1,
-          payload: { type: 'pass' }
-        }
-      ]
+          payload: { type: 'pass' },
+        },
+      ];
 
       // 使用辅助函数，将 limit 设置为终结方法
-      const chain = createArrayQueryMock({ data: mockTurns, error: null }, ['limit'])
-      vi.mocked(supabase.from).mockReturnValue(chain)
+      const chain = createArrayQueryMock({ data: mockTurns, error: null }, [
+        'limit',
+      ]);
+      vi.mocked(supabase.from).mockReturnValue(chain);
 
       useGameStore.setState({
         gameId: 'game-123',
-        currentSeat: 0
-      })
+        currentSeat: 0,
+      });
 
-      const result = await mockGameStore.fetchLastTrickPlay()
+      const result = await mockGameStore.fetchLastTrickPlay();
 
-      expect(result).toBeDefined()
-      expect(result?.type).toBe('play')
-      expect(result?.cards).toBeDefined()
-    })
+      expect(result).toBeDefined();
+      expect(result?.type).toBe('play');
+      expect(result?.cards).toBeDefined();
+    });
 
     it('应该能够获取指定回合号之后的所有回合', async () => {
       const mockTurns = [
         {
           turn_no: 6,
           seat_no: 3,
-          payload: { type: 'play', cards: [{ id: 1, suit: 'H', rank: '3', val: 3 }] }
+          payload: {
+            type: 'play',
+            cards: [{ id: 1, suit: 'H', rank: '3', val: 3 }],
+          },
         },
         {
           turn_no: 7,
           seat_no: 0,
-          payload: { type: 'pass' }
-        }
-      ]
+          payload: { type: 'pass' },
+        },
+      ];
 
       const mockGetTurnsSince = vi.fn().mockResolvedValue({
         data: mockTurns,
-        error: null
-      })
+        error: null,
+      });
 
       useGameStore.setState({
         gameId: 'game-123',
         currentSeat: 0,
-        recentTurns: []
-      })
+        recentTurns: [],
+      });
 
       vi.mocked(supabase.rpc).mockImplementation((name) => {
         if (name === 'get_turns_since') {
-          return mockGetTurnsSince()
+          return mockGetTurnsSince();
         }
-        return { data: null, error: null }
-      })
+        return { data: null, error: null };
+      });
 
-      const result = await mockGameStore.fetchTurnsSince('game-123', 5)
+      const result = await mockGameStore.fetchTurnsSince('game-123', 5);
 
-      expect(result).toBeDefined()
-      expect(result.length).toBe(2)
+      expect(result).toBeDefined();
+      expect(result.length).toBe(2);
       // 使用最新的 store 状态
-      expect(useGameStore.getState().recentTurns.length).toBeGreaterThan(0)
-    })
-  })
+      expect(useGameStore.getState().recentTurns.length).toBeGreaterThan(0);
+    });
+  });
 
   describe('游戏暂停和恢复', () => {
     it('应该能够暂停游戏', async () => {
       const mockPauseGame = vi.fn().mockResolvedValue({
         data: null,
-        error: null
-      })
+        error: null,
+      });
 
       useGameStore.setState({
         gameId: 'game-123',
-        status: 'playing'
-      })
+        status: 'playing',
+      });
 
       vi.mocked(supabase.rpc).mockImplementation((name) => {
         if (name === 'pause_game') {
-          return mockPauseGame()
+          return mockPauseGame();
         }
-        return { data: null, error: null }
-      })
+        return { data: null, error: null };
+      });
 
-      await mockGameStore.pauseGame('休息一下')
+      // 使用最新的 store 状态
+      await useGameStore.getState().pauseGame('休息一下');
 
-      expect(mockPauseGame).toHaveBeenCalled()
-    })
+      expect(mockPauseGame).toHaveBeenCalled();
+    });
 
     it('应该能够恢复游戏', async () => {
       const mockResumeGame = vi.fn().mockResolvedValue({
         data: null,
-        error: null
-      })
+        error: null,
+      });
 
       useGameStore.setState({
         gameId: 'game-123',
-        status: 'paused'
-      })
+        status: 'paused',
+      });
 
       vi.mocked(supabase.rpc).mockImplementation((name) => {
         if (name === 'resume_game') {
-          return mockResumeGame()
+          return mockResumeGame();
         }
-        return { data: null, error: null }
-      })
+        return { data: null, error: null };
+      });
 
-      await mockGameStore.resumeGame()
+      // 使用最新的 store 状态
+      await useGameStore.getState().resumeGame();
 
-      expect(mockResumeGame).toHaveBeenCalled()
-    })
-  })
+      expect(mockResumeGame).toHaveBeenCalled();
+    });
+  });
 
   describe('游戏开始', () => {
     it('应该能够开始游戏', async () => {
       const mockStartGame = vi.fn().mockResolvedValue({
         data: 'game-123',
-        error: null
-      })
+        error: null,
+      });
 
       vi.mocked(supabase.rpc).mockImplementation((name) => {
         if (name === 'start_game') {
-          return mockStartGame()
+          return mockStartGame();
         }
-        return { data: null, error: null }
-      })
+        return { data: null, error: null };
+      });
 
-      await mockGameStore.startGame('room-123')
+      await mockGameStore.startGame('room-123');
 
-      expect(mockStartGame).toHaveBeenCalled()
-    })
+      expect(mockStartGame).toHaveBeenCalled();
+    });
 
     it('应该能够处理游戏开始失败', async () => {
       const mockStartGame = vi.fn().mockResolvedValue({
         data: null,
-        error: { message: '人数不足' }
-      })
+        error: { message: '人数不足' },
+      });
 
       vi.mocked(supabase.rpc).mockImplementation((name) => {
         if (name === 'start_game') {
-          return mockStartGame()
+          return mockStartGame();
         }
-        return { data: null, error: null }
-      })
+        return { data: null, error: null };
+      });
 
-      await expect(
-        mockGameStore.startGame('room-123')
-      ).rejects.toThrow()
-    })
-  })
+      await expect(mockGameStore.startGame('room-123')).rejects.toThrow();
+    });
+  });
 
   describe('AI手牌获取', () => {
     it('应该能够获取AI手牌', async () => {
       const mockAIHand = [
         { id: 1, suit: 'H', rank: '3', val: 3 },
         { id: 2, suit: 'H', rank: '4', val: 4 },
-        { id: 3, suit: 'H', rank: '5', val: 5 }
-      ]
+        { id: 3, suit: 'H', rank: '5', val: 5 },
+      ];
 
       const mockGetAIHand = vi.fn().mockResolvedValue({
         data: mockAIHand,
-        error: null
-      })
+        error: null,
+      });
 
       useGameStore.setState({
-        gameId: 'game-123'
-      })
+        gameId: 'game-123',
+      });
 
       vi.mocked(supabase.rpc).mockImplementation((name) => {
         if (name === 'get_ai_hand') {
-          return mockGetAIHand()
+          return mockGetAIHand();
         }
-        return { data: null, error: null }
-      })
+        return { data: null, error: null };
+      });
 
-      const result = await mockGameStore.getAIHand(1)
+      const result = await mockGameStore.getAIHand(1);
 
-      expect(result).toBeDefined()
-      expect(result.length).toBe(3)
-      expect(mockGetAIHand).toHaveBeenCalled()
-    })
+      expect(result).toBeDefined();
+      expect(result.length).toBe(3);
+      expect(mockGetAIHand).toHaveBeenCalled();
+    });
 
     it('应该能够处理没有游戏ID的情况', async () => {
       useGameStore.setState({
-        gameId: null
-      })
+        gameId: null,
+      });
 
-      const result = await mockGameStore.getAIHand(1)
+      const result = await mockGameStore.getAIHand(1);
 
-      expect(result).toEqual([])
-    })
-  })
+      expect(result).toEqual([]);
+    });
+  });
 
   describe('游戏状态重置', () => {
     it('应该能够重置游戏状态', () => {
@@ -547,26 +561,26 @@ describe('游戏状态同步集成测试', () => {
         turnNo: 5,
         currentSeat: 2,
         myHand: [{ id: 1, suit: 'H', rank: '3', val: 3 }],
-        rankings: [1, 2, 3, 4]
-      })
+        rankings: [1, 2, 3, 4],
+      });
 
-      mockGameStore.resetGame()
+      mockGameStore.resetGame();
 
-      expect(mockGameStore.gameId).toBeNull()
-      expect(mockGameStore.status).toBe('deal')
-      expect(mockGameStore.turnNo).toBe(0)
-      expect(mockGameStore.currentSeat).toBe(0)
-      expect(mockGameStore.myHand).toEqual([])
-      expect(mockGameStore.rankings).toEqual([])
-    })
-  })
+      expect(mockGameStore.gameId).toBeNull();
+      expect(mockGameStore.status).toBe('deal');
+      expect(mockGameStore.turnNo).toBe(0);
+      expect(mockGameStore.currentSeat).toBe(0);
+      expect(mockGameStore.myHand).toEqual([]);
+      expect(mockGameStore.rankings).toEqual([]);
+    });
+  });
 
   describe('完整游戏流程同步', () => {
     it('应该能够完成完整的游戏流程', async () => {
       const mockStartGame = vi.fn().mockResolvedValue({
         data: 'game-123',
-        error: null
-      })
+        error: null,
+      });
 
       const mockSubmitTurn = vi.fn().mockResolvedValue({
         data: [
@@ -574,11 +588,11 @@ describe('游戏状态同步集成测试', () => {
             turn_no: 1,
             current_seat: 1,
             status: 'playing',
-            rankings: []
-          }
+            rankings: [],
+          },
         ],
-        error: null
-      })
+        error: null,
+      });
 
       const mockGame = {
         id: 'game-123',
@@ -592,43 +606,44 @@ describe('游戏状态同步集成测试', () => {
         state_public: {
           counts: [26, 27, 27, 27],
           rankings: [],
-          levelRank: 2
+          levelRank: 2,
         },
         paused_by: null,
         paused_at: null,
-        pause_reason: null
-      }
+        pause_reason: null,
+      };
 
       // 使用辅助函数创建链式 mock
       const chain = createNestedQueryMock(
         { data: mockGame, error: null },
         { data: [mockGame], error: null }
-      )
-      vi.mocked(supabase.from).mockImplementation(() => chain)
+      );
+      vi.mocked(supabase.from).mockImplementation(() => chain);
 
       vi.mocked(supabase.rpc).mockImplementation((name) => {
         if (name === 'start_game') {
-          return mockStartGame()
+          return mockStartGame();
         } else if (name === 'submit_turn') {
-          return mockSubmitTurn()
+          return mockSubmitTurn();
         }
-        return { data: null, error: null }
-      })
+        return { data: null, error: null };
+      });
 
-      await mockGameStore.startGame('room-123')
-      expect(mockStartGame).toHaveBeenCalled()
+      // 使用最新的 store 状态
+      await useGameStore.getState().startGame('room-123');
+      expect(mockStartGame).toHaveBeenCalled();
 
-      await mockGameStore.fetchGame('room-123')
+      await useGameStore.getState().fetchGame('room-123');
       // 获取更新后的 store 状态
-      const state = useGameStore.getState()
-      expect(state.gameId).toBe('game-123')
-      expect(state.status).toBe('playing')
+      const state = useGameStore.getState();
+      expect(state.gameId).toBe('game-123');
+      expect(state.status).toBe('playing');
 
-      const cards: Card[] = [{ id: 1, suit: 'H', rank: '3', val: 3 }]
-      useGameStore.setState({ myHand: cards })
+      const cards: Card[] = [{ id: 1, suit: 'H', rank: '3', val: 3 }];
+      useGameStore.setState({ myHand: cards });
 
-      await mockGameStore.submitTurn('play', cards)
-      expect(mockSubmitTurn).toHaveBeenCalled()
-    })
-  })
-})
+      await useGameStore.getState().submitTurn('play', cards);
+      expect(mockSubmitTurn).toHaveBeenCalled();
+    });
+  });
+});
