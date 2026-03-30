@@ -10,7 +10,7 @@ if (!process.env.CI) {
     if (fs.existsSync(envPath)) {
       console.log('Loading env from:', envPath);
       const envConfig = fs.readFileSync(envPath, 'utf8');
-      envConfig.split('\n').forEach(line => {
+      envConfig.split('\n').forEach((line) => {
         const match = line.match(/^([^=]+)=(.*)$/);
         if (match) {
           const key = match[1].trim();
@@ -32,7 +32,7 @@ console.log('Playwright Config: hasSupabaseEnv (Forced) =', hasSupabaseEnv);
 if (!hasSupabaseEnv) {
   console.log('Missing env vars:', {
     url: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-    key: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    key: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   });
 }
 
@@ -40,16 +40,18 @@ export default defineConfig({
   testDir: './tests/e2e',
   testMatch: hasSupabaseEnv ? undefined : ['**/noop.spec.ts'],
   // Global timeout for the entire test run (10 minutes)
-  globalTimeout: 10 * 60 * 1000, 
+  globalTimeout: 10 * 60 * 1000,
   // Timeout for each individual test (2 minutes)
   timeout: 120 * 1000,
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 1,
   workers: 1,
-  reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : [['list'], ['html', { open: 'never' }]],
+  reporter: process.env.CI
+    ? [['list'], ['html', { open: 'never' }]]
+    : [['list'], ['html', { open: 'never' }]],
   use: {
-    baseURL: 'http://localhost:3001',
+    baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: process.env.CI ? 'off' : 'retain-on-failure',
@@ -65,7 +67,10 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'], channel: process.platform === 'win32' ? 'msedge' : undefined },
+      use: {
+        ...devices['Desktop Chrome'],
+        channel: process.platform === 'win32' ? 'msedge' : undefined,
+      },
     },
   ],
   // 禁用自动启动 webServer，假设开发服务器已经在运行
