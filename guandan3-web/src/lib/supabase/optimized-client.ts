@@ -1,5 +1,5 @@
 import { createClient as createSupabaseClient, SupabaseClient } from '@supabase/supabase-js'
-import { databaseOptimizer, DatabaseMetrics } from '../performance/database-optimizer'
+import { databaseOptimizer, DatabaseMetrics, getDatabasePerformanceReport } from '../performance/database-optimizer'
 import { networkOptimizer, NetworkMetrics } from '../performance/network-optimizer'
 import { supabase as baseSupabase } from './client'
 
@@ -245,7 +245,6 @@ function createOptimizedClient(): OptimizedSupabaseClient {
     getDatabaseMetrics: () => databaseOptimizer.getMetrics(),
 
     getDatabasePerformanceReport: () => {
-      const { getDatabasePerformanceReport } = require('../performance/database-optimizer')
       return getDatabasePerformanceReport()
     },
 

@@ -38,6 +38,7 @@ export async function fetchGame(this: GameState, roomId: string): Promise<void> 
   const levelRank = statePublic?.levelRank || 2
 
   // 更新基础游戏状态
+  // 注意：status 直接使用 API 返回的值，不进行类型转换
   this.setGame({
     gameId: game.id,
     status: game.status as 'deal' | 'playing' | 'paused' | 'finished',

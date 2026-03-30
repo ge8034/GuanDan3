@@ -120,7 +120,8 @@ export async function setupRoomMocks(page: Page, userId: string = 'mock-user-id'
     const roomId = requestBody?.p_room_id
 
     // 返回当前成员信息（包括新加入的成员）
-    const members = isPracticeRoom
+    const isPractice = (global as any).isPracticeRoom
+    const members = isPractice
       ? createPracticeRoomMembers(roomId, userId)
       : [...createPvpRoomMembers(roomId, userId)]
 
