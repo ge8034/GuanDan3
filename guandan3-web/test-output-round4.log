@@ -1,0 +1,109 @@
+npm warn Unknown project config "enable-pre-post-scripts". This will stop working in the next major version of npm.
+
+> guandan3-web@0.1.0 test
+> vitest --run
+
+
+[1m[46m RUN [49m[22m [36mv4.1.1 [39m[90mD:/Learn-Claude/GuanDan3/guandan3-web[39m
+
+ [31m❯[39m src/test/unit/game/ai_coop.test.ts [2m([22m[2m2 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 52[2mms[22m[39m
+[31m     [31m×[31m needsSupport=false 时不走支援逻辑[39m[32m 25[2mms[22m[39m
+ [31m❯[39m src/test/unit/store/room.test.ts [2m([22m[2m22 tests[22m[2m | [22m[31m3 failed[39m[2m)[22m[32m 97[2mms[22m[39m
+[31m     [31m×[31m fetchRoom会同步room与members[39m[32m 24[2mms[22m[39m
+[31m     [31m×[31m fetchRoom遇到roomError会提前返回[39m[32m 5[2mms[22m[39m
+[31m     [31m×[31m fetchRoom遇到membersError会保留room但不更新members[39m[32m 4[2mms[22m[39m
+[90mstderr[2m | src/test/integration/security-integration.test.ts[2m > [22m[2m安全系统集成测试[2m > [22m[2m错误处理集成[2m > [22m[2m应该能够处理解密错误
+[22m[39m[ERROR] Decryption error: Error: Malformed UTF-8 data
+    at Object.stringify [90m(D:\Learn-Claude\GuanDan3\guandan3-web\[39mnode_modules\[4m.pnpm[24m\crypto-js@4.2.0\node_modules\[4mcrypto-js[24m\core.js:523:24[90m)[39m
+    at WordArray.init.toString [90m(D:\Learn-Claude\GuanDan3\guandan3-web\[39mnode_modules\[4m.pnpm[24m\crypto-js@4.2.0\node_modules\[4mcrypto-js[24m\core.js:278:38[90m)[39m
+    at DataSecurity.decrypt (D:/Learn-Claude/GuanDan3/guandan3-web/src/lib/security/data-security.ts:30:20)
+    at D:/Learn-Claude/GuanDan3/guandan3-web/src/test/integration/security-integration.test.ts:326:35
+    at [90mfile:///D:/Learn-Claude/GuanDan3/guandan3-web/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.1.1/node_modules/[4m@vitest/runner[24m/dist/chunk-artifact.js:302:11
+    at [90mfile:///D:/Learn-Claude/GuanDan3/guandan3-web/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.1.1/node_modules/[4m@vitest/runner[24m/dist/chunk-artifact.js:1893:26
+    at [90mfile:///D:/Learn-Claude/GuanDan3/guandan3-web/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.1.1/node_modules/[4m@vitest/runner[24m/dist/chunk-artifact.js:2316:20
+    at new Promise (<anonymous>)
+    at runWithCancel [90m(file:///D:/Learn-Claude/GuanDan3/guandan3-web/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.1.1/node_modules/[4m@vitest/runner[24m/dist/chunk-artifact.js:2313:10[90m)[39m
+    at [90mfile:///D:/Learn-Claude/GuanDan3/guandan3-web/[39mnode_modules/[4m.pnpm[24m/@vitest+runner@4.1.1/node_modules/[4m@vitest/runner[24m/dist/chunk-artifact.js:2295:20
+
+ [31m❯[39m src/test/integration/security-integration.test.ts [2m([22m[2m30 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 140[2mms[22m[39m
+[31m       [31m×[31m 应该能够处理解密错误[39m[32m 30[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 5 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/test/integration/security-integration.test.ts[2m > [22m安全系统集成测试[2m > [22m错误处理集成[2m > [22m应该能够处理解密错误
+[31m[1mError[22m: Failed to decrypt data[39m
+[36m [2m❯[22m DataSecurity.decrypt src/lib/security/data-security.ts:[2m33:13[22m[39m
+    [90m 31|[39m     } [35mcatch[39m (error) {
+    [90m 32|[39m       logger[33m.[39m[34merror[39m([32m'Decryption error:'[39m[33m,[39m error)
+    [90m 33|[39m       [35mthrow[39m [35mnew[39m [33mError[39m([32m'Failed to decrypt data'[39m)
+    [90m   |[39m             [31m^[39m
+    [90m 34|[39m     }
+    [90m 35|[39m   }
+[90m [2m❯[22m src/test/integration/security-integration.test.ts:[2m326:35[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/test/unit/game/ai_coop.test.ts[2m > [22mAI Cooperation Strategy[2m > [22mneedsSupport=false 时不走支援逻辑
+[31m[1mAssertionError[22m: expected 4 to be 1 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 1[39m
+[31m+ 4[39m
+
+[36m [2m❯[22m src/test/unit/game/ai_coop.test.ts:[2m76:32[22m[39m
+    [90m 74|[39m     )[33m;[39m
+    [90m 75|[39m     [34mexpect[39m(move[33m.[39mtype)[33m.[39m[34mtoBe[39m([32m'play'[39m)[33m;[39m
+    [90m 76|[39m     [34mexpect[39m(move[33m.[39mcards[33m?.[39mlength)[33m.[39m[34mtoBe[39m([34m1[39m)[33m;[39m
+    [90m   |[39m                                [31m^[39m
+    [90m 77|[39m     [34mexpect[39m(move[33m.[39mcards[33m?.[39m[[34m0[39m][33m.[39msuit)[33m.[39m[34mtoBe[39m([32m'J'[39m)[33m;[39m
+    [90m 78|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/test/unit/store/room.test.ts[2m > [22museRoomStore[2m > [22mfetchRoom会同步room与members
+[31m[1mTypeError[22m: supabase.rpc is not a function[39m
+[36m [2m❯[22m Object.fetchRoom src/lib/store/room.ts:[2m244:44[22m[39m
+    [90m242|[39m   fetchRoom[33m:[39m [35masync[39m (roomId) [33m=>[39m {
+    [90m243|[39m     [90m// 使用优化的 RPC 函数一次性获取房间和成员数据[39m
+    [90m244|[39m     const { data, error } = await supabase.rpc('get_room_with_members_…
+    [90m   |[39m                                            [31m^[39m
+    [90m245|[39m       p_room_id[33m:[39m roomId
+    [90m246|[39m     })
+[90m [2m❯[22m src/test/unit/store/room.test.ts:[2m210:35[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/test/unit/store/room.test.ts[2m > [22museRoomStore[2m > [22mfetchRoom遇到roomError会提前返回
+[31m[1mTypeError[22m: supabase.rpc is not a function[39m
+[36m [2m❯[22m Object.fetchRoom src/lib/store/room.ts:[2m244:44[22m[39m
+    [90m242|[39m   fetchRoom[33m:[39m [35masync[39m (roomId) [33m=>[39m {
+    [90m243|[39m     [90m// 使用优化的 RPC 函数一次性获取房间和成员数据[39m
+    [90m244|[39m     const { data, error } = await supabase.rpc('get_room_with_members_…
+    [90m   |[39m                                            [31m^[39m
+    [90m245|[39m       p_room_id[33m:[39m roomId
+    [90m246|[39m     })
+[90m [2m❯[22m src/test/unit/store/room.test.ts:[2m224:35[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/test/unit/store/room.test.ts[2m > [22museRoomStore[2m > [22mfetchRoom遇到membersError会保留room但不更新members
+[31m[1mTypeError[22m: supabase.rpc is not a function[39m
+[36m [2m❯[22m Object.fetchRoom src/lib/store/room.ts:[2m244:44[22m[39m
+    [90m242|[39m   fetchRoom[33m:[39m [35masync[39m (roomId) [33m=>[39m {
+    [90m243|[39m     [90m// 使用优化的 RPC 函数一次性获取房间和成员数据[39m
+    [90m244|[39m     const { data, error } = await supabase.rpc('get_room_with_members_…
+    [90m   |[39m                                            [31m^[39m
+    [90m245|[39m       p_room_id[33m:[39m roomId
+    [90m246|[39m     })
+[90m [2m❯[22m src/test/unit/store/room.test.ts:[2m248:35[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m31 passed[39m[22m[90m (34)[39m
+[2m      Tests [22m [1m[31m5 failed[39m[22m[2m | [22m[1m[32m516 passed[39m[22m[90m (521)[39m
+[2m   Start at [22m 16:38:09
+[2m   Duration [22m 39.54s[2m (transform 8.55s, setup 45.48s, import 7.89s, tests 17.32s, environment 153.94s)[22m
+

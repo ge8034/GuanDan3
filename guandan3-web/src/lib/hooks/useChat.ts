@@ -2,16 +2,84 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase/client';
 
 import { logger } from '@/lib/utils/logger'
+
+/**
+ * 聊天消息类型
+ */
 export type ChatMessage = {
+  /** 消息唯一 ID */
   id: string;
+  /** 发送者用户 ID */
   senderId: string;
+  /** 发送者昵称 */
   senderName: string;
+  /** 消息内容 */
   content: string;
+  /** 消息时间戳 */
   timestamp: number;
+  /** 消息类型 */
   type: 'text' | 'emoji';
 };
 
-export const useChat = (roomId: string, userId: string, userName: string) => {
+/**
+ * 返回值类型
+ */
+interface UseChatReturn {
+  /** 消息列表 */
+  messages: ChatMessage[];
+  /** 发送消息函数 */
+  sendMessage: (content: string, type?: 'text' | 'emoji') => Promise<void>;
+}
+
+/**
+ * 聊天室 Hook
+ *
+ * 管理游戏房间内的实时聊天功能。
+ *
+ * @param roomId - 房间 ID
+ * @param userId - 当前用户 ID
+ * @param userName - 当前用户昵称
+ * @returns 聊天消息列表和发送消息函数
+ *
+ * @example
+ * ```tsx
+ * function RoomChat() {
+ *   const { user } = useAuthStore()
+ *   const { messages, sendMessage } = useChat(roomId, user.id, user.nickname)
+ *
+ *   return (
+ *     <div>
+ *       {messages.map(msg => (
+ *         <div key={msg.id}>
+ *           <strong>{msg.senderName}:</strong> {msg.content}
+ *         </div>
+ *       ))}
+ *       <input onSend={sendMessage} />
+ *     </div>
+ *   )
+ * }
+ * ```
+ *
+ * @remarks
+ * **连接管理**:
+ * - 最多重试 3 次连接
+ * - 10 秒连接超时保护
+ * - 自动清理连接防止泄漏
+ *
+ * **消息类型**:
+ * - `text`: 普通文本消息
+ * - `emoji`: 表情消息
+ *
+ * **可靠性保证**:
+ * - 使用 Supabase Broadcast 保证消息送达
+ * - 自动重连机制
+ * - 连接状态日志记录
+ */
+export const useChat = (
+  roomId: string,
+  userId: string,
+  userName: string
+): UseChatReturn => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const channelRef = useRef<any>(null);
   const connectAttemptRef = useRef(0);
@@ -73,6 +141,23 @@ export const useChat = (roomId: string, userId: string, userName: string) => {
     };
   }, [roomId, userId]);
 
+  /**
+   * 发送消息
+   *
+   * 向房间广播一条消息。
+   *
+   * @param content - 消息内容
+   * @param type - 消息类型，默认为 'text'
+   *
+   * @example
+   * ```ts
+   * // 发送文本消息
+   * await sendMessage('你好！')
+   *
+   * // 发送表情
+   * await sendMessage('😀', 'emoji')
+   * ```
+   */
   const sendMessage = useCallback(
     async (content: string, type: 'text' | 'emoji' = 'text') => {
       if (!channelRef.current) return;

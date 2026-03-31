@@ -1,0 +1,70 @@
+npm warn Unknown project config "enable-pre-post-scripts". This will stop working in the next major version of npm.
+
+> guandan3-web@0.1.0 test
+> vitest --run
+
+
+[1m[46m RUN [49m[22m [36mv4.1.1 [39m[90mD:/Learn-Claude/GuanDan3/guandan3-web[39m
+
+ [31m❯[39m src/test/unit/game/ai_coop.test.ts [2m([22m[2m2 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 49[2mms[22m[39m
+[31m     [31m×[31m needsSupport=false 时不走支援逻辑[39m[32m 28[2mms[22m[39m
+ [31m❯[39m src/test/unit/store/room.test.ts [2m([22m[2m22 tests[22m[2m | [22m[31m4 failed[39m[2m)[22m[32m 95[2mms[22m[39m
+[31m     [31m×[31m fetchRoom会同步room与members[39m[32m 20[2mms[22m[39m
+[31m     [31m×[31m fetchRoom遇到roomError会提前返回[39m[32m 2[2mms[22m[39m
+[31m     [31m×[31m fetchRoom遇到membersError会保留room但不更新members[39m[32m 2[2mms[22m[39m
+[31m     [31m×[31m subscribeRoom收到rooms变更会更新currentRoom，members变更会触发fetchRoom[39m[32m 1[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 5 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/test/unit/game/ai_coop.test.ts[2m > [22mAI Cooperation Strategy[2m > [22mneedsSupport=false 时不走支援逻辑
+[31m[1mAssertionError[22m: expected 4 to be 1 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 1[39m
+[31m+ 4[39m
+
+[36m [2m❯[22m src/test/unit/game/ai_coop.test.ts:[2m76:32[22m[39m
+    [90m 74|[39m     )[33m;[39m
+    [90m 75|[39m     [34mexpect[39m(move[33m.[39mtype)[33m.[39m[34mtoBe[39m([32m'play'[39m)[33m;[39m
+    [90m 76|[39m     [34mexpect[39m(move[33m.[39mcards[33m?.[39mlength)[33m.[39m[34mtoBe[39m([34m1[39m)[33m;[39m
+    [90m   |[39m                                [31m^[39m
+    [90m 77|[39m     [34mexpect[39m(move[33m.[39mcards[33m?.[39m[[34m0[39m][33m.[39msuit)[33m.[39m[34mtoBe[39m([32m'J'[39m)[33m;[39m
+    [90m 78|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/test/unit/store/room.test.ts[2m > [22museRoomStore[2m > [22mfetchRoom会同步room与members
+[31m[1mTypeError[22m: supabase.rpc is not a function[39m
+[36m [2m❯[22m Object.fetchRoom src/lib/store/room.ts:[2m244:44[22m[39m
+    [90m242|[39m   fetchRoom[33m:[39m [35masync[39m (roomId) [33m=>[39m {
+    [90m243|[39m     [90m// 使用优化的 RPC 函数一次性获取房间和成员数据[39m
+    [90m244|[39m     const { data, error } = await supabase.rpc('get_room_with_members_…
+    [90m   |[39m                                            [31m^[39m
+    [90m245|[39m       p_room_id[33m:[39m roomId
+    [90m246|[39m     })
+[90m [2m❯[22m src/test/unit/store/room.test.ts:[2m198:35[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/test/unit/store/room.test.ts[2m > [22museRoomStore[2m > [22mfetchRoom遇到roomError会提前返回
+[41m[1m FAIL [22m[49m src/test/unit/store/room.test.ts[2m > [22museRoomStore[2m > [22mfetchRoom遇到membersError会保留room但不更新members
+[41m[1m FAIL [22m[49m src/test/unit/store/room.test.ts[2m > [22museRoomStore[2m > [22msubscribeRoom收到rooms变更会更新currentRoom，members变更会触发fetchRoom
+[31m[1mTypeError[22m: supabase.rpc.mockClear is not a function[39m
+[36m [2m❯[22m src/test/unit/store/room.test.ts:[2m13:28[22m[39m
+    [90m 11|[39m     [90m// 清除所有mock调用记录，不重置实现[39m
+    [90m 12|[39m     vi[33m.[39m[34mclearAllMocks[39m()
+    [90m 13|[39m     [33m;[39m(supabase[33m.[39mrpc [35mas[39m any)[33m.[39m[34mmockClear[39m()
+    [90m   |[39m                            [31m^[39m
+    [90m 14|[39m     [33m;[39m(supabase[33m.[39m[35mfrom[39m [35mas[39m any)[33m.[39m[34mmockClear[39m()
+    [90m 15|[39m     [33m;[39m(supabase[33m.[39mchannel [35mas[39m any)[33m.[39m[34mmockClear[39m()
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m32 passed[39m[22m[90m (34)[39m
+[2m      Tests [22m [1m[31m5 failed[39m[22m[2m | [22m[1m[32m516 passed[39m[22m[90m (521)[39m
+[2m   Start at [22m 16:35:26
+[2m   Duration [22m 39.42s[2m (transform 8.05s, setup 46.72s, import 7.80s, tests 18.52s, environment 153.59s)[22m
+
