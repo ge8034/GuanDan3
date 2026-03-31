@@ -45,5 +45,29 @@ next-env.d.ts
 # 日志
 /logs
 /logs/*
+dev-server*.log
+
+# 测试截图和临时文件
+test-*.png
+test-*.js
+zz.png
+
+# 临时脚本（数据库迁移辅助）
+scripts/find-*.html
+scripts/find-*.js
+scripts/get-*.js
+scripts/test-*.js
+scripts/check-*.js
+scripts/apply-*.js
+scripts/execute-*.js
+scripts/reexecute-*.js
+scripts/finalize-*.js
+scripts/replace-*.js
+scripts/setup-*.js
+scripts/validate-*.js
+
+# 备份文件
+*.backup
+*.bak
 
 .vercel
