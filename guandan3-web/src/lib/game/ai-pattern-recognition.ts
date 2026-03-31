@@ -20,12 +20,13 @@ export function findPairs(cards: Card[], levelRank: number): Card[][] {
   const pairs: Card[][] = [];
   const valueMap = new Map<number, Card[]>();
 
+  // 使用原始 val 值分组（级牌对子：红桃级牌+其他花色级牌=有效对子）
   cards.forEach((card) => {
-    const value = getCardValue(card, levelRank);
-    if (!valueMap.has(value)) {
-      valueMap.set(value, []);
+    const val = card.val;
+    if (!valueMap.has(val)) {
+      valueMap.set(val, []);
     }
-    valueMap.get(value)!.push(card);
+    valueMap.get(val)!.push(card);
   });
 
   valueMap.forEach((cardsWithSameValue) => {
@@ -43,12 +44,13 @@ export function findTriples(cards: Card[], levelRank: number): Card[][] {
   const triples: Card[][] = [];
   const valueMap = new Map<number, Card[]>();
 
+  // 使用原始 val 值分组（级牌三张：红桃级牌+其他两张级牌=有效三张）
   cards.forEach((card) => {
-    const value = getCardValue(card, levelRank);
-    if (!valueMap.has(value)) {
-      valueMap.set(value, []);
+    const val = card.val;
+    if (!valueMap.has(val)) {
+      valueMap.set(val, []);
     }
-    valueMap.get(value)!.push(card);
+    valueMap.get(val)!.push(card);
   });
 
   valueMap.forEach((cardsWithSameValue) => {
@@ -75,13 +77,14 @@ export function findBombs(cards: Card[], levelRank: number): Card[][] {
   const valueMap = new Map<number, Card[]>();
   const jokers = cards.filter((c) => c.suit === 'J');
 
+  // 使用原始 val 值分组（级牌炸弹：所有级牌=有效炸弹）
   cards.forEach((card) => {
     if (card.suit !== 'J') {
-      const value = getCardValue(card, levelRank);
-      if (!valueMap.has(value)) {
-        valueMap.set(value, []);
+      const val = card.val;
+      if (!valueMap.has(val)) {
+        valueMap.set(val, []);
       }
-      valueMap.get(value)!.push(card);
+      valueMap.get(val)!.push(card);
     }
   });
 
@@ -102,22 +105,23 @@ export function findBombs(cards: Card[], levelRank: number): Card[][] {
 
 export function findStraights(cards: Card[], levelRank: number): Card[][] {
   const straights: Card[][] = [];
-  const valueMap = new Map<number, Card[]>();
+  const valMap = new Map<number, Card[]>();
 
+  // 使用原始 val 建立映射（顺子连续性基于原始值）
   cards.forEach((card) => {
-    const value = getCardValue(card, levelRank);
-    if (!valueMap.has(value)) {
-      valueMap.set(value, []);
+    const val = card.val;
+    if (!valMap.has(val)) {
+      valMap.set(val, []);
     }
-    valueMap.get(value)!.push(card);
+    valMap.get(val)!.push(card);
   });
 
-  const sortedValues = Array.from(valueMap.keys()).sort((a, b) => a - b);
+  const sortedVals = Array.from(valMap.keys()).sort((a, b) => a - b);
 
-  for (let i = 0; i < sortedValues.length - 4; i++) {
-    const straightValues = sortedValues.slice(i, i + 5);
-    if (straightValues[4] - straightValues[0] === 4) {
-      const lists = straightValues.map((v) => valueMap.get(v)!).filter(Boolean);
+  for (let i = 0; i < sortedVals.length - 4; i++) {
+    const straightVals = sortedVals.slice(i, i + 5);
+    if (straightVals[4] - straightVals[0] === 4) {
+      const lists = straightVals.map((v) => valMap.get(v)!).filter(Boolean);
       const combinations = generateCartesianProduct(lists);
       straights.push(...combinations);
     }
@@ -130,12 +134,13 @@ export function findFullHouses(cards: Card[], levelRank: number): Card[][] {
   const fullHouses: Card[][] = [];
   const valueMap = new Map<number, Card[]>();
 
+  // 使用原始 val 值分组（三带二）
   cards.forEach((card) => {
-    const value = getCardValue(card, levelRank);
-    if (!valueMap.has(value)) {
-      valueMap.set(value, []);
+    const val = card.val;
+    if (!valueMap.has(val)) {
+      valueMap.set(val, []);
     }
-    valueMap.get(value)!.push(card);
+    valueMap.get(val)!.push(card);
   });
 
   const triples = Array.from(valueMap.entries())
@@ -166,26 +171,27 @@ export function findFullHouses(cards: Card[], levelRank: number): Card[][] {
 
 export function findSequencePairs(cards: Card[], levelRank: number): Card[][] {
   const sequencePairs: Card[][] = [];
-  const valueMap = new Map<number, Card[]>();
+  const valMap = new Map<number, Card[]>();
 
+  // 使用原始 val 建立映射（连对连续性基于原始值）
   cards.forEach((card) => {
-    const value = getCardValue(card, levelRank);
-    if (!valueMap.has(value)) {
-      valueMap.set(value, []);
+    const val = card.val;
+    if (!valMap.has(val)) {
+      valMap.set(val, []);
     }
-    valueMap.get(value)!.push(card);
+    valMap.get(val)!.push(card);
   });
 
-  const sortedValues = Array.from(valueMap.keys()).sort((a, b) => a - b);
+  const sortedVals = Array.from(valMap.keys()).sort((a, b) => a - b);
 
-  for (let i = 0; i < sortedValues.length - 2; i++) {
-    const sequenceValues = sortedValues.slice(i, i + 3);
-    if (sequenceValues[2] - sequenceValues[0] === 2) {
-      const perValuePairs = sequenceValues.map((v) =>
-        generateCombinations(valueMap.get(v) || [], 2)
+  for (let i = 0; i < sortedVals.length - 2; i++) {
+    const sequenceVals = sortedVals.slice(i, i + 3);
+    if (sequenceVals[2] - sequenceVals[0] === 2) {
+      const perValPairs = sequenceVals.map((v) =>
+        generateCombinations(valMap.get(v) || [], 2)
       );
-      if (perValuePairs.some((x) => x.length === 0)) continue;
-      const combinations = generateCartesianProduct(perValuePairs);
+      if (perValPairs.some((x) => x.length === 0)) continue;
+      const combinations = generateCartesianProduct(perValPairs);
       sequencePairs.push(...combinations.map((group) => group.flat()));
     }
   }
@@ -198,143 +204,32 @@ export function findSequenceTriples(
   levelRank: number
 ): Card[][] {
   const sequenceTriples: Card[][] = [];
-  const valueMap = new Map<number, Card[]>();
+  const valMap = new Map<number, Card[]>();
 
+  // 使用原始 val 建立映射（飞机连续性基于原始值）
   cards.forEach((card) => {
-    const value = getCardValue(card, levelRank);
-    if (!valueMap.has(value)) {
-      valueMap.set(value, []);
+    const val = card.val;
+    if (!valMap.has(val)) {
+      valMap.set(val, []);
     }
-    valueMap.get(value)!.push(card);
+    valMap.get(val)!.push(card);
   });
 
-  const sortedValues = Array.from(valueMap.keys()).sort((a, b) => a - b);
+  const sortedVals = Array.from(valMap.keys()).sort((a, b) => a - b);
 
-  for (let i = 0; i < sortedValues.length - 2; i++) {
-    const sequenceValues = sortedValues.slice(i, i + 3);
-    if (sequenceValues[2] - sequenceValues[0] === 2) {
-      const perValueTriples = sequenceValues.map((v) =>
-        generateCombinations(valueMap.get(v) || [], 3)
+  for (let i = 0; i < sortedVals.length - 2; i++) {
+    const sequenceVals = sortedVals.slice(i, i + 3);
+    if (sequenceVals[2] - sequenceVals[0] === 2) {
+      const perValTriples = sequenceVals.map((v) =>
+        generateCombinations(valMap.get(v) || [], 3)
       );
-      if (perValueTriples.some((x) => x.length === 0)) continue;
-      const combinations = generateCartesianProduct(perValueTriples);
+      if (perValTriples.some((x) => x.length === 0)) continue;
+      const combinations = generateCartesianProduct(perValTriples);
       sequenceTriples.push(...combinations.map((group) => group.flat()));
     }
   }
 
   return sequenceTriples;
-}
-
-export function findQuadWithTwo(cards: Card[], levelRank: number): Card[][] {
-  const quadsWithTwo: Card[][] = [];
-  const valueMap = new Map<number, Card[]>();
-
-  cards.forEach((card) => {
-    const value = getCardValue(card, levelRank);
-    if (!valueMap.has(value)) {
-      valueMap.set(value, []);
-    }
-    valueMap.get(value)!.push(card);
-  });
-
-  const quads = Array.from(valueMap.entries())
-    .filter(([_, cards]) => cards.length >= 4)
-    .map(([value, cards]) => ({ value, cards }));
-
-  quads.forEach((quad) => {
-    const remainingCards = cards.filter(
-      (card) => getCardValue(card, levelRank) !== quad.value
-    );
-
-    const wingCombinations = generateCombinations(remainingCards, 2);
-    const quadCombinations = generateCombinations(quad.cards, 4);
-
-    quadCombinations.forEach((quadCombo) => {
-      wingCombinations.forEach((wingCombo) => {
-        quadsWithTwo.push([...quadCombo, ...wingCombo]);
-      });
-    });
-  });
-
-  return quadsWithTwo;
-}
-
-export function findSequenceTriplesWithWings(
-  cards: Card[],
-  levelRank: number
-): Card[][] {
-  const results: Card[][] = [];
-  const valueMap = new Map<number, Card[]>();
-
-  cards.forEach((card) => {
-    const value = getCardValue(card, levelRank);
-    if (!valueMap.has(value)) {
-      valueMap.set(value, []);
-    }
-    valueMap.get(value)!.push(card);
-  });
-
-  const sortedValues = Array.from(valueMap.keys()).sort((a, b) => a - b);
-
-  // 查找至少2组连续的三张
-  for (let i = 0; i < sortedValues.length - 1; i++) {
-    for (let j = i + 1; j < sortedValues.length; j++) {
-      // 检查是否连续
-      if (sortedValues[j] - sortedValues[i] !== j - i) continue;
-
-      // 检查每个值是否至少有3张牌
-      const tripleValues = sortedValues.slice(i, j + 1);
-      const allHaveTriples = tripleValues.every(
-        (v) => valueMap.has(v) && (valueMap.get(v) || []).length >= 3
-      );
-
-      if (!allHaveTriples) continue;
-
-      // 生成所有三张组合
-      const tripleGroups = tripleValues.map((v) =>
-        generateCombinations(valueMap.get(v) || [], 3)
-      );
-      const tripleCombos = generateCartesianProduct(tripleGroups).map((group) =>
-        group.flat()
-      );
-
-      // 生成翅膀（单牌或对子）
-      const usedCardIds = new Set<number>();
-      tripleCombos.forEach((combo) =>
-        combo.forEach((c) => usedCardIds.add(c.id))
-      );
-
-      const remainingCards = cards.filter((c) => !usedCardIds.has(c.id));
-
-      // 带单牌翅膀 - 翅膀数量等于三张组数
-      if (remainingCards.length >= tripleValues.length) {
-        const wingCombos = generateCombinations(
-          remainingCards,
-          tripleValues.length
-        );
-        wingCombos.forEach((wing) => {
-          tripleCombos.forEach((triple) => {
-            results.push([...triple, ...wing]);
-          });
-        });
-      }
-
-      // 带对子翅膀 - 翅膀数量等于三张组数 * 2
-      if (remainingCards.length >= tripleValues.length * 2) {
-        const wingCombos = generateCombinations(
-          remainingCards,
-          tripleValues.length * 2
-        );
-        wingCombos.forEach((wing) => {
-          tripleCombos.forEach((triple) => {
-            results.push([...triple, ...wing]);
-          });
-        });
-      }
-    }
-  }
-
-  return results;
 }
 
 function generateCombinations<T>(items: T[], size: number): T[][] {
@@ -378,7 +273,5 @@ export function analyzeHand(cards: Card[], levelRank: number): HandAnalysis {
     sequencePairs: findSequencePairs(cards, levelRank),
     sequenceTriples: findSequenceTriples(cards, levelRank),
     fullHouses: findFullHouses(cards, levelRank),
-    quadWithTwo: findQuadWithTwo(cards, levelRank),
-    sequenceTriplesWithWings: findSequenceTriplesWithWings(cards, levelRank),
   };
 }

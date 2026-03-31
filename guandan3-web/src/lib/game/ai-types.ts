@@ -26,8 +26,6 @@ export interface HandAnalysis {
   sequencePairs: Card[][];
   sequenceTriples: Card[][];
   fullHouses: Card[][];
-  quadWithTwo: Card[][];
-  sequenceTriplesWithWings: Card[][];
 }
 
 export interface CardDistribution {

@@ -75,9 +75,13 @@ export async function setupGameRpcMocks(
       updated_at: new Date().toISOString(),
     };
 
-    // 存储房间信息
+    // 存储房间信息 - 同时存储到 mockRoomInfo 和 mockRooms
     (global as any).mockRoomInfo = newRoom;
     (global as any).isPracticeRoom = mode === 'pve1v3';
+
+    // 存储到 mockRooms 数组，确保 GET /rooms 能找到它
+    (global as any).mockRooms = (global as any).mockRooms || [];
+    (global as any).mockRooms.push(newRoom);
 
     await route.fulfill({
       status: 200,
@@ -139,38 +143,80 @@ export async function setupGameRpcMocks(
     const postData = request.postDataJSON();
     console.log('Mocking Submit Turn with payload:', JSON.stringify(postData));
 
-    // 从全局变量获取当前状态
-    let currentSeat = (global as any).currentSeat || 1;
-    let turnNo = (global as any).turnNo || 0;
-
-    // 获取当前手牌
-    let currentHandCards = getMockHandCards();
+    // 从全局变量获取当前状态，确保初始值正确
+    let currentSeat = (global as any).currentSeat ?? 0;
+    let turnNo = (global as any).turnNo ?? 0;
 
     // 提取出牌信息
     const payload = postData?.p_payload || {};
     const playedCards = payload.cards || [];
+    const actionType = payload?.type || 'pass';
 
     console.log(
-      `Played ${playedCards.length} cards, current hand size: ${currentHandCards.length}`
+      `Mock submit_turn: turnNo=${turnNo}, currentSeat=${currentSeat}, type=${actionType}, played=${playedCards.length}`
     );
 
-    // 移除已打出的牌
-    currentHandCards = removeCardsFromHand(currentHandCards, playedCards);
-    setMockHandCards(currentHandCards);
-
-    // 如果没有出牌，移除第一张（回退逻辑）
-    if (playedCards.length === 0 && currentHandCards.length > 0) {
-      currentHandCards.shift();
+    // 根据当前座位更新对应的手牌
+    if (currentSeat === 0) {
+      // 人类玩家 (座位0)
+      let currentHandCards = getMockHandCards();
+      currentHandCards = removeCardsFromHand(currentHandCards, playedCards);
       setMockHandCards(currentHandCards);
+      console.log(
+        `Updated seat 0 hand: ${currentHandCards.length} cards remaining`
+      );
+    } else {
+      // AI玩家 (座位1-3)
+      if (!(global as any).aiHands) {
+        (global as any).aiHands = {};
+      }
+      if (!(global as any).aiHands[currentSeat]) {
+        // 如果还没有初始化AI手牌，先初始化
+        (global as any).aiHands[currentSeat] = Array.from(
+          { length: 27 },
+          (_, i) => ({
+            id: currentSeat * 100 + i + 1,
+            suit: ['S', 'H', 'D', 'C'][
+              Math.floor((currentSeat * 27 + i) / 13) % 4
+            ] as any,
+            rank: [
+              'A',
+              'K',
+              'Q',
+              'J',
+              '10',
+              '9',
+              '8',
+              '7',
+              '6',
+              '5',
+              '4',
+              '3',
+              '2',
+            ][(currentSeat * 27 + i) % 13] as any,
+            val: 14 - ((currentSeat * 27 + i) % 13),
+          })
+        );
+      }
+      let aiHand = (global as any).aiHands[currentSeat];
+      aiHand = removeCardsFromHand(aiHand, playedCards);
+      (global as any).aiHands[currentSeat] = aiHand;
+      console.log(
+        `Updated seat ${currentSeat} AI hand: ${aiHand.length} cards remaining`
+      );
     }
 
-    // 更新游戏状态
+    // 更新游戏状态 - 轮转到下一个座位
     turnNo++;
     currentSeat = (currentSeat + 1) % 4;
 
     // 存储回全局变量
     (global as any).turnNo = turnNo;
     (global as any).currentSeat = currentSeat;
+
+    console.log(
+      `Mock submit_turn: next turnNo=${turnNo}, next currentSeat=${currentSeat}`
+    );
 
     // 返回数组格式，与实际 RPC 一致
     await route.fulfill({
@@ -229,19 +275,47 @@ export async function setupGameRpcMocks(
 
   // RPC: get_ai_hand - 为 AI 返回手牌
   await page.route('**/rest/v1/rpc/get_ai_hand', async (route) => {
-    console.log('Mocking Get AI Hand');
     const requestBody = route.request().postDataJSON();
     const seatNo = requestBody?.p_seat_no ?? 1;
 
-    // 为每个 AI 座位生成不同的手牌
-    const aiHandCards = Array.from({ length: 27 }, (_, i) => ({
-      id: seatNo * 100 + i + 1,
-      suit: ['S', 'H', 'D', 'C'][Math.floor((seatNo * 27 + i) / 13) % 4] as any,
-      rank: ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4', '3', '2'][
-        (seatNo * 27 + i) % 13
-      ] as any,
-      val: 14 - ((seatNo * 27 + i) % 13),
-    }));
+    console.log(`Mocking Get AI Hand for seat ${seatNo}`);
+
+    // 为每个座位维护独立的手牌状态
+    if (!(global as any).aiHands) {
+      (global as any).aiHands = {};
+    }
+
+    // 如果该座位还没有手牌，初始化它
+    if (!(global as any).aiHands[seatNo]) {
+      (global as any).aiHands[seatNo] = Array.from({ length: 27 }, (_, i) => ({
+        id: seatNo * 100 + i + 1,
+        suit: ['S', 'H', 'D', 'C'][
+          Math.floor((seatNo * 27 + i) / 13) % 4
+        ] as any,
+        rank: [
+          'A',
+          'K',
+          'Q',
+          'J',
+          '10',
+          '9',
+          '8',
+          '7',
+          '6',
+          '5',
+          '4',
+          '3',
+          '2',
+        ][(seatNo * 27 + i) % 13] as any,
+        val: 14 - ((seatNo * 27 + i) % 13),
+      }));
+    }
+
+    const aiHandCards = (global as any).aiHands[seatNo] || [];
+
+    console.log(
+      `Mocking Get AI Hand: seat ${seatNo}, card count ${aiHandCards.length}`
+    );
 
     await route.fulfill({
       status: 200,

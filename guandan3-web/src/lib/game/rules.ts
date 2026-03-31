@@ -7,7 +7,6 @@ export type HandType =
   | 'straight'
   | 'sequencePairs'
   | 'sequenceTriples'
-  | 'sequenceTriplesWithWings'
   | 'fullhouse'
   | 'bomb'
   | 'pass';
@@ -19,32 +18,28 @@ export interface Move {
 }
 
 // Get the effective value of a card in GuanDan
-// levelRank: The rank of the current level (e.g. 2 for level 2).
-// Note: In strict GuanDan, level card rank depends on suit (Heart > others).
+// 掼蛋规则：
+// 1. 大小王：红王200，黑王100
+// 2. 级牌：红桃级牌60，其他级牌50（大于A=14）
+// 3. 普通牌：A=14, K=13, ..., 2=2（当2不是级牌时）
 export function getCardValue(card: Card, levelRank: number): number {
-  // Jokers
+  // 大小王
   if (card.suit === 'J') {
-    return card.rank === 'hr' ? 200 : 100; // Red Joker > Black Joker
+    return card.rank === 'hr' ? 200 : 100;
   }
 
-  // Level Card (e.g. if playing 2, then 2 is higher than A)
-  // We need to know the 'val' corresponding to levelRank.
-  // Assuming levelRank is 2..14 (A=14).
-  // If card.val == levelRank, it is a level card.
+  // 级牌 - 大于A（掼蛋核心规则）
   if (card.val === levelRank) {
-    return card.suit === 'H' ? 50 : 40; // Heart Level > Other Level
+    // 红桃级牌逢人配，值最大
+    return card.suit === 'H' ? 60 : 50;
   }
 
-  // Normal Cards
-  // 2 is usually lowest in standard poker, but in GuanDan 2 is level card?
-  // If level is NOT 2, then 2 is smallest (unless specific rule).
-  // Let's assume standard ordering: 2,3,4...A.
-  // But usually A is high.
-  // Let's stick to card.val for now (2..14).
+  // 普通牌：A=14, K=13, ..., 2=2
   return card.val;
 }
 
 // Analyze a set of cards to determine its type
+// 掼蛋牌型识别和分析
 export function analyzeMove(cards: Card[], levelRank: number): Move | null {
   if (cards.length === 0) return { type: 'pass', cards: [], primaryValue: 0 };
 
@@ -59,68 +54,66 @@ export function analyzeMove(cards: Card[], levelRank: number): Move | null {
   const hasJoker = cards.some((c) => c.suit === 'J');
   const hasLevel = cards.some((c) => c.val === levelRank);
 
-  // Single
+  // ========== 单张 ==========
   if (cards.length === 1) {
     return { type: 'single', cards, primaryValue: values[0] };
   }
 
-  // Pair
-  if (cards.length === 2 && uniqueValues.length === 1) {
-    return { type: 'pair', cards, primaryValue: values[0] };
+  // ========== 对子 ==========
+  // 使用原始值判断是否相同（级牌对子：红桃级牌+其他花色级牌=有效对子）
+  if (cards.length === 2 && uniqueRawVals.length === 1) {
+    // 级牌对子使用最大值（逢人配的红桃级牌）
+    const isLevelPair = rawVals[0] === levelRank;
+    const primaryValue = isLevelPair ? values[values.length - 1] : values[0];
+    return { type: 'pair', cards, primaryValue };
   }
 
-  // Triple
-  if (cards.length === 3 && uniqueValues.length === 1) {
-    return { type: 'triple', cards, primaryValue: values[0] };
+  // ========== 三张 ==========
+  // 使用原始值判断是否相同
+  if (cards.length === 3 && uniqueRawVals.length === 1) {
+    // 级牌三张使用最大值（逢人配的红桃级牌）
+    const isLevelTriple = rawVals[0] === levelRank;
+    const primaryValue = isLevelTriple ? values[values.length - 1] : values[0];
+    return { type: 'triple', cards, primaryValue };
   }
 
-  // Bomb (4+ cards of same rank)
-  if (cards.length >= 4 && uniqueValues.length === 1) {
-    // Bomb value depends on count (5 > 4) and rank.
-    // We can use a large base for bomb count.
-    // e.g. 4-bomb base 1000, 5-bomb base 2000...
-    return {
-      type: 'bomb',
-      cards,
-      primaryValue: 1000 * cards.length + values[0],
-    };
-  }
-
-  // 王炸 - 四张王牌组成的炸弹，最大的炸弹
-  if (cards.length === 4 && hasJoker && uniqueRanks.length >= 2) {
-    // 王炸是最大的炸弹，使用特殊的高值
+  // ========== 王炸检测（4张王，最大炸弹）==========
+  if (cards.length === 4 && cards.every((c) => c.suit === 'J')) {
     return { type: 'bomb', cards, primaryValue: 10000 };
   }
 
-  // 统计每个值的数量
+  // ========== 统计每个值的数量 ==========
   const counts: Record<number, number> = {};
   for (const v of rawVals) counts[v] = (counts[v] || 0) + 1;
-  const countEntries = Object.entries(counts).sort((a, b) => b[1] - a[1]); // 按数量降序
+  const countEntries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
 
-  // Fullhouse (三带二) - 5张牌：3张相同 + 2张相同
+  // ========== 炸弹（4+张相同）==========
+  // 使用原始值判断是否相同（级牌炸弹：所有级牌=有效炸弹）
+  if (cards.length >= 4 && uniqueRawVals.length === 1) {
+    const isLevelBomb = cards.some((c) => c.val === levelRank);
+    // 级牌炸弹加成：5000 * 张数 + 主值
+    // 普通炸弹：1000 * 张数 + 主值
+    const bombBase = isLevelBomb ? 5000 : 1000;
+    // 级牌炸弹使用最大值（逢人配的红桃级牌）
+    const mainValue = isLevelBomb ? values[values.length - 1] : values[0];
+    return {
+      type: 'bomb',
+      cards,
+      primaryValue: bombBase * cards.length + mainValue,
+    };
+  }
+
+  // ========== 三带二（富余）- 5张牌 ==========
   if (cards.length === 5 && countEntries.length === 2) {
     const [entry1, entry2] = countEntries;
     if (entry1[1] === 3 && entry2[1] === 2) {
-      // 三张的值作为主值
-      const tripleValue = Number(entry1[0]);
-      return { type: 'fullhouse', cards, primaryValue: tripleValue };
+      return { type: 'fullhouse', cards, primaryValue: values[0] };
     }
   }
 
-  // 四带二（炸弹变体）- 6张牌：4张相同 + 2张单牌
-  if (cards.length === 6 && countEntries.length >= 2) {
-    const maxCount = Math.max(...Object.values(counts));
-    if (maxCount === 4) {
-      // 找到四张的值作为主值
-      const quadValue = Number(
-        Object.keys(counts).find((k) => counts[Number(k)] === 4)
-      );
-      // 四带二归类为炸弹类型，但用张数区分
-      return { type: 'bomb', cards, primaryValue: 1000 * 4 + quadValue };
-    }
-  }
-
-  if (!hasJoker && !hasLevel) {
+  // ========== 顺子和连对（可以含2，2是最小的；但不能含王）==========
+  if (!hasJoker) {
+    // 顺子（5张以上连续单牌）
     if (cards.length >= 5 && uniqueRawVals.length === cards.length) {
       let isStraight = true;
       for (let i = 1; i < rawVals.length; i++) {
@@ -138,11 +131,12 @@ export function analyzeMove(cards: Card[], levelRank: number): Move | null {
       }
     }
 
-    if (cards.length >= 4 && cards.length % 2 === 0) {
-      const counts: Record<number, number> = {};
-      for (const v of rawVals) counts[v] = (counts[v] || 0) + 1;
-      if (Object.values(counts).every((c) => c === 2)) {
-        const pairVals = Object.keys(counts)
+    // 连对（3连对以上）
+    if (cards.length >= 6 && cards.length % 2 === 0) {
+      const pairCounts: Record<number, number> = {};
+      for (const v of rawVals) pairCounts[v] = (pairCounts[v] || 0) + 1;
+      if (Object.values(pairCounts).every((c) => c === 2)) {
+        const pairVals = Object.keys(pairCounts)
           .map((v) => Number(v))
           .sort((a, b) => a - b);
         let isSeq = true;
@@ -152,7 +146,7 @@ export function analyzeMove(cards: Card[], levelRank: number): Move | null {
             break;
           }
         }
-        if (isSeq) {
+        if (isSeq && pairVals.length >= 3) {
           return {
             type: 'sequencePairs',
             cards,
@@ -161,70 +155,31 @@ export function analyzeMove(cards: Card[], levelRank: number): Move | null {
         }
       }
     }
+  }
 
-    // Sequence Triples (飞机) - 2+ consecutive triples (最多6张)
-    if (cards.length >= 6 && cards.length % 3 === 0) {
-      const counts: Record<number, number> = {};
-      for (const v of rawVals) counts[v] = (counts[v] || 0) + 1;
-      const tripleVals = Object.keys(counts)
-        .map((v) => Number(v))
-        .filter((v) => counts[v] === 3)
-        .sort((a, b) => a - b);
+  // ========== 飞机（连续三张，不带翅膀）==========
+  if (cards.length >= 6 && cards.length % 3 === 0) {
+    const tripleCounts: Record<number, number> = {};
+    for (const v of rawVals) tripleCounts[v] = (tripleCounts[v] || 0) + 1;
+    const tripleVals = Object.keys(tripleCounts)
+      .map((v) => Number(v))
+      .filter((v) => tripleCounts[v] === 3)
+      .sort((a, b) => a - b);
 
-      if (tripleVals.length >= 2 && tripleVals.length * 3 === cards.length) {
-        let isSeq = true;
-        for (let i = 1; i < tripleVals.length; i++) {
-          if (tripleVals[i] !== tripleVals[i - 1] + 1) {
-            isSeq = false;
-            break;
-          }
-        }
-        if (isSeq) {
-          return {
-            type: 'sequenceTriples',
-            cards,
-            primaryValue: tripleVals[tripleVals.length - 1],
-          };
+    if (tripleVals.length >= 2 && tripleVals.length * 3 === cards.length) {
+      let isSeq = true;
+      for (let i = 1; i < tripleVals.length; i++) {
+        if (tripleVals[i] !== tripleVals[i - 1] + 1) {
+          isSeq = false;
+          break;
         }
       }
-    }
-
-    // 飞机带翅膀 - 连续三张 + 翅膀
-    // 翅膀可以是单牌或对子
-    if (cards.length >= 8) {
-      const counts: Record<number, number> = {};
-      for (const v of rawVals) counts[v] = (counts[v] || 0) + 1;
-      const tripleVals = Object.keys(counts)
-        .map((v) => Number(v))
-        .filter((v) => counts[v] === 3)
-        .sort((a, b) => a - b);
-
-      // 检查是否有至少2个连续的三张
-      if (tripleVals.length >= 2) {
-        let isSeq = true;
-        for (let i = 1; i < tripleVals.length; i++) {
-          if (tripleVals[i] !== tripleVals[i - 1] + 1) {
-            isSeq = false;
-            break;
-          }
-        }
-
-        if (isSeq) {
-          const tripleCount = tripleVals.length;
-          const wingCardCount = cards.length - tripleCount * 3;
-
-          // 翅膀数量必须等于三张组数（带单牌）或2倍三张组数（带对子）
-          if (
-            wingCardCount === tripleCount ||
-            wingCardCount === tripleCount * 2
-          ) {
-            return {
-              type: 'sequenceTriplesWithWings',
-              cards,
-              primaryValue: tripleVals[tripleVals.length - 1],
-            };
-          }
-        }
+      if (isSeq) {
+        return {
+          type: 'sequenceTriples',
+          cards,
+          primaryValue: tripleVals[tripleVals.length - 1],
+        };
       }
     }
   }
@@ -248,7 +203,7 @@ export function canBeat(moveA: Move, moveB: Move): boolean {
   // 同牌型比较
   if (moveA.type === moveB.type) {
     if (moveA.type === 'bomb') {
-      // 炸弹：张数多的大，或张数相同时主值大
+      // 炸弹：直接比较primaryValue
       return moveA.primaryValue > moveB.primaryValue;
     }
     // 非炸弹：必须张数相同且主值更大

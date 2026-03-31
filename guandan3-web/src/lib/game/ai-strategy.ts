@@ -116,8 +116,6 @@ export function findBestSupportMove(
     const allPossibleMoves = [
       ...analysis.bombs,
       ...analysis.fullHouses,
-      ...analysis.quadWithTwo,
-      ...analysis.sequenceTriplesWithWings,
       ...analysis.sequenceTriples,
     ];
 
@@ -192,10 +190,18 @@ export function evaluateMove(
       reasoning.push(`Primary value bonus: ${500 - actualValue * 5}`);
     }
 
-    // 非炸弹多张牌加分
+    // 非炸弹多张牌加分（增加权重，鼓励出对子、三张等）
     if (analysis?.type !== 'bomb') {
-      score += moveCards.length * 10; // 鼓励出多张牌
-      reasoning.push(`Cards played bonus: ${moveCards.length * 10}`);
+      // 对子、三张等牌型额外加分
+      if (moveCards.length === 2) {
+        score += 50; // 对子额外加分
+        reasoning.push(`Pair bonus: 50`);
+      } else if (moveCards.length === 3) {
+        score += 80; // 三张额外加分
+        reasoning.push(`Triple bonus: 80`);
+      }
+      score += moveCards.length * 15; // 基础多张牌加分（提高从10到15）
+      reasoning.push(`Cards played bonus: ${moveCards.length * 15}`);
     }
   } else {
     // 跟牌时：鼓励用最小的能压过的牌（掼蛋策略）
@@ -255,8 +261,6 @@ export function evaluateMove(
         reasoning.push('Quad with two');
       }
     }
-  } else if (analysis?.type === 'sequenceTriplesWithWings') {
-    reasoning.push('Sequence triple with wing');
   }
 
   // 接近结束时加分
@@ -303,8 +307,6 @@ export function findOptimalMove(
     ...analysis.sequencePairs,
     ...analysis.sequenceTriples,
     ...analysis.fullHouses,
-    ...analysis.quadWithTwo,
-    ...analysis.sequenceTriplesWithWings,
   ];
 
   allPossibleMoves.forEach((move) => {

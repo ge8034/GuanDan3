@@ -219,45 +219,6 @@ export class AdvancedPatternRecognizer {
           }
         }
       }
-
-      // 飞机带翅膀
-      if (cards.length >= 8) {
-        const counts: Record<number, number> = {};
-        for (const v of rawVals) counts[v] = (counts[v] || 0) + 1;
-        const tripleVals = Object.keys(counts)
-          .map((v) => Number(v))
-          .filter((v) => counts[v] === 3)
-          .sort((a, b) => a - b);
-
-        // 检查是否有至少2个连续的三张
-        if (tripleVals.length >= 2) {
-          let isSeq = true;
-          for (let i = 1; i < tripleVals.length; i++) {
-            if (tripleVals[i] !== tripleVals[i - 1] + 1) {
-              isSeq = false;
-              break;
-            }
-          }
-
-          if (isSeq) {
-            const wingCardCount = cards.length - tripleVals.length * 3;
-            // 翅膀数量必须等于三张组数（带单牌）或2倍三张组数（带对子）
-            if (
-              wingCardCount === tripleVals.length ||
-              wingCardCount === tripleVals.length * 2
-            ) {
-              patterns.push({
-                type: 'sequenceTriplesWithWings',
-                cards,
-                primaryValue: tripleVals[tripleVals.length - 1],
-                complexity: tripleVals.length + wingCardCount,
-                isWildCardUsed: false,
-                wildCards: [],
-              });
-            }
-          }
-        }
-      }
     }
 
     return patterns;
