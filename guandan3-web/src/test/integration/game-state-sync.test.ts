@@ -140,7 +140,7 @@ describe('游戏状态同步集成测试', () => {
       });
 
       // 使用最新的 store 状态
-      const result = await useGameStore.getState().submitTurn('play', cards);
+      const result = await useGameStore.getState().submitTurn('play', cards) as { data?: unknown; error?: unknown };
 
       expect(result.data).toBeDefined();
       expect(mockSubmitTurn).toHaveBeenCalled();
