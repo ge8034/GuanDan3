@@ -1,25 +1,106 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+/**
+ * Toast 消息类型
+ */
 type ToastKind = 'success' | 'error' | 'info'
 
+/**
+ * Toast 操作按钮配置
+ */
 type ToastAction = {
+  /** 按钮显示文本 */
   label: string
+  /** 点击回调函数 */
   onClick: () => void
 }
 
+/**
+ * Toast 状态
+ */
 type ToastState = {
+  /** 唯一标识符 */
   id: string
+  /** 显示的消息内容 */
   message: string
+  /** 消息类型 */
   kind: ToastKind
+  /** 可选的操作按钮 */
   action?: ToastAction
 }
 
+/**
+ * Toast 显示参数
+ */
+type ShowToastParams = {
+  /** 要显示的消息内容 */
+  message: string
+  /** 消息类型，默认 'error' */
+  kind?: ToastKind
+  /** 自动关闭时间（毫秒），默认 2500ms */
+  timeoutMs?: number
+  /** 可选的操作按钮 */
+  action?: ToastAction
+}
+
+/**
+ * Toast 通知 Hook
+ *
+ * 提供全局 Toast 通知功能，支持成功、错误、信息三种类型，
+ * 可配置自动关闭时间和操作按钮。
+ *
+ * @returns Toast 操作方法和视图组件
+ *
+ * @example
+ * ```tsx
+ * function MyComponent() {
+ *   const { showToast, hideToast, toastView } = useToast()
+ *
+ *   const handleSuccess = () => {
+ *     showToast({
+ *       message: '操作成功！',
+ *       kind: 'success'
+ *     })
+ *   }
+ *
+ *   const handleError = (error: Error) => {
+ *     showToast({
+ *       message: error.message,
+ *       kind: 'error',
+ *       timeoutMs: 5000,
+ *       action: {
+ *         label: '重试',
+ *         onClick: () => retry()
+ *       }
+ *     })
+ *   }
+ *
+ *   return (
+ *     <div>
+ *       <button onClick={handleSuccess}>显示成功提示</button>
+ *       {toastView}
+ *     </div>
+ *   )
+ * }
+ * ```
+ *
+ * @remarks
+ * - 最多同时显示 3 个 Toast
+ * - 自动关闭，默认 2.5 秒
+ * - 操作按钮有 1 秒防抖保护
+ * - 组件卸载时自动清理所有定时器
+ */
 export const useToast = () => {
   const [toasts, setToasts] = useState<ToastState[]>([])
   const toastIdRef = useRef(0)
   const timersRef = useRef<Map<string, number>>(new Map())
   const lastActionAtRef = useRef(0)
 
+  /**
+   * 隐藏 Toast
+   *
+   * @param id - Toast ID，不传则隐藏所有
+   */
   const hideToast = useCallback((id?: string) => {
     if (!id) {
       timersRef.current.forEach(t => window.clearTimeout(t))
@@ -44,12 +125,12 @@ export const useToast = () => {
     }
   }, [])
 
-  const showToast = useCallback((params: {
-    message: string
-    kind?: ToastKind
-    timeoutMs?: number
-    action?: ToastAction
-  }) => {
+  /**
+   * 显示 Toast
+   *
+   * @param params - Toast 配置参数
+   */
+  const showToast = useCallback((params: ShowToastParams) => {
     const kind = params.kind ?? 'error'
     const timeoutMs = params.timeoutMs ?? 2500
     toastIdRef.current += 1
@@ -124,4 +205,3 @@ export const useToast = () => {
 
   return { showToast, hideToast, toastView }
 }
-

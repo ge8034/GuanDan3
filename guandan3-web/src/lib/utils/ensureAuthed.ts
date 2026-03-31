@@ -2,12 +2,62 @@ import { User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase/client'
 import { useAuthStore } from '@/lib/store/auth'
 
+/**
+ * 确保用户已认证的选项
+ */
 type EnsureAuthedOptions = {
+  /** 重试次数，默认 3 次 */
   retries?: number
+  /** 重试退避时间（毫秒），默认 300ms */
   backoffMs?: number
+  /** 错误回调函数 */
   onError?: (message: string, error: unknown) => void
 }
 
+/**
+ * 确保用户已认证
+ *
+ * 检查用户登录状态，如果未登录则执行匿名登录。
+ * 支持重试机制和错误回调，用于在需要认证的操作前确保用户身份。
+ *
+ * @param options - 配置选项
+ * @returns 包含认证状态和用户信息的对象
+ *
+ * @example
+ * ```ts
+ * // 基础用法
+ * const { ok, user } = await ensureAuthed()
+ * if (!ok) {
+ *   console.error('认证失败')
+ *   return
+ * }
+ * console.log('用户已登录:', user.id)
+ * ```
+ *
+ * @example
+ * ```ts
+ * // 带错误回调
+ * const { ok } = await ensureAuthed({
+ *   onError: (msg) => showToast({ message: msg, kind: 'error' })
+ * })
+ * ```
+ *
+ * @example
+ * ```ts
+ * // 自定义重试
+ * const { ok } = await ensureAuthed({
+ *   retries: 5,
+ *   backoffMs: 500
+ * })
+ * ```
+ *
+ * @remarks
+ * 认证流程：
+ * 1. 检查 store 中是否已有用户
+ * 2. 尝试从 Supabase 获取当前 session
+ * 3. 如果未认证，执行匿名登录
+ * 4. 支持重试机制，每次重试间隔递增
+ */
 export const ensureAuthed = async (options: EnsureAuthedOptions = {}): Promise<{ ok: boolean; user: User | null }> => {
   const { retries = 3, backoffMs = 300, onError } = options
 
@@ -60,4 +110,3 @@ export const ensureAuthed = async (options: EnsureAuthedOptions = {}): Promise<{
 
   return { ok: false, user: null }
 }
-
