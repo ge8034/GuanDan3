@@ -5,7 +5,7 @@ import RippleEffect from '@/components/effects/RippleEffect'
 export type GamePausedOverlayProps = {
   visible: boolean
   pausedBy?: string | null
-  pausedAt?: string | null
+  pausedAt?: Date | null
   pauseReason?: string | null
   onResume: () => void
 }
@@ -19,10 +19,9 @@ export const GamePausedOverlay = ({
 }: GamePausedOverlayProps) => {
   if (!visible) return null
 
-  const formatPausedTime = (timestamp: string | null | undefined) => {
+  const formatPausedTime = (timestamp: Date | null | undefined) => {
     if (!timestamp) return ''
-    const date = new Date(timestamp)
-    return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+    return timestamp.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
   }
 
   return (
