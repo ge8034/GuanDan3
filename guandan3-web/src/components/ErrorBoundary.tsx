@@ -151,8 +151,8 @@ function DefaultErrorFallback({
 
         {/* 返回首页链接 */}
         <a
-          href="/"
-          className="inline-block mt-4 text-blue-600 hover:text-blue-700 underline"
+          onClick={() => window.location.href = '/'}
+          className="inline-block mt-4 text-blue-600 hover:text-blue-700 underline cursor-pointer"
         >
           返回首页
         </a>

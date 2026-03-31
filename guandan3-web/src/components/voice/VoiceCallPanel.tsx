@@ -48,10 +48,14 @@ export default function VoiceCallPanel({ roomId }: VoiceCallPanelProps) {
   const processedStreamsRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
+    // 创建当前 ref 值的快照，避免 cleanup 函数中使用过时的 ref
+    const currentRemoteRefs = remoteAudioRefs.current
+    const currentProcessedStreams = processedStreamsRef.current
+
     remoteStreams.forEach((stream, index) => {
       const streamId = `${index}-${stream.id}`
       // 避免重复处理同一个流
-      if (processedStreamsRef.current.has(streamId)) {
+      if (currentProcessedStreams.has(streamId)) {
         return
       }
 
@@ -59,20 +63,19 @@ export default function VoiceCallPanel({ roomId }: VoiceCallPanelProps) {
       audioElement.srcObject = stream
       audioElement.autoplay = true
       audioElement.muted = false
-      remoteAudioRefs.current.set(streamId, audioElement)
-      processedStreamsRef.current.add(streamId)
+      currentRemoteRefs.set(streamId, audioElement)
+      currentProcessedStreams.add(streamId)
     })
 
     return () => {
-      const currentRefs = remoteAudioRefs.current
-      currentRefs.forEach(audio => {
+      currentRemoteRefs.forEach(audio => {
         audio.pause()
         audio.srcObject = null
       })
-      currentRefs.clear()
-      processedStreamsRef.current.clear()
+      currentRemoteRefs.clear()
+      currentProcessedStreams.clear()
     }
-  }, [remoteStreams.length]) // 只依赖流数量，而不是整个数组
+  }, [remoteStreams]) // 依赖整个 remoteStreams 数组，但内部使用快照避免闭包问题
 
   return (
     <div className="flex items-center gap-4">
