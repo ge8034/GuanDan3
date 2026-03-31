@@ -155,7 +155,11 @@ export default function RoomPage() {
 
   // ============ 音效逻辑 ============
   const playSoundRef = useRef(playSound)
-  playSoundRef.current = playSound
+
+  // 使用 useEffect 更新 ref，避免在渲染期间直接修改
+  useEffect(() => {
+    playSoundRef.current = playSound
+  }, [playSound])
 
   useEffect(() => {
     if (derivedState.isMyTurn) {
@@ -200,6 +204,7 @@ export default function RoomPage() {
     derivedState.isOwner,
     gameState.gameId,
     roomId,
+    gameState.startGameRef,
   ])
 
   // ============ 渲染 ============
