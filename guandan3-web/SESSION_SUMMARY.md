@@ -246,17 +246,50 @@ const importedModule = await import(/* @vite-ignore */ importPath)
 
 ### 中优先级（可选）
 
-- ARCH-001: 拆分 RoomPage 组件（805 行 → 多个小组件）
+- PERF-002: 3D 渲染性能优化（使用 InstancedMesh）
 - PERF-001: 优化图片加载
 - TEST-001: 补充 E2E 测试覆盖
 
 ### 低优先级
 
 - DEPS-001: 更新依赖包
-- CODE-001: 清理剩余未使用的导入
 - DOCS-001: 完善 API 文档
 
 详见 `IMPROVEMENTS.md` 文档。
+
+---
+
+## 📝 本次会话新增完成的工作 (2026-03-31 续)
+
+### 重构完成
+1. **ARCH-001: RoomPage 组件拆分** ✅
+   - 创建 5 个专用 hooks
+   - 创建 3 个子组件
+   - 从 785 行减少到约 400 行
+   - 所有类型安全问题已修复
+
+### 性能优化完成
+1. **PERF-003: 状态管理优化** ✅
+   - 使用 useShallow 进行浅层比较
+   - 优化 4 个组件/hooks
+
+### 代码质量改进
+1. **CODE-001: 清理未使用的导入** ✅
+   - ESLint 报告 0 处未使用导入
+
+2. **React Hooks ESLint 错误修复** ✅
+   - 修复 "Cannot access refs during render" 错误
+   - 修复 "Missing dependency" 警告
+
+### Git 提交记录（本次会话）
+```
+3e7992b - docs: 更新 IMPROVEMENTS.md 标记已完成的改进项
+9903305 - fix: 修复 RoomPage 中的 React hooks ESLint 错误
+b8a814f - perf: 优化 Zustand store 使用 useShallow 减少重渲染
+f4713a4 - refactor: 重构 RoomPage 组件，拆分为模块化 hooks 和组件
+```
+
+**总计**: 4 个新提交，已全部推送到 GitHub
 
 ---
 
