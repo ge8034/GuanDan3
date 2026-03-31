@@ -3,11 +3,8 @@ import './globals.css'
 import { ThemeProvider } from '@/lib/theme/theme-context'
 import NoiseOverlay from '@/components/effects/NoiseOverlay'
 import Navigation from '@/components/Navigation'
-import { setupResourcePreloading, setupPerformanceObserver } from '@/lib/performance/resource-optimizer'
+import PerformanceSetup from '@/components/performance/PerformanceSetup'
 import MonitoringComponents from '@/components/monitoring/MonitoringComponents'
-// 暂时禁用 ContextStatusBarPro 以修复 SSR 问题
-// import ContextStatusBarPro from '@/components/ContextStatusBarPro'
-// import { statusbarConfig } from '@/config/statusbar'
 
 export const metadata: Metadata = {
   title: '掼蛋 3',
@@ -33,11 +30,6 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  if (typeof window !== 'undefined') {
-    setupResourcePreloading()
-    setupPerformanceObserver()
-  }
-
   return (
     <html lang="zh-CN">
       <body
@@ -45,6 +37,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <ThemeProvider>
+          <PerformanceSetup />
           <Navigation />
           <NoiseOverlay />
           <MonitoringComponents />
