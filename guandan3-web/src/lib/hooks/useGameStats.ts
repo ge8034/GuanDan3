@@ -1,14 +1,34 @@
 import { useEffect, useRef } from 'react'
+import { useShallow } from 'zustand/shallow'
 import { useAuthStore } from '@/lib/store/auth'
 import { useGameStore } from '@/lib/store/game'
 import { useRoomStore } from '@/lib/store/room'
 import { statsCollectionService } from '@/lib/services/stats-collection'
 
 import { logger } from '@/lib/utils/logger'
+
 export function useGameStats() {
   const { user } = useAuthStore()
-  const { gameId, status: gameStatus, currentSeat, myHand, lastAction, rankings, turnNo } = useGameStore()
-  const { currentRoom, members } = useRoomStore()
+
+  // 使用 useShallow 减少不必要的重渲染
+  const { gameId, status: gameStatus, currentSeat, myHand, lastAction, rankings, turnNo } = useGameStore(
+    useShallow((s) => ({
+      gameId: s.gameId,
+      status: s.status,
+      currentSeat: s.currentSeat,
+      myHand: s.myHand,
+      lastAction: s.lastAction,
+      rankings: s.rankings,
+      turnNo: s.turnNo,
+    }))
+  )
+
+  const { currentRoom, members } = useRoomStore(
+    useShallow((s) => ({
+      currentRoom: s.currentRoom,
+      members: s.members,
+    }))
+  )
   
   const gameStartedRef = useRef(false)
   const gameEndedRef = useRef(false)

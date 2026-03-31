@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useShallow } from 'zustand/shallow'
 import { useGameStore } from '@/lib/store/game'
 import { useToast } from '@/lib/hooks/useToast'
 import { PauseIcon, PlayIcon } from '@/components/icons/LandscapeIcons'
@@ -15,7 +16,19 @@ export default function GamePauseResume({ roomId, isOwner }: GamePauseResumeProp
   const [showPauseDialog, setShowPauseDialog] = useState(false)
   const [inputPauseReason, setInputPauseReason] = useState('')
   const [showResumeDialog, setShowResumeDialog] = useState(false)
-  const { status, pausedBy, pausedAt, pauseReason, pauseGame, resumeGame } = useGameStore()
+
+  // 使用 useShallow 减少不必要的重渲染
+  const { status, pausedBy, pausedAt, pauseReason, pauseGame, resumeGame } = useGameStore(
+    useShallow((s) => ({
+      status: s.status,
+      pausedBy: s.pausedBy,
+      pausedAt: s.pausedAt,
+      pauseReason: s.pauseReason,
+      pauseGame: s.pauseGame,
+      resumeGame: s.resumeGame,
+    }))
+  )
+
   const { showToast } = useToast()
 
   const handlePause = async () => {

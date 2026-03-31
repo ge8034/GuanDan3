@@ -2,9 +2,11 @@
  * 房间页面游戏状态 Hook
  *
  * 集中管理所有游戏相关的 store 状态和派生状态
+ * 使用 useShallow 减少不必要的重渲染
  */
 
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef } from 'react'
+import { useShallow } from 'zustand/shallow'
 import { useGameStore } from '@/lib/store/game'
 import { useRoomStore } from '@/lib/store/room'
 import { logger } from '@/lib/utils/logger'
@@ -14,10 +16,14 @@ interface RoomGameStateOptions {
   onAutoStart?: () => void
 }
 
+/**
+ * 使用 useShallow 优化性能
+ * 只有当返回的状态值真正发生变化时才会触发重渲染
+ */
 export function useRoomGameState(options: RoomGameStateOptions) {
   const { roomId } = options
 
-  // Room Store
+  // Room Store - 使用 shallow 比较减少重渲染
   const {
     currentRoom,
     members,
@@ -26,9 +32,19 @@ export function useRoomGameState(options: RoomGameStateOptions) {
     toggleReady,
     leaveRoom,
     heartbeatRoomMember,
-  } = useRoomStore()
+  } = useRoomStore(
+    useShallow((s) => ({
+      currentRoom: s.currentRoom,
+      members: s.members,
+      joinRoom: s.joinRoom,
+      addAI: s.addAI,
+      toggleReady: s.toggleReady,
+      leaveRoom: s.leaveRoom,
+      heartbeatRoomMember: s.heartbeatRoomMember,
+    }))
+  )
 
-  // Game Store - 解构需要的方法
+  // Game Store - 使用 shallow 比较减少重渲染
   const {
     gameId,
     status: gameStatus,
@@ -46,7 +62,26 @@ export function useRoomGameState(options: RoomGameStateOptions) {
     pausedBy,
     pausedAt,
     pauseReason,
-  } = useGameStore()
+  } = useGameStore(
+    useShallow((s) => ({
+      gameId: s.gameId,
+      status: s.status,
+      turnNo: s.turnNo,
+      currentSeat: s.currentSeat,
+      levelRank: s.levelRank,
+      myHand: s.myHand,
+      lastAction: s.lastAction,
+      counts: s.counts,
+      rankings: s.rankings,
+      fetchLastTrickPlay: s.fetchLastTrickPlay,
+      fetchGame: s.fetchGame,
+      pauseGame: s.pauseGame,
+      resumeGame: s.resumeGame,
+      pausedBy: s.pausedBy,
+      pausedAt: s.pausedAt,
+      pauseReason: s.pauseReason,
+    }))
+  )
 
   // 使用 ref 存储 startGame 以避免依赖循环
   const startGameRef = useRef(useGameStore.getState().startGame)
