@@ -1,65 +1,151 @@
-这是一个[Next.js](https://nextjs.org/)通过以下方式启动的项目[`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 掼蛋 3 (GuanDan3) - Web 版
 
-## 测试状态（测试待补齐）
+> 基于 Next.js 16 + Supabase 的实时掼蛋游戏
 
-预计补齐完成日期：2026-03-26
+## 项目简介
 
-### 已覆盖的手动测试场景与结果摘要（2026-03-12）
+掼蛋 3 是一款完整的 Web 版掼蛋纸牌游戏，支持实时多人对战和 AI 练习模式。
 
-- 主页匿名登录：点击“对战大厅”可进入 Lobby，异常网络下偶发超时但可重试进入
-- Lobby 房间流：创建房间、列表可见、加入房间、进入 Room 页面正常
-- PVP 准备与开局：4 人加入后 Ready/Cancel Ready 状态可同步，房主可 Start Game，进入 playing
-- 基础出牌回合：出牌后 Last 区域更新，轮转到下一位，Pass 可用
-- 游戏结束界面：出现“游戏结束”弹层，展示排名徽章与“再来一局”入口（未做自动化验证）
+### 核心特性
 
-### 跳过的自动化测试范围（已标记 TODO-TEST）
+- **进入即玩** - 匿名登录，无需注册
+- **实时对战** - 4 人在线对战，低延迟同步
+- **AI 练习** - 1v3 AI 对战模式
+- **断线重连** - 自动恢复游戏状态
+- **响应式设计** - 支持桌面和移动设备
 
-- PVP 游戏结束与排名：E2E 稳定性不足，暂时跳过（见 tests/e2e/pvp-finish*.spec.ts）
-- 断线重连/刷新恢复：需要补充专门用例覆盖（刷新后座位/手牌/回合状态一致性）
-- 可靠性用例：加入房间并发、Ready 同步抖动、Start Game 竞态等
+### 性能目标
 
-### 提交门禁（下次提交前必须完成）
+| 指标 | 目标值 |
+|------|--------|
+| 并发用户 | ≤ 20 人 |
+| 首屏加载 | ≤ 2s (3G 网络) |
+| 单局延迟 | ≤ 100ms (P99) |
+| CPU 占用 | ≤ 30% (20 并发) |
 
-- 补齐上述 TODO-TEST 自动化用例并在本地通过
-- 覆盖率目标（关键模块）：lines/statements/functions ≥ 90%，branches ≥ 85%
-- 通过 CI 流水线验证
+## 快速开始
 
-### 环境变量
+### 环境要求
 
-- 复制 `.env.example` 为 `.env.local` 并填入 Supabase 配置
-- 未配置 Supabase 环境变量时，`npm run test:e2e` 会自动跳过 E2E（用于 CI/本地无环境时不阻断）
+- Node.js 18+
+- npm 或 yarn 或 pnpm
 
-## 入门指南
+### 安装依赖
 
-首先，运行开发服务器:
+```bash
+npm install
+```
+
+### 环境配置
+
+复制环境变量模板：
+
+```bash
+cp .env.local.example .env.local
+```
+
+编辑 `.env.local`，填入 Supabase 配置：
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+```
+
+### 启动开发服务器
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-用你的浏览器打开 [http://localhost:3000](http://localhost:3000) 查看结果.
+访问 [http://localhost:3000](http://localhost:3000)
 
-你可以通过修改来开始编辑该页面 `app/page.tsx`. 当你编辑文件时，页面会自动更新.
+## 可用脚本
 
-该项目使用 [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) 自动优化并加载 Inter 这款自定义谷歌字体.
+| 命令 | 说明 |
+|------|------|
+| `npm run dev` | 启动开发服务器 |
+| `npm run build` | 构建生产版本 |
+| `npm start` | 启动生产服务器 |
+| `npm run lint` | 运行 ESLint |
+| `npm run typecheck` | 类型检查 |
+| `npm test` | 运行单元测试 |
+| `npm run test:e2e` | 运行 E2E 测试 |
 
-## 了解更多
+## 项目结构
 
-要了解更多关于Next.js的信息，请看以下资源:
+```
+guandan3-web/
+├── src/
+│   ├── app/              # Next.js App Router
+│   ├── lib/              # 核心业务逻辑
+│   │   ├── game/         # 游戏规则和 AI
+│   │   ├── store/        # Zustand 状态管理
+│   │   └── utils/        # 工具函数
+│   └── components/       # React 组件
+├── supabase/             # 数据库迁移和函数
+├── tests/                # E2E 测试
+└── public/               # 静态资源
+```
 
--[Next.js 文档](https://nextjs.org/docs) - 了解 Next.js 的功能和 API.
-- [学习 Next.js](https://nextjs.org/learn)——一个交互式的 Next.js 教程.
+## 技术栈
 
-你可以查看[Next.js GitHub 仓库](https://github.com/vercel/next.js/)——欢迎提供你的反馈和贡献。!
+- **前端框架**: Next.js 16.2, React 19
+- **状态管理**: Zustand 5
+- **样式**: Tailwind CSS 4
+- **后端**: Supabase (PostgreSQL + Realtime)
+- **测试**: Playwright, Vitest
+- **类型系统**: TypeScript 5
 
-##在Vercel上部署
+## 游戏模式
 
-部署你的Supabase应用最简单的方法是使用Vercel平台（https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme），它由Next.js的创建者推出。.
+### 练习房 (1v3)
 
-查看我们的[Supabase部署文档](https://nextjs.org/docs/deployment)以获取更多详细信息。
+- 1 个真人玩家 vs 3 个 AI
+- 自动发牌开局
+- AI 自动决策出牌
+
+### 对战房 (4人)
+
+- 4 个真人玩家
+- 房主创建房间
+- 其他玩家加入并准备
+- 房主开始游戏
+
+## 数据库架构
+
+### 核心表
+
+- `users` - 用户认证
+- `profiles` - 用户资料
+- `rooms` - 游戏房间
+- `room_members` - 房间成员
+- `games` - 牌局实例
+- `game_hands` - 玩家手牌
+- `turns` - 出牌记录
+- `scores` - 积分记录
+
+## 部署
+
+### Vercel (推荐)
+
+```bash
+npm run build
+vercel --prod
+```
+
+### Fly.io
+
+```bash
+npm run build
+flyctl deploy
+```
+
+## 文档
+
+- [架构文档](./ARCHITECTURE.md)
+- [开发计划](./GuanDan3_Development_Plan.md)
+- [迁移指南](./MIGRATION_GUIDE.md)
+
+## 许可证
+
+MIT
