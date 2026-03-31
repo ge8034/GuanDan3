@@ -9,11 +9,43 @@ if (!supabaseUrl || !supabaseAnonKey) {
   )
 }
 
-// 配置超时和全局错误处理
+/**
+ * Supabase 客户端实例
+ *
+ * 预配置的 Supabase 客户端，用于所有数据库操作和实时订阅。
+ *
+ * @example
+ * ```ts
+ * // 数据库查询
+ * const { data, error } = await supabase
+ *   .from('rooms')
+ *   .select()
+ *   .eq('status', 'open')
+ *
+ * // 实时订阅
+ * const channel = supabase
+ *   .channel('room-updates')
+ *   .on('postgres_changes', { event: 'INSERT', table: 'rooms' }, (payload) => {
+ *     console.log('New room:', payload.new)
+ *   })
+ *   .subscribe()
+ *
+ * // 认证操作
+ * const { data } = await supabase.auth.signInAnonymously()
+ * ```
+ *
+ * @remarks
+ * 配置说明：
+ * - **超时**: 60 秒请求超时
+ * - **实时**: 每秒最多 10 个事件
+ * - **会话持久化**: 启用，存储在 localStorage
+ * - **自动刷新令牌**: 启用
+ * - **URL 检测**: 启用（支持 OAuth 回调）
+ */
 export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
   global: {
     fetch: (url, options) => {
-      // 使用AbortController实现超时（兼容性更好）
+      // 使用 AbortController 实现超时（兼容性更好）
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 60000) // 60秒超时
       return fetch(url, {
