@@ -29,28 +29,28 @@ export default function StatsPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'games' | 'cards' | 'teams' | 'analysis'>('overview')
 
   useEffect(() => {
+    const loadStats = async () => {
+      if (!user) return
+
+      setLoading(true)
+      try {
+        const [summary, analysisResult] = await Promise.all([
+          statsAnalysisService.getPlayerStats(user.id),
+          statsAnalysisService.analyzePlayerPerformance(user.id)
+        ])
+        setStatsSummary(summary)
+        setAnalysis(analysisResult)
+      } catch (error) {
+        logger.error('Failed to load stats:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
     if (user) {
       loadStats()
     }
   }, [user])
-
-  const loadStats = async () => {
-    if (!user) return
-
-    setLoading(true)
-    try {
-      const [summary, analysisResult] = await Promise.all([
-        statsAnalysisService.getPlayerStats(user.id),
-        statsAnalysisService.analyzePlayerPerformance(user.id)
-      ])
-      setStatsSummary(summary)
-      setAnalysis(analysisResult)
-    } catch (error) {
-      logger.error('Failed to load stats:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   if (loading) {
     return (

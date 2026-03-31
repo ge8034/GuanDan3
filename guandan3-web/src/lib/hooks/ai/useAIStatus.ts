@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo, useCallback } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { MessageBus } from '@/lib/multi-agent/core/MessageBus'
 import type { Message } from '@/lib/multi-agent/core/types'
 import { devLog } from '@/lib/utils/devLog'
@@ -19,8 +19,7 @@ export function useAIStatus(
 } {
   const [debugLog, setDebugLog] = useState<string[]>([])
 
-  // 使用 ref 存储最新状态，避免闭包陷阱
-  const agentStatusesRef = useRef<Record<string, { status: string; task?: string }>>({})
+  // 只使用 state，避免在渲染期间访问 ref
   const [agentStatusesState, setAgentStatusesState] = useState<Record<string, { status: string; task?: string }>>({})
 
   // addDebugLog 使用 useCallback 但依赖为空，保持稳定引用
@@ -28,11 +27,8 @@ export function useAIStatus(
     setDebugLog((prev) => [msg, ...prev].slice(0, 5))
   }, [])
 
-  // 暴露当前状态
-  const agentStatuses = useMemo(
-    () => ({ ...agentStatusesRef.current, ...agentStatusesState }),
-    [agentStatusesState]
-  )
+  // 直接返回状态，不与 ref 合并
+  const agentStatuses = agentStatusesState
 
   // MessageBus 订阅（修复版）
   useEffect(() => {
@@ -41,19 +37,12 @@ export function useAIStatus(
     const bus = MessageBus.getInstance()
     const agentId = `room-${roomId}`
 
-    // 使用 ref 存储最新状态，避免回调依赖变化
-    const latestStateRef = {
-      agentStatusesRef,
-      setAgentStatusesState,
-      addDebugLog
-    }
-
     // 创建稳定的回调函数
     const handleMessage = (msg: Message) => {
       devLog('[useAIStatus] 收到消息:', msg.type, msg.from)
 
       if (msg.type === 'AGENT_LOG') {
-        latestStateRef.addDebugLog(`${msg.from}: ${msg.payload}`)
+        addDebugLog(`${msg.from}: ${msg.payload}`)
       }
 
       if (msg.type === 'STATUS_UPDATE') {
@@ -61,10 +50,8 @@ export function useAIStatus(
           status: msg.payload.status || msg.payload,
           task: msg.payload.task
         }
-        // 更新 ref
-        latestStateRef.agentStatusesRef.current[msg.from] = update
         // 更新 state
-        latestStateRef.setAgentStatusesState(prev => ({
+        setAgentStatusesState(prev => ({
           ...prev,
           [msg.from]: update
         }))
@@ -79,7 +66,7 @@ export function useAIStatus(
       devLog('[useAIStatus] 取消订阅 MessageBus, agentId:', agentId)
       bus.unsubscribe(agentId)
     }
-  }, [isOwner, roomId]) // 移除 addDebugLog 依赖，仅依赖 isOwner 和 roomId
+  }, [isOwner, roomId, addDebugLog])
 
   return { debugLog, addDebugLog, agentStatuses }
 }

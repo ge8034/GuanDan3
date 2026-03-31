@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, useMemo, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useMemo, type ReactNode } from 'react'
 import { ThemeMode, GameTheme, themeConfigs, ThemeConfig } from './theme-types'
 
 import { logger } from '@/lib/utils/logger'
@@ -16,18 +16,18 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [mounted, setMounted] = useState(false)
-  const [mode, setMode] = useState<ThemeMode>('light')
-  const [gameTheme, setGameTheme] = useState<GameTheme>('classic')
-  const [customThemes, setCustomThemes] = useState<Record<string, ThemeConfig>>({})
-
-  useEffect(() => {
-    setMounted(true)
+  // 使用懒初始化从 localStorage 读取初始值
+  const [mode, setMode] = useState<ThemeMode>(() => {
+    if (typeof window === 'undefined') return 'light'
     const savedMode = localStorage.getItem('theme-mode') as ThemeMode
+    return savedMode || 'light'
+  })
+  const [gameTheme, setGameTheme] = useState<GameTheme>(() => {
+    if (typeof window === 'undefined') return 'classic'
     const savedGameTheme = localStorage.getItem('game-theme') as GameTheme
-    if (savedMode) setMode(savedMode)
-    if (savedGameTheme) setGameTheme(savedGameTheme)
-  }, [])
+    return savedGameTheme || 'classic'
+  })
+  const [customThemes, setCustomThemes] = useState<Record<string, ThemeConfig>>({})
 
   useEffect(() => {
     const loadCustomThemes = () => {
@@ -65,14 +65,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [gameTheme])
 
   const currentTheme = useMemo(() => {
-    if (!mounted) {
-      return themeConfigs.classic
-    }
     if (gameTheme.startsWith('custom_')) {
       return customThemes[gameTheme] || themeConfigs.classic
     }
     return themeConfigs[gameTheme] || themeConfigs.classic
-  }, [gameTheme, customThemes, mounted])
+  }, [gameTheme, customThemes])
 
   return (
     <ThemeContext.Provider

@@ -42,6 +42,7 @@ export function useAIDecision(
   const submittingTurnRef = useRef<number | null>(null);
 
   // AI 决策执行
+  /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
     // 前置条件检查
     const shouldRunAI =
@@ -272,6 +273,7 @@ export function useAIDecision(
     members,
     addDebugLog,
   ]);
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   return {
     debugLog,

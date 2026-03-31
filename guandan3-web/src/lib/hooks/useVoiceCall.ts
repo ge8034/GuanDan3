@@ -69,7 +69,7 @@ export function useVoiceCall({
       devError('获取麦克风权限失败:', error)
       throw new Error('无法访问麦克风，请检查权限设置')
     }
-  }, [])
+  }, [updateState])
 
   const createPeerConnection = useCallback(async (peerId: string): Promise<RTCPeerConnection> => {
     const pc = new RTCPeerConnection({
@@ -119,7 +119,7 @@ export function useVoiceCall({
 
     peerConnectionsRef.current.set(peerId, pc)
     return pc
-  }, [roomId, userId, onParticipantJoined, onParticipantLeft])
+  }, [roomId, userId, onParticipantJoined, onParticipantLeft, updateState])
 
   const handleOffer = useCallback(async (data: { offer: RTCSessionDescriptionInit; senderId: string }) => {
     try {
@@ -185,7 +185,7 @@ export function useVoiceCall({
       isCallActiveRef.current = false
       updateState({ isCalling: false, error: error instanceof Error ? error.message : '开始通话失败' })
     }
-  }, [roomId, getLocalStream, createPeerConnection, handleOffer, handleAnswer, handleIceCandidate, updateState])
+  }, [roomId, getLocalStream, handleOffer, handleAnswer, handleIceCandidate, updateState])
 
   // 使用 ref 来避免 onCallEnded 依赖变化导致 useCallback 重新创建
   const onCallEndedRef = useRef(onCallEnded)
