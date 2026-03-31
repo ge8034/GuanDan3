@@ -120,7 +120,7 @@
 
 **状态**: 🟡 进行中 (2026-03-31)
 
-**已完成** (~21/101):
+**已完成核心模块** (~25/101):
 - ✅ src/lib/utils/card-utils.ts - 卡牌工具函数
 - ✅ src/lib/utils/throttle.ts - 节流函数
 - ✅ src/lib/utils/supabaseErrors.ts - 错误映射工具
@@ -137,14 +137,19 @@
 - ✅ src/lib/supabase/client.ts - Supabase 客户端配置
 - ✅ src/lib/performance/resource-optimizer.ts - 资源优化器
 - ✅ src/lib/game/rules.ts - 游戏规则核心模块
-- ✅ src/lib/api/chat.ts - 私聊 API (9个函数)
-- ✅ src/lib/api/friends.ts - 好友系统 API (11个函数)
 - ✅ src/lib/game/ai-utils.ts - AI 工具函数 (7个函数)
 - ✅ src/lib/game/ai-types.ts - AI 类型定义
+- ✅ src/lib/api/chat.ts - 私聊 API (9个函数)
+- ✅ src/lib/api/friends.ts - 好友系统 API (11个函数)
+- ✅ src/lib/database/index-optimizer.ts - 数据库索引优化器
+- ✅ src/components/pwa/* - PWA 模块 (6个文件)
+- ✅ src/components/monitoring/* - 监控组件
 
-**待完成**: 约 80 个文件
+**备注**: 核心模块文档已基本完善，剩余主要是组件和页面级文档。
 
-**预计时间**: 剩余约 3-4 小时
+**待完成**: 约 76 个文件（主要是页面和组件）
+
+**预计时间**: 剩余约 2-3 小时
 
 ---
 
