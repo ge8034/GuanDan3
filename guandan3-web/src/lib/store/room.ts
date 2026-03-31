@@ -240,41 +240,48 @@ export const useRoomStore = create<RoomState>((set, get) => ({
   },
   
   fetchRoom: async (roomId) => {
-    // 1. Fetch Room
-    const response = await supabase
-      .from('rooms')
-      .select('id,name,mode,type,status,visibility,owner_uid,created_at')
-      .eq('id', roomId)
-      .single()
+    // 使用优化的 RPC 函数一次性获取房间和成员数据
+    const { data, error } = await supabase.rpc('get_room_with_members_optimized', {
+      p_room_id: roomId
+    })
 
-    // 调试日志
-    logger.debug('[fetchRoom] Supabase response:', response)
-    logger.debug('[fetchRoom] room:', response.data)
-    logger.debug('[fetchRoom] error:', response.error)
-
-    const { data: room, error: roomError } = response
-
-    if (roomError) {
-      logger.error('[fetchRoom] Error:', roomError)
+    if (error) {
+      logger.error('[fetchRoom] RPC Error:', error)
       return
     }
 
-    logger.debug('[fetchRoom] Setting currentRoom:', room)
-    set({ currentRoom: room })
-
-    // 2. Fetch Members
-    const { data: members, error: membersError } = await supabase
-      .from('room_members')
-      .select('id,room_id,uid,seat_no,ready,online,member_type,ai_key')
-      .eq('room_id', roomId)
-      .order('seat_no')
-
-    if (membersError) {
-      logger.error('Fetch members error:', membersError)
+    if (!data) {
+      logger.warn('[fetchRoom] No data returned')
       return
     }
 
-    set({ members: members || [] })
+    // 解析 JSONB 返回值
+    const roomData = data as unknown as {
+      id: string
+      name: string | null
+      mode: string
+      type: string
+      status: string
+      visibility: string
+      owner_uid: string
+      created_at: string
+      room_members: RoomMember[]
+    }
+
+    // 设置房间和成员信息
+    set({
+      currentRoom: {
+        id: roomData.id,
+        mode: roomData.mode as 'pvp4' | 'pve1v3',
+        type: roomData.type,
+        name: roomData.name || undefined,
+        status: roomData.status as 'open' | 'playing' | 'closed',
+        owner_uid: roomData.owner_uid
+      },
+      members: roomData.room_members || []
+    })
+
+    logger.debug('[fetchRoom] Fetched room with members efficiently')
   },
 
   subscribeRoom: (roomId, options) => {

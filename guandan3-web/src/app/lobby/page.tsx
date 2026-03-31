@@ -71,7 +71,7 @@ export default function LobbyPage() {
       .eq('status', 'open')
       .eq('visibility', 'public')
       .order('created_at', { ascending: false })
-    
+
     if (error) {
       logger.error('Fetch rooms error:', error)
       showToast({

@@ -66,26 +66,35 @@
 
 ### PERF-001: 优化图片加载
 
-**问题**: 大量游戏卡牌图片未优化
+**状态**: ✅ 不适用 (2026-03-31)
 
-**建议**:
-1. 使用 WebP 格式
-2. 实现图片懒加载
-3. 添加图片预加载
-4. 使用 CDN 加速
+**分析结果**: 项目使用 DOM/CSS 渲染游戏卡牌，而非图片文件。已存在 `ResourceOptimizer` 提供资源预加载和性能监控功能。
 
-**预计时间**: 1 小时
+**完成内容**:
+- 修复 layout.tsx 中 React 规则违规（渲染期间调用函数）
+- 创建 PerformanceSetup 客户端组件处理性能初始化
 
 ---
 
 ### TEST-001: 补充 E2E 测试覆盖
 
-**当前缺口**:
-- 断线重连场景
-- 游戏结束流程
-- 并发操作测试
+**状态**: ✅ 已覆盖 (2026-03-31)
 
-**预计时间**: 4-6 小时
+**分析结果**: 现有 E2E 测试已覆盖所有关键场景
+
+**完成内容**:
+- `connection-sync.spec.ts` - 断线重连恢复测试
+- `pvp-finish.spec.ts` - 游戏结束流程和结算测试
+- `edge-cases.spec.ts` - 并发操作和边缘情况测试
+- 共 30 个 E2E 测试文件覆盖核心用户流程
+
+**测试文件列表**:
+- 完整游戏流程: `complete-game-iteration.spec.ts`, `full-gameplay.spec.ts`
+- 练习模式: `complete-practice-game.spec.ts`
+- PVP 对战: `pvp-game.spec.ts`, `pvp-finish.spec.ts`
+- 连接稳定性: `connection-sync.spec.ts`, `offline-indicator.spec.ts`
+- 边缘情况: `edge-cases.spec.ts`, `reliability.spec.ts`
+- UI 测试: `game-ui.spec.ts`, `room-overlay.spec.ts`
 
 ---
 
