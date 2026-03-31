@@ -5,6 +5,7 @@ import NoiseOverlay from '@/components/effects/NoiseOverlay'
 import Navigation from '@/components/Navigation'
 import PerformanceSetup from '@/components/performance/PerformanceSetup'
 import MonitoringComponents from '@/components/monitoring/MonitoringComponents'
+import { PWAProvider, OfflineIndicator, UpdateBanner } from '@/components/pwa'
 
 export const metadata: Metadata = {
   title: '掼蛋 3',
@@ -36,15 +37,19 @@ export default function RootLayout({
         className="font-sans antialiased"
         suppressHydrationWarning
       >
-        <ThemeProvider>
-          <PerformanceSetup />
-          <Navigation />
-          <NoiseOverlay />
-          <MonitoringComponents />
-          <main className="pt-16 pb-16">
-            {children}
-          </main>
-        </ThemeProvider>
+        <PWAProvider>
+          <ThemeProvider>
+            <PerformanceSetup />
+            <Navigation />
+            <NoiseOverlay />
+            <MonitoringComponents />
+            <OfflineIndicator />
+            <UpdateBanner />
+            <main className="pt-16 pb-16">
+              {children}
+            </main>
+          </ThemeProvider>
+        </PWAProvider>
       </body>
     </html>
   )

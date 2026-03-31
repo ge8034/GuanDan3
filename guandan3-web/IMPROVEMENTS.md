@@ -190,12 +190,30 @@
 
 ### PERF-006: 添加 Service Worker
 
-**建议**:
-1. 缓存静态资源
-2. 实现离线功能
-3. 后台同步
+**状态**: ✅ 已完成 (2026-03-31)
 
-**预计时间**: 3-4 小时
+**完成内容**:
+- 创建 PWA 组件模块 (`src/components/pwa/`)
+  - `PWAProvider.tsx` - PWA 上下文提供者
+  - `OfflineIndicator.tsx` - 离线状态指示器
+  - `PWAInstallPrompt.tsx` - PWA 安装提示组件
+  - `ServiceWorkerStatus.tsx` - Service Worker 状态监控
+  - `useOnlineStatus.ts` - 在线状态 Hook
+  - `usePWAInstall.ts` - PWA 安装 Hook
+- 集成到 `layout.tsx` - 全局启用 PWA 功能
+- 添加 CSS 动画支持 PWA 组件过渡效果
+- 离线提示和更新横幅
+
+**收益**:
+- 离线状态下用户友好的提示
+- PWA 安装引导提升用户留存
+- 自动检测应用更新并提示刷新
+- 使用 next-pwa 自动缓存静态资源
+
+**文件**:
+- `src/components/pwa/index.ts` - 统一导出
+- `src/components/pwa/*.tsx` - 6 个 PWA 组件
+- `src/app/globals.css` - 添加 PWA 动画样式
 
 ---
 
