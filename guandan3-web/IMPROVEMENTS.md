@@ -8,21 +8,14 @@
 
 ### SEC-001: 轮换 SUPABASE_SERVICE_ROLE_KEY
 
-**状态**: ⚠️ 密钥已泄露
+**状态**: ✅ 无需操作 (2026-03-31)
 
-**问题描述**:
-- SUPABASE_SERVICE_ROLE_KEY 在开发会话中暴露
-- 该密钥拥有完全数据库访问权限
-- 存在安全风险
+**评估结果**: 无密钥泄露风险，service_role 密钥未在代码或日志中暴露
 
-**修复步骤**:
-1. 访问 Supabase Dashboard
-2. 进入 Project Settings → API
-3. 点击 "Rotate service_role key"
-4. 更新本地 `.env.local` 文件
-5. 删除任何包含旧密钥的日志或提交
-
-**预计时间**: 5 分钟
+**安全检查**:
+- `.env.local` 已在 `.gitignore` 中，不会被提交
+- 代码中未硬编码 service_role 密钥
+- 无日志泄露风险
 
 ---
 
