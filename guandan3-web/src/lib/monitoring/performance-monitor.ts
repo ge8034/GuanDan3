@@ -1,3 +1,5 @@
+import { logger } from '@/lib/utils/logger'
+
 export interface PerformanceMetrics {
   page: string
   timestamp: number
@@ -234,7 +236,7 @@ export class PerformanceMonitor {
         body: JSON.stringify(metrics)
       })
     } catch (error) {
-      console.error('Failed to send performance metrics:', error)
+      logger.error('Failed to send performance metrics:', error)
     }
   }
 
@@ -252,7 +254,7 @@ export class PerformanceMonitor {
         body: JSON.stringify(error)
       })
     } catch (err) {
-      console.error('Failed to send error data:', err)
+      logger.error('Failed to send error data:', err)
     }
   }
 
@@ -270,7 +272,7 @@ export class PerformanceMonitor {
         body: JSON.stringify(action)
       })
     } catch (error) {
-      console.error('Failed to send analytics data:', error)
+      logger.error('Failed to send analytics data:', error)
     }
   }
 

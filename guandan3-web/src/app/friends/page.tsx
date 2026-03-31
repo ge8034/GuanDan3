@@ -28,6 +28,7 @@ import {
 } from '@/lib/api/friends'
 import CloudMountainBackground from '@/components/backgrounds/CloudMountainBackground'
 
+import { logger } from '@/lib/utils/logger'
 export default function FriendsPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
@@ -50,7 +51,7 @@ export default function FriendsPage() {
       if (requestsData) setPendingRequests(requestsData)
       if (sentData) setSentRequests(sentData)
     } catch (e: any) {
-      console.error(e)
+      logger.error(e)
       setError(mapSupabaseErrorToMessage(e, '加载数据失败'))
     } finally {
       setLoading(false)
@@ -106,7 +107,7 @@ export default function FriendsPage() {
         setSearchResults(data)
       }
     } catch (e: any) {
-      console.error(e)
+      logger.error(e)
       setError(mapSupabaseErrorToMessage(e, '搜索失败'))
     }
   }, [])
@@ -122,7 +123,7 @@ export default function FriendsPage() {
         setError(error || '发送好友请求失败')
       }
     } catch (e: any) {
-      console.error(e)
+      logger.error(e)
       setError(mapSupabaseErrorToMessage(e, '发送好友请求失败'))
     }
   }, [loadData])
@@ -136,7 +137,7 @@ export default function FriendsPage() {
         setError(error || '接受好友请求失败')
       }
     } catch (e: any) {
-      console.error(e)
+      logger.error(e)
       setError(mapSupabaseErrorToMessage(e, '接受好友请求失败'))
     }
   }, [loadData])
@@ -150,7 +151,7 @@ export default function FriendsPage() {
         setError(error || '拒绝好友请求失败')
       }
     } catch (e: any) {
-      console.error(e)
+      logger.error(e)
       setError(mapSupabaseErrorToMessage(e, '拒绝好友请求失败'))
     }
   }, [loadData])
@@ -164,7 +165,7 @@ export default function FriendsPage() {
         setError(error || '取消好友请求失败')
       }
     } catch (e: any) {
-      console.error(e)
+      logger.error(e)
       setError(mapSupabaseErrorToMessage(e, '取消好友请求失败'))
     }
   }, [loadData])
@@ -182,7 +183,7 @@ export default function FriendsPage() {
         setError(error || '删除好友失败')
       }
     } catch (e: any) {
-      console.error(e)
+      logger.error(e)
       setError(mapSupabaseErrorToMessage(e, '删除好友失败'))
     }
   }, [loadData])

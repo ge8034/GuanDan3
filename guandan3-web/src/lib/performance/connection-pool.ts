@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase/client'
 import { realtimeOptimizer } from './realtime-optimizer'
 
+import { logger } from '@/lib/utils/logger'
 interface PooledConnection {
   id: string
   channel: string
@@ -93,7 +94,7 @@ class ConnectionPool {
     try {
       supabase.removeChannel(connection.channelInstance)
     } catch (error) {
-      console.error(`[ConnectionPool] Error removing channel ${channelName}:`, error)
+      logger.error(`[ConnectionPool] Error removing channel ${channelName}:`, error)
     }
 
     this.pool.delete(channelName)
@@ -113,7 +114,7 @@ class ConnectionPool {
       toRemove.forEach(name => this.remove(name))
 
       if (toRemove.length > 0) {
-        console.log(`[ConnectionPool] Cleaned up ${toRemove.length} idle connections`)
+        logger.debug(`[ConnectionPool] Cleaned up ${toRemove.length} idle connections`)
       }
     }, 60000) // Check every minute
   }
@@ -136,7 +137,7 @@ class ConnectionPool {
       try {
         supabase.removeChannel(conn.channelInstance)
       } catch (error) {
-        console.error(`[ConnectionPool] Error clearing channel ${name}:`, error)
+        logger.error(`[ConnectionPool] Error clearing channel ${name}:`, error)
       }
     })
     this.pool.clear()

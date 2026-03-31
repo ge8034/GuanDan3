@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase/optimized-client'
 import { PlayerStats, GameStats, CardPlayStats, TeamStats, TimeStats, StatsSummary, StatsFilters, StatsAnalysis } from '@/types/game-stats'
 
+import { logger } from '@/lib/utils/logger'
 export class StatsAnalysisService {
   private static instance: StatsAnalysisService
 
@@ -35,7 +36,7 @@ export class StatsAnalysisService {
         trends
       }
     } catch (error) {
-      console.error('Failed to get player stats:', error)
+      logger.error('Failed to get player stats:', error)
       throw error
     }
   }
@@ -60,7 +61,7 @@ export class StatsAnalysisService {
         comparison
       }
     } catch (error) {
-      console.error('Failed to analyze player performance:', error)
+      logger.error('Failed to analyze player performance:', error)
       throw error
     }
   }

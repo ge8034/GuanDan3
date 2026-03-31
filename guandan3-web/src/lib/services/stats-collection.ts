@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase/optimized-client'
 import { GameStats, PlayerStats, CardPlayStats, TeamStats, TimeStats, AchievementStats } from '@/types/game-stats'
 
+import { logger } from '@/lib/utils/logger'
 export interface GameEventData {
   game_id: string
   user_id: string
@@ -86,7 +87,7 @@ export class StatsCollectionService {
     if (!this.statsEnabled) return
 
     if (!this.currentGameData) {
-      console.warn('No active game to record card play')
+      logger.warn('No active game to record card play')
       return
     }
 
@@ -113,7 +114,7 @@ export class StatsCollectionService {
     if (!this.statsEnabled) return
 
     if (!this.currentGameData) {
-      console.warn('No active game to record trick')
+      logger.warn('No active game to record trick')
       return
     }
 
@@ -138,7 +139,7 @@ export class StatsCollectionService {
     if (!this.statsEnabled) return
 
     if (!this.currentGameData) {
-      console.warn('No active game to record bomb')
+      logger.warn('No active game to record bomb')
       return
     }
 
@@ -157,7 +158,7 @@ export class StatsCollectionService {
     if (!this.statsEnabled) return
 
     if (!this.currentGameData) {
-      console.warn('No active game to record rocket')
+      logger.warn('No active game to record rocket')
       return
     }
 
@@ -176,7 +177,7 @@ export class StatsCollectionService {
     if (!this.statsEnabled) return
 
     if (!this.currentGameData) {
-      console.warn('No active game to record perfect round')
+      logger.warn('No active game to record perfect round')
       return
     }
 
@@ -193,7 +194,7 @@ export class StatsCollectionService {
 
   endGame(result: 'win' | 'lose' | 'draw', teamScore: number, opponentScore: number): void {
     if (!this.currentGameData) {
-      console.warn('No active game to end')
+      logger.warn('No active game to end')
       return
     }
 
@@ -243,7 +244,7 @@ export class StatsCollectionService {
     try {
       const { error } = await supabase.from('game_events').insert(events)
       if (error) {
-        console.error('[stats] Failed to flush game events:', error)
+        logger.error('[stats] Failed to flush game events:', error)
         // 保留事件以便重试
         this.eventBuffer.unshift(...events)
       }
@@ -257,7 +258,7 @@ export class StatsCollectionService {
                               err.code === 'PGRST116' ||
                               err.code === 'PGRST205'
       if (!isTableNotFound) {
-        console.error('[stats] Failed to flush game events:', error)
+        logger.error('[stats] Failed to flush game events:', error)
         this.eventBuffer.unshift(...events)
       }
     }
@@ -280,7 +281,7 @@ export class StatsCollectionService {
 
       // 如果表不存在或其他可选功能错误，静默处理
       if (error && error.code !== 'PGRST116' && error.code !== 'PGRST205') {
-        console.error('[stats] Failed to save game stats:', error)
+        logger.error('[stats] Failed to save game stats:', error)
       }
 
       await this.updatePlayerStats().catch(() => {})
@@ -297,7 +298,7 @@ export class StatsCollectionService {
                               err.code === 'PGRST116' ||
                               err.code === 'PGRST205'
       if (!isTableNotFound) {
-        console.error('[stats] Failed to save game stats:', error)
+        logger.error('[stats] Failed to save game stats:', error)
         throw error
       }
       this.currentGameData = null
@@ -357,7 +358,7 @@ export class StatsCollectionService {
           .eq('user_id', this.currentGameData.user_id!)
 
         if (error && error.code !== 'PGRST116') {
-          console.error('Failed to update player stats:', error)
+          logger.error('Failed to update player stats:', error)
         }
       } else {
         const winRate = isWin ? 100 : 0
@@ -389,14 +390,14 @@ export class StatsCollectionService {
           })
 
         if (error && error.code !== 'PGRST116') {
-          console.error('Failed to create player stats:', error)
+          logger.error('Failed to create player stats:', error)
         }
       }
     } catch (error: unknown) {
       // 静默忽略表不存在的错误
       const err = error as { message?: string; code?: string }
       if (!err.message?.includes('PGRST116') && err.code !== 'PGRST116') {
-        console.error('Failed to update player stats:', error)
+        logger.error('Failed to update player stats:', error)
       }
     }
   }
@@ -461,7 +462,7 @@ export class StatsCollectionService {
       // 静默忽略表不存在的错误
       const err = error as { message?: string; code?: string }
       if (!err.message?.includes('PGRST116') && err.code !== 'PGRST116') {
-        console.error('Failed to update card play stats:', error)
+        logger.error('Failed to update card play stats:', error)
       }
     }
   }
@@ -531,7 +532,7 @@ export class StatsCollectionService {
       // 静默忽略表不存在的错误
       const err = error as { message?: string; code?: string }
       if (!err.message?.includes('PGRST116') && err.code !== 'PGRST116') {
-        console.error('Failed to update time stats:', error)
+        logger.error('Failed to update time stats:', error)
       }
     }
   }

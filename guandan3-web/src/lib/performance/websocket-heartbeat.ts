@@ -1,3 +1,5 @@
+import { logger } from '@/lib/utils/logger'
+
 export interface HeartbeatConfig {
   interval: number
   timeout: number
@@ -62,14 +64,14 @@ export class WebSocketHeartbeat {
 
   start(): void {
     if (this.isRunning) {
-      console.warn('Heartbeat is already running')
+      logger.warn('Heartbeat is already running')
       return
     }
 
     this.isRunning = true
     this.connectionStartTime = Date.now()
     this.startHeartbeat()
-    console.log('WebSocket heartbeat started')
+    logger.debug('WebSocket heartbeat started')
   }
 
   stop(): void {
@@ -80,7 +82,7 @@ export class WebSocketHeartbeat {
     this.isRunning = false
     this.clearAllIntervals()
     this.retryCount = 0
-    console.log('WebSocket heartbeat stopped')
+    logger.debug('WebSocket heartbeat stopped')
   }
 
   reset(): void {
@@ -194,7 +196,7 @@ export class WebSocketHeartbeat {
 
   updateConfig(config: Partial<HeartbeatConfig>): void {
     this.config = { ...this.config, ...config }
-    console.log('Heartbeat config updated:', this.config)
+    logger.debug('Heartbeat config updated:', this.config)
   }
 
   private startHeartbeat(): void {
@@ -238,19 +240,19 @@ export class WebSocketHeartbeat {
     const healthStatus = this.getHealthStatus()
 
     if (healthStatus.status === 'disconnected') {
-      console.warn('Heartbeat timeout, connection lost')
+      logger.warn('Heartbeat timeout, connection lost')
       if (this.timeoutCallback) {
         this.timeoutCallback()
       }
       this.startReconnect()
     } else if (healthStatus.status === 'unstable') {
-      console.warn('Heartbeat timeout, connection unstable')
+      logger.warn('Heartbeat timeout, connection unstable')
     }
   }
 
   private startReconnect(): void {
     if (this.retryCount >= this.config.maxRetries) {
-      console.error('Max reconnection attempts reached')
+      logger.error('Max reconnection attempts reached')
       if (this.maxRetriesCallback) {
         this.maxRetriesCallback()
       }
@@ -258,7 +260,7 @@ export class WebSocketHeartbeat {
     }
 
     this.retryCount++
-    console.log(`Attempting reconnection (${this.retryCount}/${this.config.maxRetries})`)
+    logger.debug(`Attempting reconnection (${this.retryCount}/${this.config.maxRetries})`)
 
     this.retryInterval = setInterval(() => {
       if (this.reconnectCallback) {

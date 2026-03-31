@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { dataSecurity } from '@/lib/security/data-security'
 import { userSecurity } from '@/lib/security/user-security'
 
+import { logger } from '@/lib/utils/logger'
 export function useDataSecurity() {
   const encrypt = useCallback((data: string) => {
     return dataSecurity.encrypt(data)
@@ -119,7 +120,7 @@ export function useSecureStorage<T>(key: string, initialValue: T) {
       }
       return initialValue
     } catch (error) {
-      console.error('Error loading from secure storage:', error)
+      logger.error('Error loading from secure storage:', error)
       return initialValue
     }
   })
@@ -131,7 +132,7 @@ export function useSecureStorage<T>(key: string, initialValue: T) {
       const encrypted = dataSecurity.encrypt(JSON.stringify(valueToStore))
       localStorage.setItem(key, encrypted)
     } catch (error) {
-      console.error('Error saving to secure storage:', error)
+      logger.error('Error saving to secure storage:', error)
     }
   }, [key, storedValue])
 
@@ -140,7 +141,7 @@ export function useSecureStorage<T>(key: string, initialValue: T) {
       localStorage.removeItem(key)
       setStoredValue(initialValue)
     } catch (error) {
-      console.error('Error removing from secure storage:', error)
+      logger.error('Error removing from secure storage:', error)
     }
   }, [key, initialValue])
 

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { ThemeConfig } from '@/lib/theme/theme-types'
 
+import { logger } from '@/lib/utils/logger'
 const CUSTOM_THEMES_KEY = 'guandan3_custom_themes'
 
 export function useCustomThemes() {
@@ -21,7 +22,7 @@ export function useCustomThemes() {
         setCustomThemes(themes)
       }
     } catch (error) {
-      console.error('Failed to load custom themes:', error)
+      logger.error('Failed to load custom themes:', error)
     } finally {
       setIsLoading(false)
     }
@@ -34,7 +35,7 @@ export function useCustomThemes() {
       setCustomThemes(updatedThemes)
       return true
     } catch (error) {
-      console.error('Failed to save custom theme:', error)
+      logger.error('Failed to save custom theme:', error)
       return false
     }
   }
@@ -46,7 +47,7 @@ export function useCustomThemes() {
       setCustomThemes(updatedThemes)
       return true
     } catch (error) {
-      console.error('Failed to delete custom theme:', error)
+      logger.error('Failed to delete custom theme:', error)
       return false
     }
   }
@@ -60,7 +61,7 @@ export function useCustomThemes() {
       setCustomThemes(updatedThemes)
       return true
     } catch (error) {
-      console.error('Failed to update custom theme:', error)
+      logger.error('Failed to update custom theme:', error)
       return false
     }
   }
@@ -79,7 +80,7 @@ export function useCustomThemes() {
       URL.revokeObjectURL(url)
       return true
     } catch (error) {
-      console.error('Failed to export theme:', error)
+      logger.error('Failed to export theme:', error)
       return false
     }
   }

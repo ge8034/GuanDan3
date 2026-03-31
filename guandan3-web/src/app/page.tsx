@@ -7,6 +7,7 @@ import { useAuthStore } from '@/lib/store/auth'
 import { useToast } from '@/lib/hooks/useToast'
 import { mapSupabaseErrorToMessage } from '@/lib/utils/supabaseErrors'
 import { ensureAuthed } from '@/lib/utils/ensureAuthed'
+import { logger } from '@/lib/utils/logger'
 import { Button } from '@/components/ui/Button'
 import SpotlightCard, { SpotlightCardHeader, SpotlightCardBody } from '@/components/ui/SpotlightCard'
 import FadeIn from '@/components/ui/FadeIn'
@@ -32,7 +33,7 @@ export default function Home() {
       getSession: () => supabase.auth.getSession(),
       getUser: () => useAuthStore.getState().user
     }
-    console.log('[DEBUG] 全局变量已设置，使用 window.DEBUG 访问')
+    logger.debug('[DEBUG] 全局变量已设置，使用 window.DEBUG 访问')
   }, [])
 
   const handleLobbyEnter = async () => {
@@ -52,16 +53,16 @@ export default function Home() {
   const createPracticeRoom = async () => {
     setIsLoading(true)
     try {
-      console.log('[DEBUG] 开始创建练习房间')
+      logger.debug('[DEBUG] 开始创建练习房间')
 
       // 确保认证
       let storeUser = useAuthStore.getState().user
-      console.log('[DEBUG] storeUser:', storeUser)
+      logger.debug('[DEBUG] storeUser:', storeUser)
 
       if (!storeUser) {
-        console.log('[DEBUG] 用户未认证，调用ensureAuthed')
+        logger.debug('[DEBUG] 用户未认证，调用ensureAuthed')
         const { ok, user } = await ensureAuthed({ onError: msg => showToast({ message: msg, kind: 'error' }) })
-        console.log('[DEBUG] ensureAuthed结果:', { ok, user })
+        logger.debug('[DEBUG] ensureAuthed结果:', { ok, user })
         if (!ok || !user) return
         storeUser = user
       }
@@ -69,12 +70,12 @@ export default function Home() {
       // 确保用户ID存在
       const userId = storeUser.id
       if (!userId) {
-        console.error('[DEBUG] 用户ID不存在:', storeUser)
+        logger.error('[DEBUG] 用户ID不存在:', storeUser)
         showToast({ message: '用户认证信息异常，请重试', kind: 'error' })
         return
       }
 
-      console.log('[DEBUG] 用户ID:', userId)
+      logger.debug('[DEBUG] 用户ID:', userId)
 
       // 明确传递用户ID作为参数
       const { data, error } = await supabase.rpc('create_practice_room', {
@@ -83,7 +84,7 @@ export default function Home() {
       })
 
       if (error) {
-        console.error('Create room failed:', error)
+        logger.error('Create room failed:', error)
         showToast({ message: mapSupabaseErrorToMessage(error, '创建房间失败'), kind: 'error' })
         return
       }

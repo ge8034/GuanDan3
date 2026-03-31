@@ -24,6 +24,7 @@ import { StaggerContainer } from '@/components/ui/StaggerContainer.lazy'
 import CloudMountainBackground from '@/components/backgrounds/CloudMountainBackground'
 import { BuildingIcon, RefreshIcon, UserGroupIcon, OnlineIcon, CheckCircleIcon, DocumentIcon } from '@/components/icons/LandscapeIcons'
 
+import { logger } from '@/lib/utils/logger'
 export default function LobbyPage() {
   const router = useRouter()
   const { createRoom, createPracticeRoom, joinRoom } = useRoomStore()
@@ -72,7 +73,7 @@ export default function LobbyPage() {
       .order('created_at', { ascending: false })
     
     if (error) {
-      console.error('Fetch rooms error:', error)
+      logger.error('Fetch rooms error:', error)
       showToast({
         message: mapSupabaseErrorToMessage(error, '加载房间列表失败'),
         kind: 'error',

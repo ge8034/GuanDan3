@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase/optimized-client'
 
+import { logger } from '@/lib/utils/logger'
 interface NetworkMetrics {
   requestCount: number
   totalBytes: number
@@ -52,7 +53,7 @@ export default function NetworkPerformanceMonitor() {
           setFailedRequests(report.failedRequests.slice(0, 5))
         }
       } catch (error) {
-        console.error('Failed to get network metrics:', error)
+        logger.error('Failed to get network metrics:', error)
       }
     }
 

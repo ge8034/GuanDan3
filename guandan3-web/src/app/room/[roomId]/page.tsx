@@ -7,8 +7,8 @@ import { useGameStore, type Card } from '@/lib/store/game';
 import { useSound } from '@/lib/hooks/useSound';
 import { useToast } from '@/lib/hooks/useToast';
 import { mapSupabaseErrorToMessage } from '@/lib/utils/supabaseErrors';
-import { devError, devLog } from '@/lib/utils/devLog';
 import { analyzeMove, canBeat } from '@/lib/game/rules';
+import { logger } from '@/lib/utils/logger';
 
 import { useRoomGameDerived } from '@/lib/hooks/useRoomGameDerived';
 import { useRoomAuth } from '@/lib/hooks/useRoomAuth';
@@ -101,9 +101,9 @@ export default function RoomPage() {
 
   // 调试：监控 currentRoom 变化
   useEffect(() => {
-    console.log('[RoomPage] currentRoom changed:', currentRoom);
-    console.log('[RoomPage] derivedUserId:', derivedUserId);
-    console.log('[RoomPage] isOwner:', isOwner);
+    logger.debug('[RoomPage] currentRoom changed:', currentRoom);
+    logger.debug('[RoomPage] derivedUserId:', derivedUserId);
+    logger.debug('[RoomPage] isOwner:', isOwner);
   }, [currentRoom, derivedUserId, isOwner]);
 
   // Hooks (Controller Logic)
@@ -160,7 +160,7 @@ export default function RoomPage() {
       !autoStartStartedRef.current && // 未尝试过自动开始
       !gameId; // 没有游戏ID
 
-    // 调试日志 - 同时使用 console.log 和 devLog 确保输出
+    // 调试日志
     const debugInfo = {
       currentRoom: currentRoom,
       derivedUserId,
@@ -174,43 +174,23 @@ export default function RoomPage() {
       'currentRoom?.owner_uid': currentRoom?.owner_uid,
       'owner_uid === derivedUserId': currentRoom?.owner_uid === derivedUserId,
     };
-    console.log('[AutoStart] 检查条件:', debugInfo);
-    devLog('[AutoStart] 检查条件:', JSON.stringify(debugInfo, null, 2));
+    logger.debug('[AutoStart] 检查条件:', debugInfo);
 
     if (shouldAutoStart) {
-      console.log('[AutoStart] 触发自动开始');
-      devLog('[AutoStart] 触发自动开始');
+      logger.debug('[AutoStart] 触发自动开始');
       autoStartStartedRef.current = true;
       const timer = setTimeout(async () => {
         try {
-          console.log('[AutoStart] 调用startGame');
-          devLog('[AutoStart] 调用startGame');
+          logger.debug('[AutoStart] 调用startGame');
           await startGameRef.current(roomId);
-          console.log('[AutoStart] startGame完成');
-          devLog('[AutoStart] startGame完成');
+          logger.debug('[AutoStart] startGame完成');
         } catch (e) {
-          console.error('[AutoStart] Failed to start practice game:', e);
-          devError('[AutoStart] Failed to start practice game:', e);
+          logger.error('[AutoStart] Failed to start practice game:', e);
         }
       }, 1000); // 延迟1秒确保房间状态已同步
       return () => clearTimeout(timer);
     } else {
-      console.log('[AutoStart] 跳过自动开始，条件不满足:', debugInfo);
-      devLog(
-        '[AutoStart] 跳过自动开始，条件不满足:',
-        JSON.stringify(
-          {
-            mode: currentRoom?.mode,
-            gameStatus,
-            roomLoaded,
-            isOwner,
-            autoStartStarted: autoStartStartedRef.current,
-            gameId,
-          },
-          null,
-          2
-        )
-      );
+      logger.debug('[AutoStart] 跳过自动开始，条件不满足:', debugInfo);
     }
   }, [
     currentRoom?.id,

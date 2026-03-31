@@ -6,6 +6,7 @@
 import { vi } from 'vitest'
 import { supabase } from '@/lib/supabase/client'
 
+import { logger } from '@/lib/utils/logger'
 // 允许的 Supabase 查询方法白名单，用于安全检查
 const ALLOWED_QUERY_METHODS = new Set([
   'select', 'insert', 'update', 'delete',
@@ -151,7 +152,7 @@ export function createNestedQueryMock<T = { data: unknown; error: unknown }>(
 
       if (!isAllowed && !isSafeProp && !isInternalProp) {
         // 在所有环境中记录未授权的属性访问
-        console.error(`[Mock Security] Blocked unauthorized property access: ${propStr}`)
+        logger.error(`[Mock Security] Blocked unauthorized property access: ${propStr}`)
         // 返回 undefined 拒绝访问
         return undefined
       }

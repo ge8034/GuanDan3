@@ -24,6 +24,7 @@ import { getRealtimePerformanceReport } from '@/lib/performance/realtime-optimiz
 import { getDatabasePerformanceReport } from '@/lib/performance/database-optimizer'
 import { generatePerformanceBudgetReport } from '@/lib/performance/performance-budget'
 
+import { logger } from '@/lib/utils/logger'
 interface MetricCardProps {
   title: string
   value: string | number
@@ -87,7 +88,7 @@ export function PerformanceDashboard() {
       setBudgetReport(budget)
       setLastUpdate(new Date())
     } catch (error) {
-      console.error('Failed to fetch performance data:', error)
+      logger.error('Failed to fetch performance data:', error)
     } finally {
       setLoading(false)
     }

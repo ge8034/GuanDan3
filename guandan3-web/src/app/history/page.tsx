@@ -9,6 +9,7 @@ import Card, { CardBody } from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
 import CloudMountainBackground from '@/components/backgrounds/CloudMountainBackground'
 
+import { logger } from '@/lib/utils/logger'
 type GameRecord = {
   id: string
   created_at: string
@@ -58,7 +59,7 @@ export default function HistoryPage() {
         if (error) throw error
         setRecords(data as any)
       } catch (e: any) {
-        console.error(e)
+        logger.error(e)
         setError(mapSupabaseErrorToMessage(e, '获取战绩失败'))
       } finally {
         setLoading(false)

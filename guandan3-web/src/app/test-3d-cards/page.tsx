@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { GameTable3D } from '@/components/3d'
 
+import { logger } from '@/lib/utils/logger'
 export default function Test3DCardsPage() {
   const [selectedCards, setSelectedCards] = useState<Set<string>>(new Set())
   
@@ -27,7 +28,7 @@ export default function Test3DCardsPage() {
   }
 
   const handleCardHover = (cardId: string, isHovered: boolean) => {
-    console.log(`Card ${cardId} hovered: ${isHovered}`)
+    logger.debug(`Card ${cardId} hovered: ${isHovered}`)
   }
 
   const cardsWithSelection = testCards.map(card => ({

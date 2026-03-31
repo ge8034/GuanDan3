@@ -1,3 +1,5 @@
+import { logger } from '@/lib/utils/logger'
+
 interface ResourceLoadConfig {
   preload: boolean
   priority: 'high' | 'low' | 'auto'
@@ -70,7 +72,7 @@ class ResourceOptimizer {
       size = blob.size
       cached = response.headers.get('X-Cache') === 'HIT'
     } catch (error) {
-      console.warn('[ResourceOptimizer] Failed to measure resource:', url, error)
+      logger.warn('[ResourceOptimizer] Failed to measure resource:', { url, error })
     }
 
     const loadTime = performance.now() - startTime

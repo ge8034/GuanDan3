@@ -62,7 +62,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   }),
   updateHand: (cards) => set({ myHand: cards }),
 
-  // 游戏操作 - 使用箭头函数确保正确的this绑定
+  // 游戏操作 - 使用 .call() 绑定 this 上下文
   fetchGame: (roomId) => gameActions.fetchGame.call(get(), roomId),
   startGame: (roomId) => gameActions.startGame.call(get(), roomId),
   getAIHand: (seatNo) => gameActions.getAIHand.call(get(), seatNo),
@@ -70,20 +70,20 @@ export const useGameStore = create<GameState>((set, get) => ({
   fetchTurnsSince: (gameId: string, turnNo: number) => gameActions.fetchTurnsSince.call(get(), gameId, turnNo),
 
   // 回合操作
-  playTurn: turnActions.playTurn,
-  submitTurn: turnActions.submitTurn,
+  playTurn: (cards) => turnActions.playTurn.call(get(), cards),
+  submitTurn: (type, cards) => turnActions.submitTurn.call(get(), type, cards),
 
-  // 订阅操作 - 使用箭头函数确保正确的this绑定
+  // 订阅操作 - 使用 .call() 绑定 this 上下文
   subscribeGame: (roomId, options) => subscriptionActions.subscribeGame.call(get(), roomId, options),
 
-  // 进贡操作
-  calculateTribute: tributeActions.calculateTribute,
-  submitTribute: tributeActions.submitTribute,
-  submitReturn: tributeActions.submitReturn,
+  // 进贡操作 - 使用 .call() 绑定 this 上下文
+  calculateTribute: () => tributeActions.calculateTribute.call(get()),
+  submitTribute: (card) => tributeActions.submitTribute.call(get(), card),
+  submitReturn: (card) => tributeActions.submitReturn.call(get(), card),
 
-  // 暂停操作
-  pauseGame: pauseActions.pauseGame,
-  resumeGame: pauseActions.resumeGame,
+  // 暂停操作 - 使用 .call() 绑定 this 上下文
+  pauseGame: (reason?) => pauseActions.pauseGame.call(get(), reason),
+  resumeGame: () => pauseActions.resumeGame.call(get()),
 }))
 
 // 导出类型

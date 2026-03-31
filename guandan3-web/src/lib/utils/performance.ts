@@ -1,3 +1,5 @@
+import { logger } from './logger'
+
 export interface PerformanceConfig {
   enable3D: boolean
   quality: 'low' | 'medium' | 'high'
@@ -88,7 +90,7 @@ export function debounce(func: (...args: any[]) => void, wait: number) {
 
 export function requestIdleCallback(callback: () => void, timeout: number = 2000): number {
   if ('requestIdleCallback' in window) {
-    return (window as any).requestIdleCallback(callback, { timeout })
+    return (window as Window & { requestIdleCallback?: typeof window.requestIdleCallback }).requestIdleCallback(callback, { timeout })
   }
 
   return setTimeout(callback, timeout) as unknown as number
@@ -96,7 +98,7 @@ export function requestIdleCallback(callback: () => void, timeout: number = 2000
 
 export function cancelIdleCallback(handle: number) {
   if ('cancelIdleCallback' in window) {
-    (window as any).cancelIdleCallback(handle)
+    (window as Window & { cancelIdleCallback?: typeof window.cancelIdleCallback }).cancelIdleCallback(handle)
   } else {
     clearTimeout(handle)
   }
@@ -117,7 +119,7 @@ export function measurePerformance(label: string) {
 
     const measure = performance.getEntriesByName(measureName)[0]
     if (measure) {
-      console.log(`[Performance] ${label}: ${measure.duration.toFixed(2)}ms`)
+      logger.debug(`[Performance] ${label}: ${measure.duration.toFixed(2)}ms`)
     }
 
     performance.clearMarks(startMark)

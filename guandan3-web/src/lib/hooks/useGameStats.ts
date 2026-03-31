@@ -4,6 +4,7 @@ import { useGameStore } from '@/lib/store/game'
 import { useRoomStore } from '@/lib/store/room'
 import { statsCollectionService } from '@/lib/services/stats-collection'
 
+import { logger } from '@/lib/utils/logger'
 export function useGameStats() {
   const { user } = useAuthStore()
   const { gameId, status: gameStatus, currentSeat, myHand, lastAction, rankings, turnNo } = useGameStore()
@@ -34,7 +35,7 @@ export function useGameStats() {
       const opponentScore = result === 'win' ? 0 : result === 'draw' ? 50 : 100
 
       statsCollectionService.endGame(result, teamScore, opponentScore)
-      statsCollectionService.saveGameStats().catch(console.error)
+      statsCollectionService.saveGameStats().catch(logger.error)
       
       gameEndedRef.current = true
       gameStartedRef.current = false

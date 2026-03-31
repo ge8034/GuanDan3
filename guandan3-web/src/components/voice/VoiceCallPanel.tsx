@@ -5,6 +5,7 @@ import { useVoiceCall } from '@/lib/hooks/useVoiceCall'
 import { VoiceCallControls } from './VoiceCallControls'
 import { useAuthStore } from '@/lib/store/auth'
 
+import { logger } from '@/lib/utils/logger'
 interface VoiceCallPanelProps {
   roomId: string
 }
@@ -29,16 +30,16 @@ export default function VoiceCallPanel({ roomId }: VoiceCallPanelProps) {
     roomId,
     userId,
     onIncomingCall: (callerId) => {
-      console.log('收到来电:', callerId)
+      logger.debug('收到来电:', callerId)
     },
     onCallEnded: () => {
-      console.log('通话结束')
+      logger.debug('通话结束')
     },
     onParticipantJoined: (participantId) => {
-      console.log('参与者加入:', participantId)
+      logger.debug('参与者加入:', participantId)
     },
     onParticipantLeft: (participantId) => {
-      console.log('参与者离开:', participantId)
+      logger.debug('参与者离开:', participantId)
     }
   })
 

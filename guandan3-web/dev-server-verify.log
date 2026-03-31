@@ -1,0 +1,41 @@
+npm warn Unknown project config "enable-pre-post-scripts". This will stop working in the next major version of npm.
+
+> guandan3-web@0.1.0 dev
+> next dev -p 3000
+
+▲ Next.js 16.2.1 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.105:3000
+- Environments: .env.local
+✓ Ready in 1099ms
+Warning: Custom Cache-Control headers detected for the following routes:
+  - /_next/static/:path*
+
+Setting a custom Cache-Control header can break Next.js development behavior.
+⚠ Slow filesystem detected. The benchmark took 270ms. If D:\Learn-Claude\GuanDan3\guandan3-web\.next/dev is a network drive, consider moving it to a local folder.
+See more: https://nextjs.org/docs/app/guides/local-development
+- Experiments (use with caution):
+  ✓ optimizeCss
+  · optimizePackageImports
+
+ GET /api/health 200 in 1751ms (next.js: 1687ms, application-code: 64ms)
+○ Compiling / ...
+ GET / 200 in 9.2s (next.js: 8.3s, application-code: 937ms)
+ GET /api/health 200 in 20ms (next.js: 8ms, application-code: 12ms)
+ POST /api/rooms 405 in 644ms (next.js: 629ms, application-code: 14ms)
+ GET /lobby 200 in 2.7s (next.js: 1802ms, application-code: 867ms)
+ GET /room/room-1774936910399-y4w8sqko7 200 in 4.0s (next.js: 3.9s, application-code: 101ms)
+ GET /lobby 200 in 280ms (next.js: 9ms, application-code: 270ms)
+ GET /lobby 200 in 199ms (next.js: 7ms, application-code: 193ms)
+ GET /room/room-1774936940582-oqa2kfplu 200 in 142ms (next.js: 39ms, application-code: 104ms)
+ GET /lobby 200 in 425ms (next.js: 21ms, application-code: 404ms)
+ GET / 200 in 557ms (next.js: 162ms, application-code: 395ms)
+ GET /room/room-1774936965531-t2lv0ywdp 200 in 103ms (next.js: 30ms, application-code: 74ms)
+[browser] [WARN] [useChat] Channel error: { roomId: [32m'room-1774936965531-t2lv0ywdp'[39m, status: [32m'CHANNEL_ERROR'[39m } (src/lib/utils/logger.ts:61:13)
+[browser] [WARN] [useChat] Channel error: { roomId: [32m'room-1774936965531-t2lv0ywdp'[39m, status: [32m'CHANNEL_ERROR'[39m } (src/lib/utils/logger.ts:61:13)
+[browser] [WARN] [useChat] Channel error: { roomId: [32m'room-1774936965531-t2lv0ywdp'[39m, status: [32m'CHANNEL_ERROR'[39m } (src/lib/utils/logger.ts:61:13)
+ GET / 200 in 119ms (next.js: 10ms, application-code: 108ms)
+ GET /room/room-1774936977008-xwf9ib6w6 200 in 100ms (next.js: 31ms, application-code: 69ms)
+[browser] [WARN] [useChat] Channel error: { roomId: [32m'room-1774936977008-xwf9ib6w6'[39m, status: [32m'CHANNEL_ERROR'[39m } (src/lib/utils/logger.ts:61:13)
+ GET / 200 in 97ms (next.js: 4ms, application-code: 92ms)
+ GET /room/room-1774936981898-c3i5w7nbq 200 in 97ms (next.js: 24ms, application-code: 73ms)

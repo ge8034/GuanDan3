@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useGameStore } from '@/lib/store/game';
 import { RoomMember } from '@/lib/store/room';
-import { devLog, devError } from '@/lib/utils/devLog';
+import { logger } from '@/lib/utils/logger';
 import { AIPerformanceMonitor } from '@/lib/utils/aiPerformanceMonitor';
 import { aiSystemManager } from './AISystemManager';
 import type { Task } from '@/lib/multi-agent/core/types';
@@ -47,7 +47,7 @@ export function useAIDecision(
     const shouldRunAI =
       gameStatus === 'playing' && isOwner && members && members.length > 0;
 
-    console.log('[useAIDecision] 触发检查:', {
+    logger.debug('[useAIDecision] 触发检查:', {
       gameStatus,
       isOwner,
       currentSeat,
@@ -62,14 +62,14 @@ export function useAIDecision(
     const currentMember = members.find((m) => m.seat_no === currentSeat);
     const isAIMember = currentMember?.member_type === 'ai';
 
-    console.log('[useAIDecision] 座位检查:', {
+    logger.debug('[useAIDecision] 座位检查:', {
       currentSeat,
       currentMember,
       isAIMember,
     });
 
     if (!isAIMember) {
-      devLog(
+      logger.debug(
         `[useAIDecision] 当前座位不是AI成员，跳过: member_type=${currentMember?.member_type}`
       );
       return;
@@ -77,7 +77,7 @@ export function useAIDecision(
 
     // 防止重复提交 - 使用轮次号作为锁，允许不同座位在同一轮次中依次执行
     if (submittingTurnRef.current === turnNo) {
-      devLog(`[useAIDecision] 轮次${turnNo}正在执行中，跳过`);
+      logger.debug(`[useAIDecision] 轮次${turnNo}正在执行中，跳过`);
       return;
     }
 
@@ -85,37 +85,37 @@ export function useAIDecision(
       submittingTurnRef.current = turnNo;
       const decisionStartTime = Date.now();
 
-      devLog(
+      logger.debug(
         `[useAIDecision] 开始执行 AI 决策: currentSeat=${currentSeat}, turnNo=${turnNo}`
       );
 
       // 超时保护
       const timeoutId = setTimeout(() => {
         if (submittingTurnRef.current === turnNo) {
-          devLog('[useAIDecision] 决策超时 (15秒)，强制重置');
+          logger.debug('[useAIDecision] 决策超时 (15秒)，强制重置');
           submittingTurnRef.current = null;
         }
       }, 15000);
 
       try {
-        console.log('[useAIDecision] 获取AI系统:', {
+        logger.debug('[useAIDecision] 获取AI系统:', {
           roomId,
           activeRooms: aiSystemManager.getActiveRoomIds(),
         });
 
         const system = aiSystemManager.getSystem(roomId);
-        console.log(
+        logger.debug(
           '[useAIDecision] 系统查询结果:',
           system ? '存在' : '不存在'
         );
 
         if (!system?.dispatcher || !system?.planner) {
-          console.error('[useAIDecision] AI 系统不存在或不完整:', {
+          logger.error('[useAIDecision] AI 系统不存在或不完整:', {
             hasSystem: !!system,
             hasDispatcher: !!system?.dispatcher,
             hasPlanner: !!system?.planner,
           });
-          devLog(`[useAIDecision] AI 系统不存在`);
+          logger.debug(`[useAIDecision] AI 系统不存在`);
           return;
         }
 
@@ -126,14 +126,14 @@ export function useAIDecision(
           freshState.status !== 'playing' ||
           freshState.currentSeat !== currentSeat
         ) {
-          devLog(`[useAIDecision] 状态已变化，跳过`);
+          logger.debug(`[useAIDecision] 状态已变化，跳过`);
           return;
         }
 
         // 再次确认是 AI 成员
         const currentMember = members.find((m) => m.seat_no === currentSeat);
         if (!currentMember || currentMember.member_type !== 'ai') {
-          devLog(`[useAIDecision] 当前座位不是AI成员`);
+          logger.debug(`[useAIDecision] 当前座位不是AI成员`);
           return;
         }
 
@@ -157,16 +157,16 @@ export function useAIDecision(
           createdAt: Date.now(),
         };
 
-        devLog(`[useAIDecision] 创建任务: ${task.id}`);
+        logger.debug(`[useAIDecision] 创建任务: ${task.id}`);
 
         // 分解任务
         const subtasks = system.planner.decompose(task);
         if (!subtasks || !Array.isArray(subtasks) || subtasks.length === 0) {
-          devError('[useAIDecision] 任务分解失败');
+          logger.error('[useAIDecision] 任务分解失败');
           return;
         }
 
-        devLog(`[useAIDecision] 准备提交 ${subtasks.length} 个任务`);
+        logger.debug(`[useAIDecision] 准备提交 ${subtasks.length} 个任务`);
         await system.dispatcher.submitTasks(subtasks);
         addDebugLog(`AI Agent: 调度中 (座位 ${currentSeat})`);
 
@@ -239,7 +239,7 @@ export function useAIDecision(
           }
         }
       } catch (e: unknown) {
-        devError('[useAIDecision] AI 异常:', e);
+        logger.error('[useAIDecision] AI 异常:', e);
         const decisionTime = Date.now() - decisionStartTime;
         performanceMonitor.recordDecision({
           timestamp: Date.now(),
@@ -255,7 +255,7 @@ export function useAIDecision(
         clearTimeout(timeoutId);
         // 重置锁
         submittingTurnRef.current = null;
-        devLog(
+        logger.debug(
           `[useAIDecision] 完成，耗时: ${Date.now() - decisionStartTime}ms`
         );
       }

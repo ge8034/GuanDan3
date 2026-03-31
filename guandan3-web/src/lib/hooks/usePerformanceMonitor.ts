@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { createPerformanceMonitor } from '@/lib/utils/performance'
 
+import { logger } from '@/lib/utils/logger'
 interface PerformanceMonitorOptions {
   componentName: string
   threshold?: number
@@ -24,7 +25,7 @@ export const usePerformanceMonitor = ({
       
       if (duration > threshold) {
         if (process.env.NODE_ENV === 'development') {
-          console.warn(
+          logger.warn(
             `[Performance] ${componentName} slow render detected: ${duration}ms (threshold: ${threshold}ms)`
           )
         }
@@ -53,7 +54,7 @@ export const useMeasureRender = (componentName: string) => {
         const duration = (typeof window !== 'undefined' ? window.performance.now() : 0) - startTime.current
         
         if (process.env.NODE_ENV === 'development' && duration > 16) {
-          console.warn(
+          logger.warn(
             `[Performance] ${componentName} render took ${duration.toFixed(2)}ms`
           )
         }

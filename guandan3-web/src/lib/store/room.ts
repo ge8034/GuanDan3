@@ -1,10 +1,11 @@
 import { create } from 'zustand'
+import type { SupabaseError } from '@/types/supabase'
 import { supabase } from '@/lib/supabase/client'
 import { throttle } from '@/lib/utils/throttle'
 import { useGameStore } from '@/lib/store/game'
 import { useAuthStore } from '@/lib/store/auth'
-import { devError } from '@/lib/utils/devLog'
-import { realtimeOptimizer, createOptimizedSubscription } from '@/lib/performance/realtime-optimizer'
+import { logger } from '@/lib/utils/logger'
+import { realtimeOptimizer } from '@/lib/performance/realtime-optimizer'
 
 export interface Room {
   id: string
@@ -46,6 +47,19 @@ interface RoomState {
   sweepOfflineMembers: (roomId: string, timeoutSeconds?: number) => Promise<number>
 }
 
+
+/**
+ * 类型守卫：检查是否为SupabaseError
+ */
+const isSupabaseError = (error: unknown): error is SupabaseError => {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    ('code' in error || 'message' in error || 'status' in error)
+  )
+}
+
+
 export const useRoomStore = create<RoomState>((set, get) => ({
   currentRoom: null,
   members: [],
@@ -57,8 +71,8 @@ export const useRoomStore = create<RoomState>((set, get) => ({
       p_room_id: roomId
     })
     if (error) {
-      if ((error as any)?.code === 'PGRST202') return
-      devError('Heartbeat room member error:', error)
+      if (isSupabaseError(error) && error.code === 'PGRST202') return
+      logger.error('Heartbeat room member error:', error)
       throw error
     }
   },
@@ -69,8 +83,8 @@ export const useRoomStore = create<RoomState>((set, get) => ({
       p_timeout_seconds: timeoutSeconds
     })
     if (error) {
-      if ((error as any)?.code === 'PGRST202') return 0
-      devError('Sweep offline members error:', error)
+      if (isSupabaseError(error) && error.code === 'PGRST202') return 0
+      logger.error('Sweep offline members error:', error)
       throw error
     }
     return (data as unknown as number) ?? 0
@@ -82,7 +96,7 @@ export const useRoomStore = create<RoomState>((set, get) => ({
     })
     
     if (error) {
-      devError('Leave room error:', error)
+      logger.error('Leave room error:', error)
       throw error
     }
     set({ currentRoom: null, members: [] })
@@ -110,7 +124,7 @@ export const useRoomStore = create<RoomState>((set, get) => ({
     
     // 3. Rollback on Error
     if (error) {
-      devError('Toggle ready error:', error)
+      logger.error('Toggle ready error:', error)
       if (user) {
          // Revert to original state
          set({ members: currentMembers }) 
@@ -130,7 +144,7 @@ export const useRoomStore = create<RoomState>((set, get) => ({
     })
     
     if (error) {
-      devError('Create room error:', error)
+      logger.error('Create room error:', error)
       throw error
     }
     return data ? { id: data } : null
@@ -141,7 +155,7 @@ export const useRoomStore = create<RoomState>((set, get) => ({
     const userId = useAuthStore.getState().user?.id
     if (!userId) {
       const error = new Error('用户未认证')
-      devError('Create practice room error:', error)
+      logger.error('Create practice room error:', error)
       throw error
     }
 
@@ -151,13 +165,27 @@ export const useRoomStore = create<RoomState>((set, get) => ({
     })
     
     if (error) {
-      devError('Create practice room error:', error)
+      logger.error('Create practice room error:', error)
       throw error
     }
     // data is array of objects? signature returns table(room_id uuid)
     // RPC returns data as array usually?
     // Let's check type. It might return [{ room_id: ... }]
-    const roomId = (data as any)?.[0]?.room_id || (data as any)?.room_id
+    // 类型守卫：检查RPC返回的数据结构
+    const isRoomIdArray = (d: unknown): d is [{ room_id: string }] => {
+      return Array.isArray(d) && d.length > 0 && typeof d[0]?.room_id === 'string'
+    }
+    
+    const isRoomIdObject = (d: unknown): d is { room_id: string } => {
+      return typeof d === 'object' && d !== null && 'room_id' in d
+    }
+    
+    let roomId: string | undefined
+    if (isRoomIdArray(data)) {
+      roomId = data[0].room_id
+    } else if (isRoomIdObject(data)) {
+      roomId = data.room_id
+    }
     return roomId ? { id: roomId } : null
   },
 
@@ -168,7 +196,7 @@ export const useRoomStore = create<RoomState>((set, get) => ({
     })
     
     if (error) {
-      devError('Join room error:', error)
+      logger.error('Join room error:', error)
       throw error
     }
     // Refresh room data after joining
@@ -203,7 +231,7 @@ export const useRoomStore = create<RoomState>((set, get) => ({
       })
 
     if (error) {
-      devError('Add AI error:', error)
+      logger.error('Add AI error:', error)
       throw error
     }
     
@@ -219,20 +247,19 @@ export const useRoomStore = create<RoomState>((set, get) => ({
       .eq('id', roomId)
       .single()
 
-    // 调试日志 - 输出到浏览器控制台
-    console.log('[fetchRoom] Supabase response:', response)
-    console.log('[fetchRoom] room:', response.data)
-    console.log('[fetchRoom] error:', response.error)
+    // 调试日志
+    logger.debug('[fetchRoom] Supabase response:', response)
+    logger.debug('[fetchRoom] room:', response.data)
+    logger.debug('[fetchRoom] error:', response.error)
 
     const { data: room, error: roomError } = response
 
     if (roomError) {
-      console.error('[fetchRoom] Error:', roomError)
-      devError('Fetch room error:', roomError)
+      logger.error('[fetchRoom] Error:', roomError)
       return
     }
 
-    console.log('[fetchRoom] Setting currentRoom:', room)
+    logger.debug('[fetchRoom] Setting currentRoom:', room)
     set({ currentRoom: room })
 
     // 2. Fetch Members
@@ -243,7 +270,7 @@ export const useRoomStore = create<RoomState>((set, get) => ({
       .order('seat_no')
 
     if (membersError) {
-      devError('Fetch members error:', membersError)
+      logger.error('Fetch members error:', membersError)
       return
     }
 
@@ -268,7 +295,7 @@ export const useRoomStore = create<RoomState>((set, get) => ({
           set({ currentRoom: payload.new as Room })
         }
       )
-      .subscribe((status: any) => {
+      .subscribe((status) => {
         const statusStr = String(status)
         if (statusStr === 'SUBSCRIBED') {
           realtimeOptimizer.updateConnectionStatus(roomConnectionId, 'connected')
@@ -289,7 +316,7 @@ export const useRoomStore = create<RoomState>((set, get) => ({
           fetchRoomThrottled()
         }
       )
-      .subscribe((status: any) => {
+      .subscribe((status) => {
         const statusStr = String(status)
         if (statusStr === 'SUBSCRIBED') {
           realtimeOptimizer.updateConnectionStatus(membersConnectionId, 'connected')

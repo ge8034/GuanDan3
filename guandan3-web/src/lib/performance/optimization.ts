@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, useState, useMemo } from 'react'
 
+import { logger } from '@/lib/utils/logger'
 export function useDebounce<T extends (...args: any[]) => any>(
   callback: T,
   delay: number
@@ -171,7 +172,7 @@ export function usePerformanceMonitor(componentName: string) {
     
     if (process.env.NODE_ENV === 'development') {
       const renderTime = Date.now() - mountTimeRef.current
-      console.log(
+      logger.debug(
         `[Performance] ${componentName} rendered ${renderCountRef.current} times, ` +
         `current render took ${renderTime}ms`
       )
@@ -182,7 +183,7 @@ export function usePerformanceMonitor(componentName: string) {
     return () => {
       const totalTime = Date.now() - mountTimeRef.current
       if (process.env.NODE_ENV === 'development') {
-        console.log(
+        logger.debug(
           `[Performance] ${componentName} unmounted after ${totalTime}ms, ` +
           `total renders: ${renderCountRef.current}`
         )

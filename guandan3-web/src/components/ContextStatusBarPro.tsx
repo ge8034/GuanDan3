@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { clsx } from 'clsx';
+import { logger } from '@/lib/utils/logger'
 import {
   FileText,
   Zap,
@@ -120,7 +121,7 @@ export default function ContextStatusBarPro({
     cacheSize: 24.5,
   });
   const [isUpdating, setIsUpdating] = useState(false);
-  const [lastUpdate, setLastUpdate] = useState(Date.now());
+  const [lastUpdate, setLastUpdate] = useState(() => Date.now());
   const [isExpanded, setIsExpanded] = useState(false);
   const fileRef = useRef<HTMLSpanElement>(null);
   const downloadRef = useRef<HTMLDivElement>(null);
@@ -393,7 +394,7 @@ export default function ContextStatusBarPro({
                 {Object.keys(themes).map((t) => (
                   <button
                     key={t}
-                    onClick={() => console.log('切换主题:', t)}
+                    onClick={() => logger.debug('切换主题:', t)}
                     className={clsx(
                       'px-4 py-2 rounded-lg text-xs font-medium transition-all',
                       theme === t
@@ -457,7 +458,7 @@ export default function ContextStatusBarPro({
               <label className="block text-xs text-slate-400 mb-2">更新频率</label>
               <select
                 value={updateInterval}
-                onChange={(e) => console.log('更新频率:', e.target.value)}
+                onChange={(e) => logger.debug('更新频率:', e.target.value)}
                 className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-white focus:outline-none focus:border-emerald-500"
               >
                 <option value="1000">1 秒</option>

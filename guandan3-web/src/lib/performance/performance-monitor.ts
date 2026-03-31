@@ -1,3 +1,5 @@
+import { logger } from '@/lib/utils/logger'
+
 interface PerformanceMetric {
   name: string
   value: number
@@ -64,7 +66,7 @@ class PerformanceMonitor {
       paintObserver.observe({ entryTypes: ['paint'] })
       this.observers.push(paintObserver)
     } catch (e) {
-      console.warn('[PerformanceMonitor] Paint observer not supported')
+      logger.warn('[PerformanceMonitor] Paint observer not supported')
     }
 
     try {
@@ -78,7 +80,7 @@ class PerformanceMonitor {
       layoutShiftObserver.observe({ entryTypes: ['layout-shift'] })
       this.observers.push(layoutShiftObserver)
     } catch (e) {
-      console.warn('[PerformanceMonitor] Layout shift observer not supported')
+      logger.warn('[PerformanceMonitor] Layout shift observer not supported')
     }
 
     try {
@@ -92,7 +94,7 @@ class PerformanceMonitor {
       lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] })
       this.observers.push(lcpObserver)
     } catch (e) {
-      console.warn('[PerformanceMonitor] LCP observer not supported')
+      logger.warn('[PerformanceMonitor] LCP observer not supported')
     }
   }
 
@@ -185,7 +187,7 @@ class PerformanceMonitor {
     this.recordMetric(name, duration, 'custom')
 
     if (duration > 100) {
-      console.warn(`[PerformanceMonitor] ${name} took ${duration.toFixed(2)}ms`)
+      logger.warn(`[PerformanceMonitor] ${name} took ${duration.toFixed(2)}ms`)
     }
 
     return result
@@ -199,7 +201,7 @@ class PerformanceMonitor {
     this.recordMetric(name, duration, 'custom')
 
     if (duration > 100) {
-      console.warn(`[PerformanceMonitor] ${name} took ${duration.toFixed(2)}ms`)
+      logger.warn(`[PerformanceMonitor] ${name} took ${duration.toFixed(2)}ms`)
     }
 
     return result

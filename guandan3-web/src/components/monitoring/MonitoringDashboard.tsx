@@ -6,6 +6,7 @@ import { CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs'
 
+import { logger } from '@/lib/utils/logger'
 interface PerformanceMetrics {
   id: string
   page: string
@@ -64,7 +65,7 @@ export default function MonitoringDashboard() {
       setErrorData(errorData.data || [])
       setAnalyticsData(analyticsData.data || [])
     } catch (error) {
-      console.error('Failed to fetch monitoring data:', error)
+      logger.error('Failed to fetch monitoring data:', error)
     } finally {
       setLoading(false)
     }

@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase/client';
 
+import { logger } from '@/lib/utils/logger'
 export type ChatMessage = {
   id: string;
   senderId: string;
@@ -21,7 +22,7 @@ export const useChat = (roomId: string, userId: string, userName: string) => {
 
     // 防止无限重试
     if (connectAttemptRef.current >= maxRetries) {
-      console.warn('[useChat] Max connection retries reached for room:', roomId);
+      logger.warn('[useChat] Max connection retries reached for room:', roomId);
       return;
     }
 
@@ -40,7 +41,7 @@ export const useChat = (roomId: string, userId: string, userName: string) => {
     // 设置超时保护
     const timeoutId = setTimeout(() => {
       if (!subscribed) {
-        console.warn('[useChat] Connection timeout for room:', roomId, '- cleaning up');
+        logger.warn('[useChat] Connection timeout for room:', { roomId });
         supabase.removeChannel(channel);
         // 不重置计数器，防止快速重连循环
         // useEffect重新运行时会在开头检查connectAttemptRef
@@ -53,14 +54,14 @@ export const useChat = (roomId: string, userId: string, userName: string) => {
         setMessages((prev) => [...prev, msg]);
       })
       .subscribe((status) => {
-        console.log('[useChat] Channel status:', status, 'for room:', roomId);
+        logger.debug('[useChat] Channel status:', { status, roomId });
         if (status === 'SUBSCRIBED') {
           subscribed = true;
           clearTimeout(timeoutId);
           connectAttemptRef.current = 0; // 重置计数器
         } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
           clearTimeout(timeoutId);
-          console.warn('[useChat] Channel error:', status, 'for room:', roomId);
+          logger.warn('[useChat] Channel error:', { status, roomId });
         }
       });
 

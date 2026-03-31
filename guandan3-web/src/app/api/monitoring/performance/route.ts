@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
+import { logger } from '@/lib/utils/logger'
 export async function POST(request: NextRequest) {
   try {
     const metrics = await request.json()
@@ -24,13 +25,13 @@ export async function POST(request: NextRequest) {
       .select()
 
     if (error) {
-      console.error('Failed to insert performance metrics:', error)
+      logger.error('Failed to insert performance metrics:', error)
       return NextResponse.json({ error: 'Failed to record metrics' }, { status: 500 })
     }
 
     return NextResponse.json({ success: true, data })
   } catch (error) {
-    console.error('Performance monitoring error:', error)
+    logger.error('Performance monitoring error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -51,7 +52,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ data })
   } catch (error) {
-    console.error('Performance monitoring GET error:', error)
+    logger.error('Performance monitoring GET error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
+import { logger } from '@/lib/utils/logger'
 export async function POST(request: NextRequest) {
   try {
     const analyticsData = await request.json()
@@ -26,7 +27,7 @@ export async function POST(request: NextRequest) {
       .select()
 
     if (error) {
-      console.error('Failed to log analytics event:', error)
+      logger.error('Failed to log analytics event:', error)
       return NextResponse.json(
         { error: 'Failed to log analytics event' },
         { status: 500 }
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, data })
   } catch (error) {
-    console.error('Error logging analytics event:', error)
+    logger.error('Error logging analytics event:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -81,7 +82,7 @@ export async function GET(request: NextRequest) {
     const { data, error, count } = await query
 
     if (error) {
-      console.error('Failed to fetch analytics events:', error)
+      logger.error('Failed to fetch analytics events:', error)
       return NextResponse.json(
         { error: 'Failed to fetch analytics events' },
         { status: 500 }
@@ -130,7 +131,7 @@ export async function GET(request: NextRequest) {
       count
     })
   } catch (error) {
-    console.error('Error fetching analytics events:', error)
+    logger.error('Error fetching analytics events:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

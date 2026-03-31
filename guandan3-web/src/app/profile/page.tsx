@@ -13,6 +13,7 @@ import ScaleIn from '@/components/ui/ScaleIn'
 import { StaggerContainer } from '@/components/ui/StaggerContainer.lazy'
 import CloudMountainBackground from '@/components/backgrounds/CloudMountainBackground'
 
+import { logger } from '@/lib/utils/logger'
 type UserProfile = {
   id: string
   email: string
@@ -102,7 +103,7 @@ export default function ProfilePage() {
           bestScore,
         })
       } catch (e: any) {
-        console.error(e)
+        logger.error(e)
         setError(mapSupabaseErrorToMessage(e, '获取用户信息失败'))
       } finally {
         setLoading(false)

@@ -1,3 +1,5 @@
+import { logger } from './logger'
+
 export const isDev = () => process.env.NODE_ENV === 'development'
 
 // 日志分类
@@ -23,18 +25,34 @@ export const shouldLog = (category?: LogCategory): boolean => {
   return ENABLED_LOGS.includes(category)
 }
 
-export const devLog = (...args: any[]) => {
-  if (shouldLog()) console.log(...args)
+export const devLog = (...args: unknown[]) => {
+  if (shouldLog()) {
+    const message = String(args[0] ?? '')
+    const meta = args.length > 1 ? args.slice(1) : undefined
+    logger.debug(message, meta)
+  }
 }
 
-export const devLogCat = (category: LogCategory, ...args: any[]) => {
-  if (shouldLog(category)) console.log(`[${category.toUpperCase()}]`, ...args)
+export const devLogCat = (category: LogCategory, ...args: unknown[]) => {
+  if (shouldLog(category)) {
+    const message = `[${category.toUpperCase()}] ${String(args[0] ?? '')}`
+    const meta = args.length > 1 ? args.slice(1) : undefined
+    logger.debug(message, meta)
+  }
 }
 
-export const devWarn = (...args: any[]) => {
-  if (shouldLog()) console.warn(...args)
+export const devWarn = (...args: unknown[]) => {
+  if (shouldLog()) {
+    const message = String(args[0] ?? '')
+    const meta = args.length > 1 ? args.slice(1) : undefined
+    logger.warn(message, meta)
+  }
 }
 
-export const devError = (...args: any[]) => {
-  if (shouldLog()) console.error(...args)
+export const devError = (...args: unknown[]) => {
+  if (shouldLog()) {
+    const message = String(args[0] ?? '')
+    const meta = args.length > 1 ? args.slice(1) : undefined
+    logger.error(message, meta)
+  }
 }

@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, useMemo, ReactNode } from 'react'
 import { ThemeMode, GameTheme, themeConfigs, ThemeConfig } from './theme-types'
 
+import { logger } from '@/lib/utils/logger'
 interface ThemeContextType {
   mode: ThemeMode
   gameTheme: GameTheme
@@ -38,7 +39,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
           setCustomThemes(themesMap)
         }
       } catch (error) {
-        console.error('Failed to load custom themes:', error)
+        logger.error('Failed to load custom themes:', error)
       }
     }
 

@@ -1,4 +1,22 @@
-export const mapSupabaseErrorToMessage = (error: any, fallback: string): string => {
+import type { SupabaseError } from '@/types/supabase'
+
+/**
+ * 将Supabase错误映射为用户友好的错误消息
+ */
+export const mapSupabaseErrorToMessage = (error: unknown, fallback: string): string => {
+  // 类型守卫：检查是否为SupabaseError
+  const isSupabaseError = (err: unknown): err is SupabaseError => {
+    return (
+      typeof err === 'object' &&
+      err !== null &&
+      ('code' in err || 'message' in err || 'status' in err)
+    )
+  }
+
+  if (!isSupabaseError(error)) {
+    return fallback
+  }
+
   const code = String(error?.code || error?.error?.code || '')
   const message = String(error?.message || error?.error?.message || '')
   const status = Number(error?.status || error?.error?.status || 0)

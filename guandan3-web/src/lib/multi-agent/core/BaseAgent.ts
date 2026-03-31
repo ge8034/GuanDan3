@@ -1,6 +1,7 @@
 import { IAgent, AgentId, AgentConfig, AgentStatus, Message } from './types';
 import { MessageBus } from './MessageBus';
 
+import { logger } from '@/lib/utils/logger'
 export abstract class BaseAgent implements IAgent {
   public id: AgentId;
   public status: AgentStatus;
@@ -19,7 +20,7 @@ export abstract class BaseAgent implements IAgent {
 
   // Handle incoming messages from MessageBus subscription
   private async handleMessage(message: Message): Promise<void> {
-    console.log(`[BaseAgent:${this.id}] handleMessage 收到消息: type=${message.type}, msgId=${message.id}, from=${message.from}, to=${message.to}`)
+    logger.debug(`[BaseAgent:${this.id}] handleMessage 收到消息: type=${message.type}, msgId=${message.id}, from=${message.from}, to=${message.to}`)
     // 委托给 receive 方法，允许子类扩展消息处理
     await this.receive(message);
   }
@@ -28,9 +29,9 @@ export abstract class BaseAgent implements IAgent {
   public async receive(message: Message): Promise<void> {
     // 处理 TASK_ASSIGN 消息
     if (message.type === 'TASK_ASSIGN') {
-      console.log(`[BaseAgent:${this.id}] 准备调用 processTask`)
+      logger.debug(`[BaseAgent:${this.id}] 准备调用 processTask`)
       await this.processTask(message.payload);
-      console.log(`[BaseAgent:${this.id}] processTask 完成`)
+      logger.debug(`[BaseAgent:${this.id}] processTask 完成`)
     }
     // 其他消息类型由子类处理
   }
@@ -51,7 +52,7 @@ export abstract class BaseAgent implements IAgent {
   // 默认 processTask 实现 - 子类可以覆盖
   protected async processTask(task: any): Promise<void> {
     // 默认实现：子类可以覆盖
-    console.warn(`[${this.id}] processTask 未被实现，跳过任务:`, task.id);
+    logger.warn(`[${this.id}] processTask 未被实现，跳过任务:`, task.id);
   }
 
   public updateStatus(status: AgentStatus): void {

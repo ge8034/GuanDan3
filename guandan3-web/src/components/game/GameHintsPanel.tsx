@@ -8,6 +8,7 @@ import Card from '@/components/ui/Card'
 import { useGameStore } from '@/lib/store/game'
 import { useRoomStore } from '@/lib/store/room'
 
+import { logger } from '@/lib/utils/logger'
 export function GameHintsPanel() {
   const { myHand, lastAction, turnNo, status } = useGameStore()
   const { currentRoom, members } = useRoomStore()
@@ -56,12 +57,12 @@ export function GameHintsPanel() {
 
   const handleHintClick = (hint: CardHint) => {
     if (hint.cards.length > 0) {
-      console.log('Selected hint cards:', hint.cards)
+      logger.debug('Selected hint cards:', hint.cards)
     }
   }
 
   const handleSuggestionClick = (suggestion: PlaySuggestion) => {
-    console.log('Selected suggestion:', suggestion)
+    logger.debug('Selected suggestion:', suggestion)
   }
 
   if (!showHints) {

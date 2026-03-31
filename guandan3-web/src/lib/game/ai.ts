@@ -1,7 +1,7 @@
-import { Card } from '@/lib/store/game'
-import { AIMove, AIDifficulty, TeammateSituation } from './ai-types'
-import { decideMove } from './ai-decision'
-import { 
+import { Card } from '@/lib/store/game';
+import { AIMove, AIDifficulty, TeammateSituation } from './ai-types';
+import { decideMove } from './ai-decision';
+import {
   shouldPlayAggressive,
   shouldPlayDefensive,
   shouldPlayAggressiveAdjusted,
@@ -10,9 +10,9 @@ import {
   findBestSupportMove,
   evaluateMove,
   findOptimalMove,
-  adjustDifficulty
-} from './ai-strategy'
-import { 
+  adjustDifficulty,
+} from './ai-strategy';
+import {
   sortCards,
   filterSafeCards,
   countStrongCards,
@@ -20,8 +20,8 @@ import {
   analyzeCardDistribution,
   estimateMovesToClear,
   calculateControlScore,
-  assessRisk
-} from './ai-utils'
+  assessRisk,
+} from './ai-utils';
 import {
   analyzeHand,
   findSingles,
@@ -32,17 +32,16 @@ import {
   findFullHouses,
   findSequencePairs,
   findSequenceTriples,
-  findQuadWithTwo
-} from './ai-pattern-recognition'
-import { 
+} from './ai-pattern-recognition';
+import {
   recordDecisionMetrics,
   getPerformanceStats,
   clearPerformanceMetrics,
   getRecentPerformance,
-  calculateWinRate
-} from './ai-performance'
+  calculateWinRate,
+} from './ai-performance';
 
-export type { AIMove, AIDifficulty, TeammateSituation } from './ai-types'
+export type { AIMove, AIDifficulty, TeammateSituation } from './ai-types';
 
 export {
   decideMove,
@@ -72,10 +71,9 @@ export {
   findFullHouses,
   findSequencePairs,
   findSequenceTriples,
-  findQuadWithTwo,
   recordDecisionMetrics,
   getPerformanceStats,
   clearPerformanceMetrics,
   getRecentPerformance,
-  calculateWinRate
-}
+  calculateWinRate,
+};

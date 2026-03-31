@@ -6,6 +6,7 @@ import { statsAnalysisService } from '@/lib/services/stats-analysis'
 import { StatsSummary, StatsAnalysis, PlayerStats, GameStats } from '@/types/game-stats'
 import Card, { CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { logger } from '@/lib/utils/logger'
 import { 
   Trophy, 
   TrendingUp, 
@@ -45,7 +46,7 @@ export default function StatsPage() {
       setStatsSummary(summary)
       setAnalysis(analysisResult)
     } catch (error) {
-      console.error('Failed to load stats:', error)
+      logger.error('Failed to load stats:', error)
     } finally {
       setLoading(false)
     }

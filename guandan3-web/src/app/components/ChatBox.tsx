@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useChat, ChatMessage } from '@/lib/hooks/useChat';
 import RippleEffect from '@/components/effects/RippleEffect';
 
+import { logger } from '@/lib/utils/logger'
 interface ChatBoxProps {
   roomId: string;
   userId: string;
@@ -138,7 +139,7 @@ export const ChatBox = ({ roomId, userId, userName }: ChatBoxProps) => {
       <RippleEffect className="relative inline-block">
         <button
           onClick={() => {
-              console.log('Chat toggle clicked, isOpen:', isOpen);
+              logger.debug('Chat toggle clicked, isOpen:', { isOpen });
               setIsOpen(!isOpen);
           }}
           data-testid="chat-toggle"

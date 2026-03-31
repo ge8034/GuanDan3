@@ -10,7 +10,10 @@ test.describe('大厅核心功能', () => {
 
   test('筛选、排序与房间详情', async ({ page }) => {
     await page.goto('http://localhost:3000/lobby', { timeout: 30000 });
-    const lobbyHeading = page.locator('h1').filter({ hasText: '对战大厅' }).first();
+    const lobbyHeading = page
+      .locator('h1')
+      .filter({ hasText: '对战大厅' })
+      .first();
     await expect(lobbyHeading).toBeVisible({ timeout: 60000 });
 
     let roomName = `LobbyCore-${Date.now()}`;
@@ -25,7 +28,10 @@ test.describe('大厅核心功能', () => {
         break;
       } catch {
         await page.goto('http://localhost:3000/lobby', { timeout: 30000 });
-        const lobbyHeading = page.locator('h1').filter({ hasText: '对战大厅' }).first();
+        const lobbyHeading = page
+          .locator('h1')
+          .filter({ hasText: '对战大厅' })
+          .first();
         await expect(lobbyHeading).toBeVisible({ timeout: 60000 });
       }
     }
@@ -37,9 +43,18 @@ test.describe('大厅核心功能', () => {
     // Wait for room list to load with longer timeout
     await page.waitForTimeout(5000);
 
-    // Find any room card (not necessarily the one we created)
-    // Use a more flexible selector that matches the room card structure
-    const roomCards = page.locator('h3').filter({ hasText: /Mock Room/i }).locator('..').locator('..');
+    // Find the room card we created (or any room card if the created one isn't visible)
+    // Try to find our created room first by its name pattern
+    const roomCardsByName = page
+      .locator('h3')
+      .filter({ hasText: new RegExp(`^${roomName}`) })
+      .locator('..')
+      .locator('..');
+    const roomCardCount = await roomCardsByName.count();
+    const roomCards =
+      roomCardCount > 0
+        ? roomCardsByName
+        : page.locator('h3').locator('..').locator('..');
     await expect(roomCards.first()).toBeVisible({ timeout: 60000 });
 
     // Wait for filters to be attached before interacting
@@ -47,7 +62,7 @@ test.describe('大厅核心功能', () => {
     const onlyHasOnline = page.getByTestId('lobby-filter-online');
     await expect(onlyJoinable).toBeAttached({ timeout: 10000 });
     await expect(onlyHasOnline).toBeAttached({ timeout: 10000 });
-    
+
     // Use JavaScript to check the boxes directly
     await onlyJoinable.evaluate((el: HTMLInputElement) => {
       el.checked = true;
@@ -68,10 +83,10 @@ test.describe('大厅核心功能', () => {
     const detailBtn = page.getByText('房间详情').first();
     await expect(detailBtn).toBeVisible({ timeout: 30000 });
     await detailBtn.click();
-    
+
     // Wait for dialog to appear
     await page.waitForTimeout(2000);
-    
+
     // Verify dialog is open by checking for dialog content
     // Use a more reliable approach - check for dialog content elements
     // Use the modal-title id to specifically target the dialog heading
@@ -81,15 +96,19 @@ test.describe('大厅核心功能', () => {
     // Verify dialog content
     const closeButton = page.getByRole('button', { name: /关闭/i });
     await expect(closeButton).toBeVisible({ timeout: 30000 });
-    
+
     const copyButton = page.getByRole('button', { name: /复制房间链接/i });
     await expect(copyButton).toBeVisible({ timeout: 30000 });
-    await copyButton.evaluate(el => (el as HTMLElement).click());
-    await expect(page.getByTestId('toast-item').first()).toBeVisible({ timeout: 30000 });
-    
+    await copyButton.evaluate((el) => (el as HTMLElement).click());
+    await expect(page.getByTestId('toast-item').first()).toBeVisible({
+      timeout: 30000,
+    });
+
     const qrButton = page.getByRole('button', { name: /二维码邀请/i });
     await expect(qrButton).toBeVisible({ timeout: 30000 });
-    await qrButton.evaluate(el => (el as HTMLElement).click());
-    await expect(page.getByTestId('lobby-detail-qr-img')).toBeVisible({ timeout: 30000 });
+    await qrButton.evaluate((el) => (el as HTMLElement).click());
+    await expect(page.getByTestId('lobby-detail-qr-img')).toBeVisible({
+      timeout: 30000,
+    });
   });
 });

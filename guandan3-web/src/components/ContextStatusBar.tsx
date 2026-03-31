@@ -24,7 +24,7 @@ export default function ContextStatusBar({ className }: ContextStatusBarProps) {
   });
   const [currentFile, setCurrentFile] = useState('D:\\Learn-Claude\\GuanDan3\\guandan3-web\\src\\app\\page.tsx');
   const [isUpdating, setIsUpdating] = useState(false);
-  const [lastUpdate, setLastUpdate] = useState(Date.now());
+  const [lastUpdate, setLastUpdate] = useState(() => Date.now());
 
   // 模拟实时数据更新
   useEffect(() => {

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useRoomStore } from '@/lib/store/room'
 import { useGameStore } from '@/lib/store/game'
 
+import { logger } from '@/lib/utils/logger'
 export function useRoomData(roomId: string, authReady: boolean) {
   const [roomLoaded, setRoomLoaded] = useState(false)
   const fetchRoom = useRoomStore(s => s.fetchRoom)
@@ -11,7 +12,7 @@ export function useRoomData(roomId: string, authReady: boolean) {
   useEffect(() => {
     // 只在客户端且认证就绪时执行数据获取
     if (typeof window === 'undefined' || !roomId || !authReady) {
-      console.log('[useRoomData] Skipping fetch:', {
+      logger.debug('[useRoomData] Skipping fetch:', {
         isClient: typeof window !== 'undefined',
         roomId,
         authReady
@@ -22,17 +23,17 @@ export function useRoomData(roomId: string, authReady: boolean) {
     let active = true
     setRoomLoaded(false)
 
-    console.log('[useRoomData] Client-side fetching room:', roomId)
+    logger.debug('[useRoomData] Client-side fetching room:', roomId)
     ;(async () => {
       try {
         await Promise.all([fetchRoom(roomId), fetchGame(roomId)])
-        console.log('[useRoomData] Fetch complete')
+        logger.debug('[useRoomData] Fetch complete')
       } catch (e) {
-        console.error('[useRoomData] Fetch error:', e)
+        logger.error('[useRoomData] Fetch error:', e)
       } finally {
         if (active) {
           setRoomLoaded(true)
-          console.log('[useRoomData] Set roomLoaded=true')
+          logger.debug('[useRoomData] Set roomLoaded=true')
         }
       }
     })()

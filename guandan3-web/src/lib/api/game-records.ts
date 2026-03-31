@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/utils/logger'
 import type {
   GameRecord,
   PlayerStats,
@@ -89,7 +90,7 @@ export async function createGameRecord(input: GameRecordInput): Promise<GameReco
 
     return updatedGameData
   } catch (error) {
-    console.error('Error creating game record:', error)
+    logger.error('Error creating game record:', error)
     return null
   }
 }
@@ -105,13 +106,13 @@ export async function getPlayerStats(userId: string): Promise<PlayerDetailedStat
     if (error) {
       // Log but don't throw - stats are non-critical
       if (error.code !== 'PGRST116' && error.code !== '406') {
-        console.warn('[getPlayerStats] Error (non-critical):', error.message)
+        logger.warn('[getPlayerStats] Error (non-critical):', error.message)
       }
       return null
     }
     return data
   } catch (error) {
-    console.warn('[getPlayerStats] Exception:', error)
+    logger.warn('[getPlayerStats] Exception:', error)
     return null
   }
 }
@@ -123,7 +124,7 @@ export async function getCurrentPlayerStats(): Promise<PlayerDetailedStats | nul
 
     return getPlayerStats(user.id)
   } catch (error) {
-    console.error('Error getting current player stats:', error)
+    logger.error('Error getting current player stats:', error)
     return null
   }
 }
@@ -142,7 +143,7 @@ export async function getGameRecords(
     if (error) throw error
     return data || []
   } catch (error) {
-    console.error('Error getting game records:', error)
+    logger.error('Error getting game records:', error)
     return []
   }
 }
@@ -158,7 +159,7 @@ export async function getGameRecordById(id: string): Promise<GameRecord | null> 
     if (error) throw error
     return data
   } catch (error) {
-    console.error('Error getting game record:', error)
+    logger.error('Error getting game record:', error)
     return null
   }
 }
@@ -174,7 +175,7 @@ export async function getGameParticipants(gameRecordId: string): Promise<GamePar
     if (error) throw error
     return data || []
   } catch (error) {
-    console.error('Error getting game participants:', error)
+    logger.error('Error getting game participants:', error)
     return []
   }
 }
@@ -196,7 +197,7 @@ export async function getLeaderboard(filter: LeaderboardFilter): Promise<Leaderb
 
     return data
   } catch (error) {
-    console.error('Error getting leaderboard:', error)
+    logger.error('Error getting leaderboard:', error)
     return null
   }
 }
@@ -243,13 +244,13 @@ export async function getPlayerRank(userId: string): Promise<number | null> {
 
     if (error) {
       if (error.code !== 'PGRST116' && error.code !== '406') {
-        console.warn('[getPlayerRank] Error (non-critical):', error.message)
+        logger.warn('[getPlayerRank] Error (non-critical):', error.message)
       }
       return null
     }
     return data.current_rank
   } catch (error) {
-    console.warn('[getPlayerRank] Exception:', error)
+    logger.warn('[getPlayerRank] Exception:', error)
     return null
   }
 }
@@ -261,7 +262,7 @@ export async function getCurrentPlayerRank(): Promise<number | null> {
 
     return getPlayerRank(user.id)
   } catch (error) {
-    console.error('Error getting current player rank:', error)
+    logger.error('Error getting current player rank:', error)
     return null
   }
 }
@@ -276,13 +277,13 @@ export async function getTopPlayers(limit: number = 10): Promise<PlayerStats[]> 
 
     if (error) {
       if (error.code !== 'PGRST116' && error.code !== '406') {
-        console.warn('[getTopPlayers] Error (non-critical):', error.message)
+        logger.warn('[getTopPlayers] Error (non-critical):', error.message)
       }
       return []
     }
     return data || []
   } catch (error) {
-    console.warn('[getTopPlayers] Exception:', error)
+    logger.warn('[getTopPlayers] Exception:', error)
     return []
   }
 }
@@ -306,7 +307,7 @@ export async function getWinLossRatio(userId: string): Promise<{ wins: number; l
       ratio
     }
   } catch (error) {
-    console.error('Error getting win/loss ratio:', error)
+    logger.error('Error getting win/loss ratio:', error)
     return null
   }
 }
@@ -318,7 +319,7 @@ export async function getCurrentPlayerWinLossRatio(): Promise<{ wins: number; lo
 
     return getWinLossRatio(user.id)
   } catch (error) {
-    console.error('Error getting current player win/loss ratio:', error)
+    logger.error('Error getting current player win/loss ratio:', error)
     return null
   }
 }
@@ -330,7 +331,7 @@ export async function getAverageGameDuration(userId: string): Promise<number | n
 
     return stats.avg_game_duration_seconds
   } catch (error) {
-    console.error('Error getting average game duration:', error)
+    logger.error('Error getting average game duration:', error)
     return null
   }
 }
@@ -342,7 +343,7 @@ export async function getCurrentPlayerAverageGameDuration(): Promise<number | nu
 
     return getAverageGameDuration(user.id)
   } catch (error) {
-    console.error('Error getting current player average game duration:', error)
+    logger.error('Error getting current player average game duration:', error)
     return null
   }
 }
@@ -354,7 +355,7 @@ export async function getTotalPlayTime(userId: string): Promise<number | null> {
 
     return stats.total_play_time_seconds
   } catch (error) {
-    console.error('Error getting total play time:', error)
+    logger.error('Error getting total play time:', error)
     return null
   }
 }
@@ -366,7 +367,7 @@ export async function getCurrentPlayerTotalPlayTime(): Promise<number | null> {
 
     return getTotalPlayTime(user.id)
   } catch (error) {
-    console.error('Error getting current player total play time:', error)
+    logger.error('Error getting current player total play time:', error)
     return null
   }
 }
@@ -378,7 +379,7 @@ export async function getLongestWinStreak(userId: string): Promise<number | null
 
     return stats.longest_win_streak
   } catch (error) {
-    console.error('Error getting longest win streak:', error)
+    logger.error('Error getting longest win streak:', error)
     return null
   }
 }
@@ -390,7 +391,7 @@ export async function getCurrentPlayerLongestWinStreak(): Promise<number | null>
 
     return getLongestWinStreak(user.id)
   } catch (error) {
-    console.error('Error getting current player longest win streak:', error)
+    logger.error('Error getting current player longest win streak:', error)
     return null
   }
 }
@@ -402,7 +403,7 @@ export async function getCurrentWinStreak(userId: string): Promise<number | null
 
     return stats.current_win_streak
   } catch (error) {
-    console.error('Error getting current win streak:', error)
+    logger.error('Error getting current win streak:', error)
     return null
   }
 }
@@ -414,7 +415,7 @@ export async function getCurrentPlayerCurrentWinStreak(): Promise<number | null>
 
     return getCurrentWinStreak(user.id)
   } catch (error) {
-    console.error('Error getting current player current win streak:', error)
+    logger.error('Error getting current player current win streak:', error)
     return null
   }
 }

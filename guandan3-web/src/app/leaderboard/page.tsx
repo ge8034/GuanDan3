@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import { getLeaderboard, type LeaderboardEntry } from '@/lib/api/gameStats'
 import { RippleEffect } from '@/components/effects/RippleEffect.lazy'
 
+import { logger } from '@/lib/utils/logger'
 export default function LeaderboardPage() {
   const [loading, setLoading] = useState(true)
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
@@ -21,7 +22,7 @@ export default function LeaderboardPage() {
         setLeaderboard(data)
       }
     } catch (error) {
-      console.error('加载排行榜失败:', error)
+      logger.error('加载排行榜失败:', error)
     } finally {
       setLoading(false)
     }

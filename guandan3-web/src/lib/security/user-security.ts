@@ -1,5 +1,6 @@
 import { dataSecurity } from './data-security'
 
+import { logger } from '@/lib/utils/logger'
 interface SecurityConfig {
   maxLoginAttempts: number
   lockoutDuration: number
@@ -57,7 +58,7 @@ export class UserSecurity {
         this.securityEvents = state.securityEvents || []
       }
     } catch (error) {
-      console.error('Failed to load security state:', error)
+      logger.error('Failed to load security state:', error)
     }
   }
 
@@ -70,7 +71,7 @@ export class UserSecurity {
       }
       localStorage.setItem('user-security-state', JSON.stringify(state))
     } catch (error) {
-      console.error('Failed to save security state:', error)
+      logger.error('Failed to save security state:', error)
     }
   }
 

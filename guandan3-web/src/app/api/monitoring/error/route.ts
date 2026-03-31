@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
+import { logger } from '@/lib/utils/logger'
 export async function POST(request: NextRequest) {
   try {
     const errorData = await request.json()
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
       .select()
 
     if (error) {
-      console.error('Failed to log error:', error)
+      logger.error('Failed to log error:', error)
       return NextResponse.json(
         { error: 'Failed to log error' },
         { status: 500 }
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, data })
   } catch (error) {
-    console.error('Error logging error:', error)
+    logger.error('Error logging error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -79,7 +80,7 @@ export async function GET(request: NextRequest) {
     const { data, error, count } = await query
 
     if (error) {
-      console.error('Failed to fetch error logs:', error)
+      logger.error('Failed to fetch error logs:', error)
       return NextResponse.json(
         { error: 'Failed to fetch error logs' },
         { status: 500 }
@@ -93,7 +94,7 @@ export async function GET(request: NextRequest) {
       offset
     })
   } catch (error) {
-    console.error('Error fetching error logs:', error)
+    logger.error('Error fetching error logs:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

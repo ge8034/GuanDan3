@@ -1,3 +1,5 @@
+import { logger } from '@/lib/utils/logger'
+
 export interface RealtimeConnection {
   id: string
   channel: string
@@ -312,7 +314,7 @@ export function startRealtimeCleanup(interval: number = 60000) {
   return setInterval(() => {
     const cleaned = realtimeOptimizer.cleanupIdleConnections()
     if (cleaned.length > 0) {
-      console.log(`[RealtimeOptimizer] Cleaned up ${cleaned.length} idle connections`)
+      logger.debug(`[RealtimeOptimizer] Cleaned up ${cleaned.length} idle connections`)
     }
   }, interval)
 }

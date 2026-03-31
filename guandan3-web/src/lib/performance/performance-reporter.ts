@@ -1,3 +1,4 @@
+import { logger } from '@/lib/utils/logger'
 import { performanceCollector, PerformanceBaseline } from './metrics-collector'
 import { performanceMonitor, getPerformanceReport } from './performance-monitor'
 import { apiPerformanceMonitor, getAPIPerformanceReport } from './api-performance'
@@ -63,7 +64,7 @@ class PerformanceReporter {
 
   private collectAndReport() {
     const report = this.generateReport()
-    console.log('[PerformanceReporter] Generated report:', report)
+    logger.debug('[PerformanceReporter] Generated report:', report)
     this.checkThresholds(report)
   }
 
@@ -337,7 +338,7 @@ class PerformanceReporter {
           extra: report
         })
       } catch (error) {
-        console.error('Failed to send report to Sentry:', error)
+        logger.error('Failed to send report to Sentry:', error)
       }
     }
   }
@@ -358,7 +359,7 @@ class PerformanceReporter {
           }
         })
       } catch (error) {
-        console.error('Failed to send report to Analytics:', error)
+        logger.error('Failed to send report to Analytics:', error)
       }
     }
   }

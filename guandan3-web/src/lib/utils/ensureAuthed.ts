@@ -52,8 +52,8 @@ export const ensureAuthed = async (options: EnsureAuthedOptions = {}): Promise<{
         await sleep(backoffMs * (attempt + 1))
       }
     }
-  } catch (e: any) {
-    const msg = '登录失败: ' + (e?.message || String(e))
+  } catch (e: unknown) {
+    const msg = '登录失败: ' + ((e instanceof Error ? e.message : null) || String(e))
     onError?.(msg, e)
     return { ok: false, user: null }
   }

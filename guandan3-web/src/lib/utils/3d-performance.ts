@@ -1,6 +1,7 @@
 import { useRef, useEffect, useCallback } from 'react'
 import * as THREE from 'three'
 
+import { logger } from '@/lib/utils/logger'
 interface PerformanceMetrics {
   fps: number
   frameTime: number
@@ -239,11 +240,11 @@ export function usePerformanceMonitor(options: PerformanceOptions = {}) {
     metricsRef.current = metrics
 
     if (enableMemoryManagement && metrics.memoryUsage > 100) {
-      console.warn('High memory usage detected:', metrics.memoryUsage, 'MB')
+      logger.warn('High memory usage detected:', { memoryUsage: metrics.memoryUsage, unit: 'MB' })
     }
 
     if (metrics.drawCalls > maxDrawCalls) {
-      console.warn('High draw calls detected:', metrics.drawCalls)
+      logger.warn('High draw calls detected:', metrics.drawCalls)
     }
 
     return metrics

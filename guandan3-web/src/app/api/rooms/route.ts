@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase/client';
 
+import { logger } from '@/lib/utils/logger'
 export async function GET() {
   try {
     const { data: rooms, error } = await supabase
@@ -25,7 +26,7 @@ export async function GET() {
       .limit(50);
 
     if (error) {
-      console.error('Error fetching rooms:', error);
+      logger.error('Error fetching rooms:', error);
       return NextResponse.json(
         { error: 'Failed to fetch rooms' },
         { status: 500 }
@@ -34,7 +35,7 @@ export async function GET() {
 
     return NextResponse.json({ rooms: rooms || [] });
   } catch (error) {
-    console.error('Unexpected error:', error);
+    logger.error('Unexpected error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

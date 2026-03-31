@@ -13,6 +13,7 @@ import {
 import { copyToClipboard } from '@/lib/utils/clipboard'
 import RippleEffect from '@/components/effects/RippleEffect'
 
+import { logger } from '@/lib/utils/logger'
 interface RoomInvitationPanelProps {
   roomId: string
   isOwner: boolean
@@ -33,7 +34,7 @@ export const RoomInvitationPanel = ({ roomId, isOwner }: RoomInvitationPanelProp
     try {
       const { data, error } = await createRoomInvitation(roomId)
       if (error) {
-        console.error('创建邀请失败:', error)
+        logger.error('创建邀请失败:', error)
         return
       }
 
@@ -43,7 +44,7 @@ export const RoomInvitationPanel = ({ roomId, isOwner }: RoomInvitationPanelProp
         setQrCodeUrl(generateQRCodeUrl(data.invite_code))
       }
     } catch (error) {
-      console.error('创建邀请失败:', error)
+      logger.error('创建邀请失败:', error)
     } finally {
       setLoading(false)
     }

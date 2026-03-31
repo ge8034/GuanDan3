@@ -1,6 +1,7 @@
 import { createGameRecord } from '@/lib/api/game-records'
 import type { GameRecordInput, GameParticipantInput, SpecialEvent } from '@/types/game-records'
 
+import { logger } from '@/lib/utils/logger'
 export class GameRecordService {
   private static instance: GameRecordService
   private currentGame: {
@@ -281,7 +282,7 @@ export class GameRecordService {
 
       return result !== null
     } catch (error) {
-      console.error('Error finishing game:', error)
+      logger.error('Error finishing game:', error)
       return false
     }
   }

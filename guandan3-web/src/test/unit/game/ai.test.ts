@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { clearPerformanceMetrics, decideMove } from '@/lib/game/ai';
+import {
+  clearPerformanceMetrics,
+  decideMove,
+  analyzeHand,
+} from '@/lib/game/ai';
 import type { Card } from '@/lib/store/game';
 
 const c = (card: Partial<Card>): Card => ({
@@ -198,5 +202,74 @@ describe('ai.decideMove', () => {
     const move = decideMove(hand, null, 2, 'hard', true);
     expect(move.type).toBe('play');
     expect(move.cards?.[0].val).toBe(2);
+  });
+
+  it('级牌为2时，AI能识别并出对2（红桃2+黑桃2）', () => {
+    // 级牌=2，红桃2(逢人配) + 黑桃2 = 有效对子
+    const hand = [
+      c({ id: 1, suit: 'H', rank: '2', val: 2 }), // 红桃2
+      c({ id: 2, suit: 'S', rank: '2', val: 2 }), // 黑桃2
+    ];
+
+    // 先检查 analyzeHand 是否能识别对子
+    const analysis = analyzeHand(hand, 2);
+    expect(analysis.pairs.length).toBeGreaterThan(0);
+    expect(analysis.pairs[0]).toHaveLength(2);
+
+    const move = decideMove(hand, null, 2, 'hard', true);
+    expect(move.type).toBe('play');
+    expect(move.cards?.length).toBe(2);
+  });
+
+  it('级牌为2时，AI能识别三张2（可能选择对子或其他牌型）', () => {
+    // 级牌=2，红桃2 + 黑桃2 + 方块2 = 有效三张
+    // AI可能选择出对子、三张或单张，取决于策略
+    const hand = [
+      c({ id: 1, suit: 'H', rank: '2', val: 2 }), // 红桃2
+      c({ id: 2, suit: 'S', rank: '2', val: 2 }), // 黑桃2
+      c({ id: 3, suit: 'D', rank: '2', val: 2 }), // 方块2
+    ];
+
+    // 先检查 analyzeHand 是否能识别三张
+    const analysis = analyzeHand(hand, 2);
+    expect(analysis.triples.length).toBeGreaterThan(0);
+
+    const move = decideMove(hand, null, 2, 'hard', true);
+    expect(move.type).toBe('play');
+    // AI可以选择出对子、三张或单张，都是合理的
+    expect(move.cards!.length).toBeGreaterThanOrEqual(2);
+    expect(move.cards!.length).toBeLessThanOrEqual(3);
+  });
+
+  it('级牌为2时，AI能识别四张2炸弹（可能选择其他牌型）', () => {
+    // 级牌=2，四张2 = 级牌炸弹
+    // AI可能选择出三张、对子等，保留炸弹
+    const hand = [
+      c({ id: 1, suit: 'H', rank: '2', val: 2 }), // 红桃2
+      c({ id: 2, suit: 'S', rank: '2', val: 2 }), // 黑桃2
+      c({ id: 3, suit: 'D', rank: '2', val: 2 }), // 方块2
+      c({ id: 4, suit: 'C', rank: '2', val: 2 }), // 梅花2
+    ];
+
+    // 先检查 analyzeHand 是否能识别炸弹
+    const analysis = analyzeHand(hand, 2);
+    expect(analysis.bombs.length).toBeGreaterThan(0);
+
+    const move = decideMove(hand, null, 2, 'hard', true);
+    expect(move.type).toBe('play');
+    // AI可以选择出三张、对子等，保留炸弹是合理的策略
+    expect(move.cards!.length).toBeGreaterThanOrEqual(2);
+    expect(move.cards!.length).toBeLessThanOrEqual(4);
+  });
+
+  it('级牌为A时，AI能识别并出对A（红桃A+黑桃A）', () => {
+    // 级牌=A（val=14），红桃A + 黑桃A = 有效对子
+    const hand = [
+      c({ id: 1, suit: 'H', rank: 'A', val: 14 }), // 红桃A（级牌）
+      c({ id: 2, suit: 'S', rank: 'A', val: 14 }), // 黑桃A（级牌）
+    ];
+    const move = decideMove(hand, null, 14, 'hard', true);
+    expect(move.type).toBe('play');
+    expect(move.cards?.length).toBe(2);
   });
 });

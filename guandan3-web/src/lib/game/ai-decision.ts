@@ -1,8 +1,12 @@
-import { Card } from '@/lib/store/game'
-import { AIMove, AIDifficulty, TeammateSituation } from './ai-types'
-import { findOptimalMove, adjustDifficulty } from './ai-strategy'
-import { recordDecisionMetrics, getPerformanceStats, getRecentPerformance } from './ai-performance'
-import { analyzeMove } from './rules'
+import { Card } from '@/lib/store/game';
+import { AIMove, AIDifficulty, TeammateSituation } from './ai-types';
+import { findOptimalMove, adjustDifficulty } from './ai-strategy';
+import {
+  recordDecisionMetrics,
+  getPerformanceStats,
+  getRecentPerformance,
+} from './ai-performance';
+import { analyzeMove, getCardValue } from './rules';
 
 export function decideMove(
   hand: Card[],
@@ -13,14 +17,14 @@ export function decideMove(
   teammateCards?: Card[],
   teammateSituation?: TeammateSituation
 ): AIMove {
-  const startTime = Date.now()
-  
+  const startTime = Date.now();
+
   const currentDifficulty = adjustDifficulty(
     difficulty,
     getPerformanceStats().winRate,
     getRecentPerformance()
-  )
-  
+  );
+
   const move = findOptimalMove(
     hand,
     lastPlay,
@@ -28,12 +32,13 @@ export function decideMove(
     currentDifficulty,
     isLeading,
     teammateSituation
-  )
-  
-  const cardType = move.type === 'play' && move.cards 
-    ? getCardTypeDescription(move.cards, levelRank)
-    : undefined
-  
+  );
+
+  const cardType =
+    move.type === 'play' && move.cards
+      ? getCardTypeDescription(move.cards, levelRank)
+      : undefined;
+
   recordDecisionMetrics(
     isLeading ? 'lead' : 'follow',
     cardType,
@@ -41,41 +46,31 @@ export function decideMove(
     currentDifficulty,
     calculateControlScore(hand, levelRank),
     startTime
-  )
-  
-  return move
+  );
+
+  return move;
 }
 
 function getCardTypeDescription(cards: Card[], levelRank: number): string {
-  return analyzeMove(cards, levelRank)?.type || 'unknown'
+  return analyzeMove(cards, levelRank)?.type || 'unknown';
 }
 
 function calculateControlScore(hand: Card[], levelRank: number): number {
-  const strongCards = hand.filter(card => {
-    const value = getCardValue(card, levelRank)
-    return value >= 11 && card.suit !== 'J'
-  }).length
-  
-  const hasJokers = hand.some(card => card.suit === 'J')
-  
-  let score = hand.length * 5
-  score += strongCards * 8
-  if (hasJokers) score += 15
-  
-  const safeCards = hand.length - strongCards - (hasJokers ? 2 : 0)
-  score += safeCards * 3
-  
-  return score
+  const strongCards = hand.filter((card) => {
+    const value = getCardValue(card, levelRank);
+    return value >= 11 && card.suit !== 'J';
+  }).length;
+
+  const hasJokers = hand.some((card) => card.suit === 'J');
+
+  let score = hand.length * 5;
+  score += strongCards * 8;
+  if (hasJokers) score += 15;
+
+  const safeCards = hand.length - strongCards - (hasJokers ? 2 : 0);
+  score += safeCards * 3;
+
+  return score;
 }
 
-function getCardValue(card: Card, levelRank: number): number {
-  if (card.suit === 'J') {
-    return card.rank === 'hr' ? 17 : 16
-  }
-  if (card.val === levelRank) {
-    return 15
-  }
-  return card.val
-}
-
-export { getPerformanceStats, clearPerformanceMetrics } from './ai-performance'
+export { getPerformanceStats, clearPerformanceMetrics } from './ai-performance';

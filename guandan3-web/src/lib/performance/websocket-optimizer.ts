@@ -1,3 +1,5 @@
+import { logger } from '@/lib/utils/logger'
+
 interface MessageBatch {
   messages: any[]
   timestamp: number
@@ -120,7 +122,7 @@ class WebSocketOptimizer {
         compressedSize = compressedBytes.length
       }
     } catch (error) {
-      console.warn('[WebSocketOptimizer] Compression failed, using original:', error)
+      logger.warn('[WebSocketOptimizer] Compression failed, using original:', error)
     }
 
     const compressionTime = performance.now() - startTime
@@ -169,7 +171,7 @@ class WebSocketOptimizer {
         return JSON.parse(decompressed)
       }
     } catch (error) {
-      console.warn('[WebSocketOptimizer] Decompression failed:', error)
+      logger.warn('[WebSocketOptimizer] Decompression failed:', error)
     }
 
     return JSON.parse(compressed)

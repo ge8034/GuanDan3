@@ -1,5 +1,6 @@
 import { useRef, useCallback } from 'react';
 
+import { logger } from '@/lib/utils/logger'
 type SoundType = 'turn' | 'play' | 'win' | 'lose' | 'bomb' | 'straight';
 
 export const useSound = () => {
@@ -104,7 +105,7 @@ export const useSound = () => {
           break;
       }
     } catch (e) {
-      console.warn('Audio play failed:', e);
+      logger.warn('Audio play failed:', e);
     }
   }, []);
 

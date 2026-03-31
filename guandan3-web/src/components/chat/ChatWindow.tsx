@@ -14,6 +14,7 @@ import EmojiPicker from './EmojiPicker'
 import QuickPhrases from './QuickPhrases'
 import { cn } from '@/lib/utils'
 
+import { logger } from '@/lib/utils/logger'
 interface ChatWindowProps {
   room: ChatRoom | null
   currentUserId: string
@@ -75,7 +76,7 @@ export default function ChatWindow({ room, currentUserId, className }: ChatWindo
     const { data, error } = await sendMessage(room.other_user_uid, inputValue.trim())
     
     if (error) {
-      console.error('Failed to send message:', error)
+      logger.error('Failed to send message:', error)
     } else if (data) {
       setInputValue('')
     }

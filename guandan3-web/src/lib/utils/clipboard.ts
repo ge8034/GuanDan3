@@ -1,3 +1,5 @@
+import { logger } from './logger'
+
 export async function copyToClipboard(text: string): Promise<boolean> {
   try {
     if (navigator.clipboard && window.isSecureContext) {
@@ -16,14 +18,14 @@ export async function copyToClipboard(text: string): Promise<boolean> {
         document.execCommand('copy')
         return true
       } catch (err) {
-        console.error('复制失败:', err)
+        logger.error('复制失败:', { err })
         return false
       } finally {
         document.body.removeChild(textArea)
       }
     }
   } catch (err) {
-    console.error('复制失败:', err)
+    logger.error('复制失败:', { err })
     return false
   }
 }

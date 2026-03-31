@@ -51,7 +51,7 @@ export default function ContextStatusBarEnhanced({
     diskUsage: showDiskUsage ? 78 : 0,
   });
   const [isUpdating, setIsUpdating] = useState(false);
-  const [lastUpdate, setLastUpdate] = useState(Date.now());
+  const [lastUpdate, setLastUpdate] = useState(() => Date.now());
   const [fileSize, setFileSize] = useState('24.5 KB');
 
   // 模拟实时数据更新

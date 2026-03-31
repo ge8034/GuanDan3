@@ -76,6 +76,22 @@ class Cache {
     return this.cache.size
   }
 
+  keys(): string[] {
+    return Array.from(this.cache.keys())
+  }
+
+  invalidatePattern(pattern: string): number {
+    let removed = 0
+    const keys = this.keys()
+    for (const key of keys) {
+      if (key.includes(pattern)) {
+        this.delete(key)
+        removed++
+      }
+    }
+    return removed
+  }
+
   cleanup(): number {
     const now = Date.now()
     let removed = 0

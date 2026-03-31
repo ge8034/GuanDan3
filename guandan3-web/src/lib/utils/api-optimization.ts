@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase/client'
 import { cache, createCacheKey } from '@/lib/utils/cache'
 
+import { logger } from '@/lib/utils/logger'
 interface QueryOptions {
   cacheKey?: string
   cacheTTL?: number
@@ -53,7 +54,7 @@ export class ApiOptimizer {
 
       return result
     } catch (error) {
-      console.error('API query error:', error)
+      logger.error('API query error:', error)
       return null
     }
   }
@@ -79,7 +80,7 @@ export class ApiOptimizer {
           results.set(key, result)
           cache.set(key, result, cacheTTL)
         } catch (error) {
-          console.error(`Batch query error for ${key}:`, error)
+          logger.error(`Batch query error for ${key}:`, error)
         }
       })
 
@@ -119,12 +120,7 @@ export class ApiOptimizer {
 
   invalidateCache(pattern?: string): void {
     if (pattern) {
-      const keys = Array.from((cache as any).cache.keys())
-      keys.forEach(key => {
-        if (typeof key === 'string' && key.includes(pattern)) {
-          cache.delete(key)
-        }
-      })
+      cache.invalidatePattern(pattern)
     } else {
       cache.clear()
     }
@@ -137,7 +133,7 @@ export class ApiOptimizer {
           const result = await queryFn()
           cache.set(cacheKey, result, cacheTTL || 60000)
         } catch (error) {
-          console.error('Prefetch error:', error)
+          logger.error('Prefetch error:', error)
         }
       })
     } else {
@@ -146,7 +142,7 @@ export class ApiOptimizer {
           const result = await queryFn()
           cache.set(cacheKey, result, cacheTTL || 60000)
         } catch (error) {
-          console.error('Prefetch error:', error)
+          logger.error('Prefetch error:', error)
         }
       }, 0)
     }
