@@ -118,12 +118,24 @@
 
 ### DOCS-001: 完善 API 文档
 
-**建议**:
-- 为所有公共函数添加 JSDoc
-- 生成 API 文档网站
-- 添加使用示例
+**状态**: 🟡 进行中 (2026-03-31)
 
-**预计时间**: 4-6 小时
+**已完成**:
+- ✅ src/lib/utils/card-utils.ts - 卡牌工具函数
+- ✅ src/lib/utils/throttle.ts - 节流函数
+- ✅ src/lib/utils/supabaseErrors.ts - 错误映射工具
+- ✅ src/lib/utils/ensureAuthed.ts - 认证确保工具
+- ✅ src/lib/utils/index.ts - 工具函数汇总
+- ✅ src/lib/utils/lobby.ts - 大厅工具函数
+- ✅ src/lib/hooks/useToast.tsx - Toast 通知 Hook
+- ✅ src/lib/hooks/useSound.ts - 音效播放 Hook
+- ✅ src/lib/hooks/useAuth.ts - 认证状态 Hook
+- ✅ src/lib/store/auth.ts - 认证状态 Store
+- ✅ src/lib/supabase/client.ts - Supabase 客户端配置
+
+**待完成**: 约 90 个文件
+
+**预计时间**: 剩余约 4-5 小时
 
 ---
 
