@@ -120,24 +120,29 @@
 
 **状态**: 🟡 进行中 (2026-03-31)
 
-**已完成**:
+**已完成** (~21/101):
 - ✅ src/lib/utils/card-utils.ts - 卡牌工具函数
 - ✅ src/lib/utils/throttle.ts - 节流函数
-- src/lib/utils/supabaseErrors.ts - 错误映射工具
-- src/lib/utils/ensureAuthed.ts - 认证确保工具
-- src/lib/utils/index.ts - 工具函数汇总
-- src/lib/utils/lobby.ts - 大厅工具函数
-- src/lib/utils/hand-analysis.ts - 手牌分析工具
-- src/lib/hooks/useToast.tsx - Toast 通知 Hook
-- src/lib/hooks/useSound.ts - 音效播放 Hook
-- src/lib/hooks/useAuth.ts - 认证状态 Hook
-- src/lib/hooks/useGameStats.ts - 游戏统计 Hook
-- src/lib/store/auth.ts - 认证状态 Store
-- src/lib/supabase/client.ts - Supabase 客户端配置
-- src/lib/performance/resource-optimizer.ts - 资源优化器
-- src/lib/game/rules.ts - 游戏规则核心模块
+- ✅ src/lib/utils/supabaseErrors.ts - 错误映射工具
+- ✅ src/lib/utils/ensureAuthed.ts - 认证确保工具
+- ✅ src/lib/utils/index.ts - 工具函数汇总
+- ✅ src/lib/utils/lobby.ts - 大厅工具函数
+- ✅ src/lib/utils/hand-analysis.ts - 手牌分析工具
+- ✅ src/lib/hooks/useToast.tsx - Toast 通知 Hook
+- ✅ src/lib/hooks/useSound.ts - 音效播放 Hook
+- ✅ src/lib/hooks/useAuth.ts - 认证状态 Hook
+- ✅ src/lib/hooks/useGameStats.ts - 游戏统计 Hook
+- ✅ src/lib/hooks/useChat.ts - 聊天室 Hook
+- ✅ src/lib/store/auth.ts - 认证状态 Store
+- ✅ src/lib/supabase/client.ts - Supabase 客户端配置
+- ✅ src/lib/performance/resource-optimizer.ts - 资源优化器
+- ✅ src/lib/game/rules.ts - 游戏规则核心模块
+- ✅ src/lib/api/chat.ts - 私聊 API (9个函数)
+- ✅ src/lib/api/friends.ts - 好友系统 API (11个函数)
+- ✅ src/lib/game/ai-utils.ts - AI 工具函数 (7个函数)
+- ✅ src/lib/game/ai-types.ts - AI 类型定义
 
-**待完成**: 约 85 个文件
+**待完成**: 约 80 个文件
 
 **预计时间**: 剩余约 3-4 小时
 

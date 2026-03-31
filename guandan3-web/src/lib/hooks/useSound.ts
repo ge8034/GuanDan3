@@ -3,8 +3,23 @@ import { logger } from '@/lib/utils/logger'
 
 /**
  * 音效类型
+ *
+ * 支持的游戏音效类型：
+ * - `turn`: 轮到玩家出牌时的提示音
+ * - `play`: 玩家出牌时的音效
+ * - `win`: 胜利时的音效
+ * - `lose`: 失败时的音效
+ * - `bomb`: 炸弹音效
+ * - `straight`: 顺子音效
  */
-type SoundType = 'turn' | 'play' | 'win' | 'lose' | 'bomb' | 'straight'
+export type SoundType = 'turn' | 'play' | 'win' | 'lose' | 'bomb' | 'straight'
+
+/**
+ * 返回值类型
+ */
+interface UseSoundReturn {
+  playSound: (type: SoundType) => void
+}
 
 /**
  * 音效播放 Hook
@@ -47,7 +62,7 @@ type SoundType = 'turn' | 'play' | 'win' | 'lose' | 'bomb' | 'straight'
  * - 自动处理浏览器自动播放策略
  * - 静默处理播放失败（用户未交互等）
  */
-export const useSound = () => {
+export const useSound = (): UseSoundReturn => {
   const audioContextRef = useRef<AudioContext | null>(null)
 
   /**
@@ -55,7 +70,7 @@ export const useSound = () => {
    *
    * @param type - 音效类型
    */
-  const playSound = useCallback((type: string) => {
+  const playSound = useCallback((type: SoundType) => {
     try {
       if (!audioContextRef.current) {
         // Lazy init
@@ -153,6 +168,41 @@ export const useSound = () => {
               osc.start(now + i * 0.15)
               osc.stop(now + i * 0.15 + 1.0)
             })
+          break
+
+        case 'bomb':
+          // Bomb - Deep explosion sound
+          const bombOsc = ctx.createOscillator()
+          bombOsc.type = 'sawtooth'
+          bombOsc.frequency.setValueAtTime(150, now)
+          bombOsc.frequency.exponentialRampToValueAtTime(50, now + 0.3)
+          bombOsc.connect(gainNode)
+
+          gainNode.gain.setValueAtTime(0, now)
+          gainNode.gain.linearRampToValueAtTime(0.4, now + 0.05)
+          gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.5)
+
+          bombOsc.start(now)
+          bombOsc.stop(now + 0.5)
+          break
+
+        case 'straight':
+          // Straight - Rising scale
+          ;[523.25, 587.33, 659.25, 698.46, 783.99].forEach((freq, i) => {
+            const osc = ctx.createOscillator()
+            osc.type = 'sine'
+            osc.frequency.setValueAtTime(freq, now + i * 0.08)
+
+            const g = ctx.createGain()
+            g.connect(ctx.destination)
+            g.gain.setValueAtTime(0, now + i * 0.08)
+            g.gain.linearRampToValueAtTime(0.15, now + i * 0.08 + 0.03)
+            g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.3)
+
+            osc.connect(g)
+            osc.start(now + i * 0.08)
+            osc.stop(now + i * 0.08 + 0.3)
+          })
           break
       }
     } catch (e) {
