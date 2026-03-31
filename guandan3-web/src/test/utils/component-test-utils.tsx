@@ -262,10 +262,10 @@ export async function testComponentLoad(
     const importPath = componentPath.replace(/^src\//, '@/')
 
     // 动态导入组件
-    const module = await import(/* @vite-ignore */ importPath)
+    const importedModule = await import(/* @vite-ignore */ importPath)
 
     // 获取默认导出或具名导出
-    const Component = module.default || Object.values(module)[0]
+    const Component = importedModule.default || Object.values(importedModule)[0]
 
     if (!Component || typeof Component !== 'function') {
       return {
