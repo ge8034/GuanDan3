@@ -146,29 +146,22 @@ export function analyzeMove(cards: Card[], levelRank: number): Move | null {
 
   // ========== 炸弹检测（4张王，最大炸弹）==========
   if (cards.length === 4 && hasJoker && !hasLevel) {
-    return { type: 'bomb', cards, primaryValue: 300 }
-  }
-
-  // 炸弹检测（4张相同）
-  if (cards.length === 4 && uniqueRawVals.length === 1) {
-    const primaryValue = values[values.length - 1]
-    return { type: 'bomb', cards, primaryValue }
+    return { type: 'bomb', cards, primaryValue: 10000 }
   }
 
   // 炸弹检测（级牌炸弹：4张级牌，红桃级牌+其他花色级牌+其他两张级牌）
-  if (cards.length === 4 && hasLevel && uniqueRawVals.length === 1) {
-    // 级牌炸弹使用红桃级牌的值
-    const primaryValue = values[values.length - 1]
+  // 级牌炸弹优先检查，因为级牌炸弹的优先级高于普通炸弹
+  if (cards.length >= 4 && hasLevel && uniqueRawVals.length === 1) {
+    // 级牌炸弹 = 5000 * 张数 + 主值
+    const primaryValue = 5000 * cards.length + values[values.length - 1]
     return { type: 'bomb', cards, primaryValue }
   }
 
-  // ========== 顺子（5张及以上连续，不能包含2和王）==========
-  if (cards.length >= 5 && !hasJoker && !hasLevel) {
-    const isSeq = uniqueRawVals.every((v, i) => i === 0 || v === rawVals[i - 1] + 1)
-    const noTwoOrBigTwo = rawVals.every((v) => v !== 15 && v !== 17)
-    if (isSeq && noTwoOrBigTwo) {
-      return { type: 'straight', cards, primaryValue: values[values.length - 1] }
-    }
+  // 炸弹检测（4张及以上相同）
+  if (cards.length >= 4 && uniqueRawVals.length === 1) {
+    // 普通炸弹 = 1000 * 张数 + 主值
+    const primaryValue = 1000 * cards.length + values[values.length - 1]
+    return { type: 'bomb', cards, primaryValue }
   }
 
   // ========== 三带二（3张相同+2张相同）==========
@@ -177,7 +170,8 @@ export function analyzeMove(cards: Card[], levelRank: number): Move | null {
     for (const v of rawVals) counts[v] = (counts[v] || 0) + 1
     const countValues = Object.values(counts)
 
-    if (countValues.includes(3) && countValues.includes(2)) {
+    // 检查是否有3张相同和2张相同（必须恰好这两种模式）
+    if (countValues.includes(3) && countValues.includes(2) && countValues.length === 2) {
       const tripleVal = Object.keys(counts).find((v) => counts[Number(v)] === 3)
       if (tripleVal) {
         const tripleCards = cards.filter((c) => c.val === Number(tripleVal))
@@ -241,6 +235,19 @@ export function analyzeMove(cards: Card[], levelRank: number): Move | null {
           primaryValue: tripleVals[tripleVals.length - 1],
         }
       }
+    }
+  }
+
+  // ========== 顺子（5张及以上连续，不能包含2和王）==========
+  if (cards.length >= 5 && !hasJoker) {
+    // 顺子必须所有牌的值都不同
+    const allUnique = uniqueRawVals.length === cards.length
+    const isSeq = uniqueRawVals.every((v, i) => i === 0 || v === rawVals[i - 1] + 1)
+    const noTwoOrBigTwo = rawVals.every((v) => v !== 15 && v !== 17)
+    if (allUnique && isSeq && noTwoOrBigTwo) {
+      // 顺子的primaryValue使用最大牌的原始值，不使用级牌特殊值
+      // 这样可以正确比较顺子大小
+      return { type: 'straight', cards, primaryValue: rawVals[rawVals.length - 1] }
     }
   }
 

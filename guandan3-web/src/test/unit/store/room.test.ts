@@ -8,10 +8,8 @@ const originalFetchRoom = useRoomStore.getState().fetchRoom
 
 describe('useRoomStore', () => {
   beforeEach(() => {
-    ;(supabase.rpc as any).mockReset()
-    ;(supabase.from as any).mockReset()
-    ;(supabase.channel as any).mockReset()
-    ;(supabase.removeChannel as any).mockReset()
+    // 清除所有mock调用记录
+    vi.clearAllMocks()
 
     useRoomStore.setState({ currentRoom: null, members: [], fetchRoom: originalFetchRoom as any })
   })
@@ -175,20 +173,20 @@ describe('useRoomStore', () => {
   })
 
   it('fetchRoom会同步room与members', async () => {
-    const roomQuery = {
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({ data: { id: 'room-1', status: 'open', owner_uid: 'u-1' }, error: null }),
-    }
-    const membersQuery = {
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      order: vi.fn().mockResolvedValue({ data: [{ seat_no: 0, uid: 'u-1', ready: true, member_type: 'human' }], error: null }),
+    const mockRoomData = {
+      id: 'room-1',
+      name: '测试房间',
+      mode: 'pvp4',
+      type: 'classic',
+      status: 'open',
+      visibility: 'public',
+      owner_uid: 'u-1',
+      created_at: '2026-03-21T00:00:00Z',
+      room_members: [{ seat_no: 0, uid: 'u-1', ready: true, member_type: 'human' }]
     }
 
-    ;(supabase.from as any)
-      .mockImplementationOnce(() => roomQuery)
-      .mockImplementationOnce(() => membersQuery)
+    // 使用 mockResolvedValue 而不是直接赋值对象
+    ;(supabase.rpc as any).mockResolvedValue({ data: mockRoomData, error: null })
 
     await useRoomStore.getState().fetchRoom('room-1')
 
@@ -198,12 +196,8 @@ describe('useRoomStore', () => {
   })
 
   it('fetchRoom遇到roomError会提前返回', async () => {
-    const roomQuery = {
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({ data: null, error: new Error('room error') }),
-    }
-    ;(supabase.from as any).mockImplementationOnce(() => roomQuery)
+    // 使用 mockResolvedValue 而不是直接赋值对象
+    ;(supabase.rpc as any).mockResolvedValue({ data: null, error: new Error('room error') })
 
     await useRoomStore.getState().fetchRoom('room-1')
 
@@ -211,19 +205,20 @@ describe('useRoomStore', () => {
   })
 
   it('fetchRoom遇到membersError会保留room但不更新members', async () => {
-    const roomQuery = {
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({ data: { id: 'room-1', status: 'open', owner_uid: 'u-1' }, error: null }),
+    const mockRoomData = {
+      id: 'room-1',
+      name: '测试房间',
+      mode: 'pvp4',
+      type: 'classic',
+      status: 'open',
+      visibility: 'public',
+      owner_uid: 'u-1',
+      created_at: '2026-03-21T00:00:00Z',
+      room_members: [] // 空成员列表
     }
-    const membersQuery = {
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      order: vi.fn().mockResolvedValue({ data: null, error: new Error('members error') }),
-    }
-    ;(supabase.from as any)
-      .mockImplementationOnce(() => roomQuery)
-      .mockImplementationOnce(() => membersQuery)
+
+    // 使用 mockResolvedValue 而不是直接赋值对象
+    ;(supabase.rpc as any).mockResolvedValue({ data: mockRoomData, error: null })
 
     await useRoomStore.getState().fetchRoom('room-1')
 

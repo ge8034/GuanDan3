@@ -210,11 +210,30 @@ export function evaluateMove(
       // 炸弹的主值包含基数（如1000），需要提取实际牌值
       let actualValue = analysis.primaryValue;
       if (analysis.type === 'bomb') {
-        // 提取实际牌值：1000 * length + cardValue -> cardValue
+        // 提取实际牌值和炸弹张数：1000 * length + cardValue -> cardValue
+        const bombLength = Math.floor(analysis.primaryValue / 1000);
         actualValue = analysis.primaryValue % 1000;
+        // 对于炸弹，优先选择张数更多的（更能压制）
+        score += bombLength * 500; // 张数越多分数越高
+        reasoning.push(`Bomb length bonus: +${bombLength * 500}`);
       }
-      score += 1000 - actualValue * 10; // 主值越小分数越高
-      reasoning.push(`Primary value penalty: -${actualValue * 10}`);
+
+      // 使用对数缩放来处理大值牌（Joker、级牌）
+      // 普通牌（2-15）：直接使用值
+      // 级牌（50-60）：映射到 15-25
+      // Joker（100-200）：映射到 25-30
+      let normalizedValue = actualValue;
+      if (actualValue >= 100) {
+        // Joker: 映射到 25-30 范围
+        normalizedValue = 25 + (actualValue - 100) / 100 * 5;
+      } else if (actualValue >= 50) {
+        // 级牌: 映射到 15-25 范围
+        normalizedValue = 15 + (actualValue - 50) / 10 * 10;
+      }
+      // 普通牌（2-15）：保持原值
+
+      score += 1000 - normalizedValue * 20; // 主值越小分数越高
+      reasoning.push(`Primary value bonus: ${1000 - normalizedValue * 20} (normalized: ${normalizedValue.toFixed(1)})`);
     }
 
     // 跟牌时：多张牌稍微加分，但炸弹要扣分

@@ -133,43 +133,37 @@ describe('房间管理流程集成测试', () => {
         { uid: 'user-1', seat_no: 0, ready: true, member_type: 'human' as const }
       ]
 
-      // Mock fetchRoom - rooms 表查询
-      const mockRoom = {
+      useRoomStore.setState({ members: mockMembers })
+
+      // Mock fetchRoom - RPC 调用
+      const mockRoomData = {
         id: 'room-123',
         name: '测试房间',
-        mode: 'pvp4' as const,
+        mode: 'pvp4',
         type: 'classic',
-        status: 'open' as const,
-        visibility: 'public' as const,
+        status: 'open',
+        visibility: 'public',
         owner_uid: 'user-1',
-        created_at: '2026-03-21T00:00:00Z'
+        created_at: '2026-03-21T00:00:00Z',
+        room_members: [
+          { uid: 'user-1', seat_no: 0, ready: true, member_type: 'human' },
+          { uid: null, seat_no: 1, ready: true, member_type: 'ai', ai_key: 'ai-key-1' }
+        ]
       }
 
-      // Mock fetchRoom 后的成员列表（包含新添加的 AI）
-      const mockMembersAfterAdd = [
-        { uid: 'user-1', seat_no: 0, ready: true, member_type: 'human' as const },
-        { uid: null, seat_no: 1, ready: true, member_type: 'ai' as const, ai_key: 'ai-key-1' }
-      ]
+      vi.mocked(supabase.rpc).mockImplementation((name) => {
+        if (name === 'get_room_with_members_optimized') {
+          return Promise.resolve({ data: mockRoomData, error: null })
+        }
+        return Promise.resolve({ data: null, error: null })
+      })
 
-      let callCount = 0
+      // Mock room_members.insert
       vi.mocked(supabase.from).mockImplementation((table: string) => {
-        if (table === 'rooms') {
-          return createNestedQueryMock({ data: mockRoom, error: null })
-        } else if (table === 'room_members') {
-          // 第一次调用是 insert，第二次调用是 fetchRoom 的 order 查询
-          callCount++
-          if (callCount === 1) {
-            // insert 返回值
-            const chain = createNestedQueryMock({ data: { id: 'member-1' }, error: null })
-            chain.insert = vi.fn(() => Promise.resolve({ error: null }))
-            return chain
-          } else {
-            // fetchRoom 的 order 查询返回成员列表
-            return createNestedQueryMock(
-              { data: mockMembersAfterAdd, error: null },  // single/maybeSingle
-              { data: mockMembersAfterAdd, error: null }  // 直接 await
-            )
-          }
+        if (table === 'room_members') {
+          const chain = createNestedQueryMock({ data: { id: 'member-1' }, error: null })
+          chain.insert = vi.fn(() => Promise.resolve({ error: null }))
+          return chain
         }
         return createNestedQueryMock({ data: null, error: null })
       })
@@ -263,19 +257,22 @@ describe('房间管理流程集成测试', () => {
         mode: 'pvp4' as const,
         type: 'classic',
         status: 'open' as const,
-        visibility: 'public' as const,
-        owner_uid: 'user-1',
-        created_at: '2026-03-21T00:00:00Z'
+        owner_uid: 'user-1'
       }
 
-      // 使用 createNestedQueryMock 创建完整的链式 mock
-      vi.mocked(supabase.from).mockImplementation((table: string) => {
-        if (table === 'rooms') {
-          return createNestedQueryMock({ data: mockRoom, error: null })
-        } else if (table === 'room_members') {
-          return createNestedQueryMock({ data: [], error: null })
+      const mockRoomData = {
+        ...mockRoom,
+        visibility: 'public',
+        created_at: '2026-03-21T00:00:00Z',
+        room_members: []
+      }
+
+      // Mock RPC 调用
+      vi.mocked(supabase.rpc).mockImplementation((name) => {
+        if (name === 'get_room_with_members_optimized') {
+          return Promise.resolve({ data: mockRoomData, error: null })
         }
-        return createNestedQueryMock({ data: null, error: null })
+        return Promise.resolve({ data: null, error: null })
       })
 
       await mockRoomStore.fetchRoom('room-123')
