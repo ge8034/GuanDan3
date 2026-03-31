@@ -190,14 +190,24 @@
 
 ---
 
-### PERF-004: 优化数据库查询
+### PERF-004: 数据库优化
 
-**建议**:
-1. 添加缺失的索引
-2. 优化 N+1 查询
-3. 实现查询结果缓存
+**状态**: ✅ 已完成 (2026-03-31)
 
-**预计时间**: 2-3 小时
+**完成内容**:
+- 创建优化的 RPC 函数 `get_room_with_members_optimized`
+  - 一次性获取房间和成员数据，修复 N+1 查询
+  - fetchRoom 从 2 次查询减少到 1 次 RPC 调用
+- 添加覆盖索引优化常用查询路径：
+  - `idx_room_members_room_seat_online` - 优化成员查询
+  - `idx_rooms_id_status` - 优化房间查询
+  - `idx_room_members_uid_online_last_seen` - 优化 heartbeat 查询
+- 创建性能监控函数 `check_missing_indexes`
+
+**收益**:
+- 减少数据库往返次数
+- 数据库层面完成过滤，减少数据传输
+- 索引优化提升查询性能
 
 ---
 
