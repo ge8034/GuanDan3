@@ -30,23 +30,37 @@
 
 ### ARCH-001: 拆分 RoomPage 组件
 
-**当前状态**: 805 行单一组件
+**状态**: ✅ 已完成 (2026-03-31)
 
-**建议**:
-```
-RoomPage/
-├── index.tsx           # 主容器 (100 行)
-├── RoomHeader.tsx      # 房间信息头 (80 行)
-├── PlayerSeats.tsx      # 玩家座位区 (150 行)
-├── GameTable.tsx        # 牌桌区域 (200 行)
-├── CardHand.tsx         # 手牌区 (120 行)
-├── PlayArea.tsx         # 出牌区 (100 行)
-└── GameControls.tsx     # 控制按钮 (80 行)
-```
+**完成内容**:
+- 创建 5 个专用 hooks (useRoomGameState, useRoomAnimations, useRoomHandlers, useRoomLocal, useMemoizedPlayerAvatars)
+- 创建 3 个子组件 (PlayerSeatsGrid, MyHandSection, RoomOverlaysContainer)
+- 主组件从 785 行减少到约 400 行
+- 所有类型安全问题已修复
 
 **收益**: 更好的代码组织和可维护性
 
-**预计时间**: 2-3 小时
+---
+
+### CODE-001: 清理未使用的导入
+
+**状态**: ✅ 已完成 (2026-03-31)
+
+**结果**: ESLint 报告 0 处未使用导入
+
+---
+
+### PERF-003: 状态管理优化
+
+**状态**: ✅ 已完成 (2026-03-31)
+
+**完成内容**:
+- 在 useRoomGameState 中使用 useShallow
+- 优化 GamePauseResume 组件
+- 优化 GameHintsPanel 组件
+- 优化 useGameStats hook
+
+**收益**: 减少不必要的组件重渲染
 
 ---
 
@@ -115,9 +129,9 @@ RoomPage/
 
 ### PERF-002: RoomPage 组件拆分
 
-**状态**: 🔴 高优先级 - 已有详细分析
+**状态**: ✅ 已完成 (2026-03-31)
 
-**问题**: `src/app/room/[roomId]/page.tsx` 有 26,439 行
+详见 ARCH-001。
 
 **详细方案**: 见 `PERFORMANCE_OPTIMIZATION.md`
 
