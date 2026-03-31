@@ -1,0 +1,31 @@
+npm warn Unknown project config "enable-pre-post-scripts". This will stop working in the next major version of npm.
+Loading env from: D:\Learn-Claude\GuanDan3\guandan3-web\.env.local
+Playwright Config: hasSupabaseEnv (Forced) = true
+
+Running 1 test using 1 worker
+
+Loading env from: D:\Learn-Claude\GuanDan3\guandan3-web\.env.local
+Playwright Config: hasSupabaseEnv (Forced) = [33mtrue[39m
+步骤1：访问首页并选择练习房
+点击练习房按钮成功
+步骤2：等待游戏加载
+当前 URL: http://localhost:3000/room/0070a8b9-db04-4d23-b2eb-f35bee9fc209
+步骤3：等待手牌显示
+步骤4：检查手牌
+找到 1 个卡片元素
+卡片 0: 掼蛋 3首页大厅好友聊天🎨雅致经典▼
+步骤5：观察游戏进行120秒
+步骤6：查找出牌按钮
+找到出牌按钮
+步骤7：继续观察60秒
+
+=== 游戏事件 ===
+没有捕获到游戏事件
+
+=== 控制台错误 ===
+没有发现控制台错误
+
+测试完成
+  ✓  1 [chromium] › tests\e2e\gameplay-test.spec.ts:6:7 › 游戏玩法测试 › 完整游戏流程：实际出牌操作 (3.3m)
+
+  1 passed (3.4m)

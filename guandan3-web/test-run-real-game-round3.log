@@ -1,0 +1,35 @@
+npm warn Unknown project config "enable-pre-post-scripts". This will stop working in the next major version of npm.
+Loading env from: D:\Learn-Claude\GuanDan3\guandan3-web\.env.local
+Playwright Config: hasSupabaseEnv (Forced) = true
+
+Running 1 test using 1 worker
+
+Loading env from: D:\Learn-Claude\GuanDan3\guandan3-web\.env.local
+Playwright Config: hasSupabaseEnv (Forced) = [33mtrue[39m
+步骤1：访问首页
+首页截图已保存
+步骤2：选择练习房模式
+点击练习房按钮成功
+步骤3：等待游戏开始
+房间截图已保存
+当前 URL: http://localhost:3000/room/f650a759-ccd2-4402-a419-e8495547b378
+步骤4：等待游戏加载
+找到手牌区域
+步骤5：观察游戏运行60秒
+
+=== 控制台日志 ===
+[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[log] [HMR] connected
+[log] [Fast Refresh] rebuilding
+[log] [Fast Refresh] done in 377ms
+
+=== 控制台错误 ===
+没有发现控制台错误
+
+=== 网络错误 ===
+没有发现网络错误
+
+测试完成
+  ✓  1 [chromium] › tests\e2e\real-game-test.spec.ts:6:7 › 真实游戏流程测试 › 完整游戏流程：练习房1v3 AI (1.4m)
+
+  1 passed (1.5m)

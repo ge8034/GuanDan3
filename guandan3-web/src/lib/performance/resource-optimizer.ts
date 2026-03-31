@@ -269,8 +269,10 @@ export const resourceOptimizer = new ResourceOptimizer()
 export function setupResourcePreloading(): void {
   if (typeof window === 'undefined') return
 
-  const criticalResources = [
-    { url: '/fonts/noto-serif-sc.woff2', type: 'font' as const, priority: 'high' as const },
+  // 暂时禁用字体预加载，因为字体文件不存在
+  // TODO: 添加字体文件后重新启用
+  const criticalResources: Array<{ url: string; type: 'script' | 'style' | 'image' | 'font'; priority: 'high' | 'low' | 'auto' }> = [
+    // { url: '/fonts/noto-serif-sc.woff2', type: 'font' as const, priority: 'high' as const },
   ]
 
   criticalResources.forEach(resource => {
