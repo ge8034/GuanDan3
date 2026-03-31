@@ -1,8 +1,10 @@
+const isDevelopment = process.env.NODE_ENV === 'development'
+
 const withPWA = require('next-pwa')({
   dest: 'public',
-  register: true,
-  skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development',
+  register: !isDevelopment,
+  skipWaiting: !isDevelopment,
+  disable: isDevelopment,
   runtimeCaching: [
     {
       urlPattern: /^https?.*/,
@@ -41,7 +43,11 @@ const withPWA = require('next-pwa')({
 
 const nextConfig = {
   reactStrictMode: true,
-  turbopack: {},
+  turbopack: {
+    // HMR 配置
+    hmr: true,
+    hmrClientPort: 24678,
+  },
 
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
@@ -75,6 +81,8 @@ const nextConfig = {
   },
   
   headers: async () => {
+    const isDev = process.env.NODE_ENV === 'development'
+
     return [
       {
         source: '/:path*',
@@ -102,7 +110,12 @@ const nextConfig = {
           {
             key: 'X-XSS-Protection',
             value: '1; mode=block'
-          }
+          },
+          // 开发环境禁用缓存以支持 HMR
+          ...(isDev ? [{
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate'
+          }] : [])
         ]
       },
       {
