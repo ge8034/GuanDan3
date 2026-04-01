@@ -56,15 +56,24 @@ export async function submitTurn(
     }
 
     const isTurnNoMismatch =
-      error.code === 'P0001' && error.message.includes('turn_no_mismatch');
+      error.code === 'P0001' && error.message && error.message.includes('turn_no_mismatch');
     const isNotYourTurn =
-      error.code === 'P0001' && error.message.includes('not_your_turn');
+      error.code === 'P0001' && error.message && error.message.includes('not_your_turn');
+    // 检查多种可能的卡牌未找到错误消息格式
+    const errorMessage = error.message || String(error);
     const isCardNotFound =
-      error.code === 'P0001' && error.message.includes('Card not found in hand');
+      error.code === 'P0001' && (
+        errorMessage.includes('Card not found in hand') ||
+        errorMessage.includes('card_id=') && errorMessage.includes('not found')
+      );
 
     // 错误日志处理
     // Card not found 是竞态条件导致的预期错误（Realtime 更新刷新手牌）
-    if (!isTurnNoMismatch && !isNotYourTurn && !isCardNotFound) {
+    if (isCardNotFound) {
+      // 不记录详细日志，这是预期内的竞态条件
+      if (isDev())
+        devWarn('Card not found - race condition detected, will refresh state');
+    } else if (!isTurnNoMismatch && !isNotYourTurn) {
       // 未知错误：生产环境记录简要日志，开发环境记录详细日志
       if (isDev()) {
         devError(
