@@ -198,8 +198,33 @@ async function fetchPlayerHand(this: GameState, gameId: string, roomId: string, 
 
 /**
  * 开始游戏
+ * 修复问题#11: 游戏启动失败时自动清理旧游戏
  */
 export async function startGame(this: GameState, roomId: string): Promise<void> {
+  // 修复问题#11: 先检查是否有playing状态的游戏，如果有则先结束它
+  const { data: existingGames } = await supabase
+    .from('games')
+    .select('id')
+    .eq('room_id', roomId)
+    .in('status', ['playing', 'deal', 'paused'])
+    .limit(1)
+
+  if (existingGames && existingGames.length > 0) {
+    devLog('[startGame] 发现进行中的游戏，先结束它:', existingGames[0].id)
+
+    // 结束旧游戏
+    const { error: endError } = await supabase
+      .from('games')
+      .update({ status: 'finished' })
+      .eq('id', existingGames[0].id)
+
+    if (endError) {
+      devWarn('[startGame] 结束旧游戏失败:', endError)
+    } else {
+      devLog('[startGame] 已结束旧游戏')
+    }
+  }
+
   const { error } = await supabase.rpc('start_game', { p_room_id: roomId })
   if (error) {
     devError('Start game failed:', error)
@@ -232,27 +257,54 @@ export async function getAIHand(this: GameState, seatNo: number): Promise<Card[]
     p_seat_no: seatNo
   })
 
-  if (error) {
-    devError('[getAIHand] RPC 错误:', {
-      error,
-      gameId,
-      seatNo,
-      message: error.message,
-      details: error.details,
-      hint: error.hint
-    })
+  // 修复问题#13: RPC成功时直接返回
+  if (!error && data) {
+    return (data as unknown as Card[]) || []
+  }
 
-    // 如果游戏不存在，返回空数组（可能游戏尚未开始）
-    if (error.message?.includes('Game not found') ||
-        error.message?.includes('游戏不存在')) {
-      devLog('[getAIHand] 游戏不存在，返回空数组')
-      return []
-    }
+  // RPC失败时，尝试fallback从game_hands表读取
+  devError('[getAIHand] RPC 错误:', {
+    error,
+    gameId,
+    seatNo,
+    message: error.message,
+    details: error.details,
+    hint: error.hint
+  })
 
+  // fallback: 从 game_hands 表读取
+  devLog('[getAIHand] RPC失败，尝试从game_hands表读取...')
+  const { data: hands, error: handsError } = await supabase
+    .from('game_hands')
+    .select('hand')
+    .eq('game_id', gameId)
+    .eq('seat_no', seatNo)
+    .maybeSingle()
+
+  if (handsError) {
+    devError('[getAIHand] game_hands查询也失败:', handsError)
     return []
   }
 
-  return (data as unknown as Card[]) || []
+  if (hands?.hand) {
+    let handData = hands.hand
+    if (typeof handData === 'string') {
+      try {
+        handData = JSON.parse(handData)
+      } catch (e) {
+        devError('[getAIHand] hand解析失败:', e)
+        return []
+      }
+    }
+    if (Array.isArray(handData)) {
+      devLog('[getAIHand] 从game_hands表成功获取手牌:', { cardsCount: handData.length })
+      return handData as Card[]
+    }
+  }
+
+  devLog('[getAIHand] 所有fallback都失败，返回空数组')
+  return []
+
 }
 
 /**

@@ -112,15 +112,16 @@ export function useAIDecision(
       }
     }
 
-    // 防止重复提交 - 使用轮次号作为锁，允许不同座位在同一轮次中依次执行
-    if (submittingTurnRef.current === turnNo) {
-      logger.debug(`[useAIDecision] 轮次${turnNo}正在执行中，跳过 (lock=${submittingTurnRef.current})`);
+    // 修复问题#10: 使用 (turnNo, currentSeat) 组合作为锁
+    // 而不是只用 turnNo，这样同一轮次的不同座位可以并发执行
+    const lockKey = `${turnNo}_${currentSeat}`;
+    if (submittingTurnRef.current === lockKey) {
+      logger.debug(`[useAIDecision] 座位${currentSeat}轮次${turnNo}正在执行中，跳过`);
       return;
     }
 
-    // 修复问题#2: 在useEffect主体中立即设置锁，而不是在runAI内部
-    // 这样可以防止useEffect多次触发导致多个runAI并发执行
-    submittingTurnRef.current = turnNo;
+    // 设置锁
+    submittingTurnRef.current = lockKey;
 
     logger.debug(`[useAIDecision] AI 开始执行，座位=${currentSeat}, 轮次=${turnNo}`);
 
@@ -132,7 +133,8 @@ export function useAIDecision(
       const isHumanSeatZero = currentSeat === 0 && members.find((m) => m.seat_no === currentSeat)?.member_type === 'human';
 
       if (isPracticeMode && isHumanSeatZero) {
-        const waitTime = 5000; // 等待5秒给人类玩家操作
+        // 修复问题#12: 缩短等待时间从5秒到2秒，提升用户体验
+        const waitTime = 2000; // 等待2秒给人类玩家操作
         console.log(`[AI-DEBUG] 练习模式：等待${waitTime}ms让人类玩家操作...`);
 
         await new Promise(resolve => setTimeout(resolve, waitTime));
