@@ -100,21 +100,31 @@ export function useAIDecision(
       return;
     }
 
+    // 修复问题#10: 使用 (turnNo, currentSeat) 组合作为锁
+    // 而不是只用 turnNo，这样同一轮次的不同座位可以并发执行
+    const lockKey = `${turnNo}_${currentSeat}`;
+
     // 修复问题#7: 检查连续失败次数，防止无限循环
     const failures = consecutiveFailuresRef.current[currentSeat] || 0;
     if (failures >= 3) {
       logger.warn(`[useAIDecision] 座位${currentSeat}连续失败${failures}次，跳过本次执行`);
-      // 在轮次变化时重置失败计数
-      if (submittingTurnRef.current !== null && submittingTurnRef.current !== turnNo) {
-        consecutiveFailuresRef.current[currentSeat] = 0;
+      // 修复问题#18: 在轮次变化时重置失败计数（使用lockKey比较）
+      const currentLockValue = submittingTurnRef.current;
+      if (currentLockValue !== null) {
+        // 提取当前锁的轮次号（格式为 "turnNo_seatNo"）
+        const currentTurnNo = parseInt(currentLockValue.split('_')[0], 10);
+        if (!isNaN(currentTurnNo) && currentTurnNo !== turnNo) {
+          consecutiveFailuresRef.current[currentSeat] = 0;
+          logger.debug(`[useAIDecision] 轮次变化，重置失败计数: ${currentTurnNo} -> ${turnNo}`);
+        } else {
+          return;
+        }
       } else {
-        return;
+        // 锁为空，可以重试
+        consecutiveFailuresRef.current[currentSeat] = 0;
       }
     }
 
-    // 修复问题#10: 使用 (turnNo, currentSeat) 组合作为锁
-    // 而不是只用 turnNo，这样同一轮次的不同座位可以并发执行
-    const lockKey = `${turnNo}_${currentSeat}`;
     if (submittingTurnRef.current === lockKey) {
       logger.debug(`[useAIDecision] 座位${currentSeat}轮次${turnNo}正在执行中，跳过`);
       return;
@@ -161,11 +171,16 @@ export function useAIDecision(
         `[useAIDecision] 开始执行 AI 决策: currentSeat=${currentSeat}, turnNo=${turnNo}`
       );
 
-      // 超时保护
+      // 修复问题#16: 超时保护（使用lockKey比较而非turnNo）
       const timeoutId = setTimeout(() => {
-        if (submittingTurnRef.current === turnNo) {
-          logger.debug('[useAIDecision] 决策超时 (15秒)，强制重置');
-          submittingTurnRef.current = null;
+        // 修复：检查锁的值是否仍为当前轮次的锁
+        const currentLock = submittingTurnRef.current;
+        if (currentLock) {
+          const currentTurnNo = parseInt(currentLock.split('_')[0], 10);
+          if (!isNaN(currentTurnNo) && currentTurnNo === turnNo) {
+            logger.debug('[useAIDecision] 决策超时 (15秒)，强制重置');
+            submittingTurnRef.current = null;
+          }
         }
       }, 15000);
 
@@ -275,10 +290,24 @@ export function useAIDecision(
               `AI 决策: ${move.type} ${move.cards?.length || 0} 张 (${decisionTime}ms)`
             );
 
-            // 验证卡牌仍在手牌中（防止竞态条件）
+            // 修复问题#17: 验证卡牌仍在手牌中（防止竞态条件）
+            // 对于AI玩家，使用aiHand验证；对于人类玩家（练习模式），使用myHand
             if (move.type === 'play' && move.cards && move.cards.length > 0) {
-              const currentHandIds = new Set(freshState.myHand.map((c: Card) => c.id));
-              const validCards = move.cards.filter((c: Card) => currentHandIds.has(c.id));
+              // 修复：判断是AI还是人类玩家
+              const currentMember = members.find((m) => m.seat_no === currentSeat);
+              const isAIMember = currentMember?.member_type === 'ai';
+              const isPracticeModeHuman = !isAIMember && roomMode === 'pve1v3' && currentSeat === 0;
+
+              let validCards: Card[] = [];
+              if (isPracticeModeHuman) {
+                // 人类玩家：使用myHand验证
+                const currentHandIds = new Set(freshState.myHand.map((c: Card) => c.id));
+                validCards = move.cards.filter((c: Card) => currentHandIds.has(c.id));
+              } else {
+                // AI玩家：使用aiHand验证（这是AI刚刚决策时获取的手牌）
+                const aiHandIds = new Set(aiHand.map((c: Card) => c.id));
+                validCards = move.cards.filter((c: Card) => aiHandIds.has(c.id));
+              }
 
               if (validCards.length !== move.cards.length) {
                 addDebugLog(
