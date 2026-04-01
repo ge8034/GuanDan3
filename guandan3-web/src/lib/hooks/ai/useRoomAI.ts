@@ -19,7 +19,9 @@ export function useRoomAI(
   currentSeat: number,
   turnNo: number,
   members: RoomMember[],
-  difficulty: 'easy' | 'medium' | 'hard' = 'medium'
+  difficulty: 'easy' | 'medium' | 'hard' = 'medium',
+  roomMode?: 'pvp4' | 'pve1v3',  // 添加房间模式参数
+  selectedCardIds?: number[]  // 添加选中的卡牌ID
 ) {
   // 调试日志
   logger.debug('[useRoomAI] Hook 执行:', {
@@ -29,6 +31,7 @@ export function useRoomAI(
     currentSeat,
     members: members?.length,
     difficulty,
+    roomMode,
   });
 
   // AI 系统管理
@@ -48,7 +51,9 @@ export function useRoomAI(
     gameStatus,
     currentSeat,
     turnNo,
-    members
+    members,
+    roomMode,  // 传递房间模式
+    selectedCardIds  // 传递选中的卡牌ID
   );
 
   // 合并状态

@@ -19,7 +19,9 @@ export function useAIDecision(
   gameStatus: 'deal' | 'playing' | 'paused' | 'finished',
   currentSeat: number,
   turnNo: number,
-  members: RoomMember[]
+  members: RoomMember[],
+  roomMode?: 'pvp4' | 'pve1v3',  // 添加房间模式参数
+  selectedCardIds?: number[]  // 添加选中的卡牌ID，避免覆盖人类玩家的操作
 ): {
   debugLog: string[];
   addDebugLog: (msg: string) => void;
@@ -49,41 +51,85 @@ export function useAIDecision(
     const shouldRunAI =
       gameStatus === 'playing' && isOwner && members && members.length > 0;
 
+    // 强制输出调试信息（不受DEBUG标志影响）
+    console.log('[AI-DEBUG] useAIDecision 触发检查:', {
+      gameStatus,
+      isOwner,
+      currentSeat,
+      turnNo,
+      membersCount: members?.length || 0,
+      members: members?.map(m => ({ seat: m.seat_no, type: m.member_type })),
+      shouldRunAI,
+      lockValue: submittingTurnRef.current,
+    });
+
     logger.debug('[useAIDecision] 触发检查:', {
       gameStatus,
       isOwner,
       currentSeat,
+      turnNo,
       membersCount: members?.length || 0,
       shouldRunAI,
+      lockValue: submittingTurnRef.current,
     });
 
     if (!shouldRunAI) {
+      if (!isOwner) console.log('[AI-DEBUG] 跳过：不是房主');
+      if (gameStatus !== 'playing') console.log('[AI-DEBUG] 跳过：gameStatus不是playing，是', gameStatus);
+      if (!members || members.length === 0) console.log('[AI-DEBUG] 跳过：members为空');
       return;
     }
 
     const currentMember = members.find((m) => m.seat_no === currentSeat);
     const isAIMember = currentMember?.member_type === 'ai';
 
+    // 练习模式特殊处理：当是练习模式且轮到人类玩家（座位0）时，AI也可以执行
+    // 但只有在人类玩家没有选牌的情况下才执行
+    const isPracticeMode = roomMode === 'pve1v3';
+    const isHumanSeatZero = currentSeat === 0 && currentMember?.member_type === 'human';
+    const shouldAIPlayForHuman = isPracticeMode && isHumanSeatZero && (!selectedCardIds || selectedCardIds.length === 0);
+
+    const shouldExecuteAI = isAIMember || shouldAIPlayForHuman;
+
     logger.debug('[useAIDecision] 座位检查:', {
       currentSeat,
       currentMember,
       isAIMember,
+      memberType: currentMember?.member_type,
+      isPracticeMode,
+      isHumanSeatZero,
+      shouldAIPlayForHuman,
+      shouldExecuteAI,
     });
 
-    if (!isAIMember) {
+    console.log('[AI-DEBUG] 座位检查详情:', {
+      currentSeat,
+      isAIMember,
+      isPracticeMode,
+      shouldExecuteAI,
+      selectedCardIdsCount: selectedCardIds?.length || 0,
+    });
+
+    if (!shouldExecuteAI) {
+      console.log('[AI-DEBUG] 跳过：当前座位不应执行AI');
       logger.debug(
-        `[useAIDecision] 当前座位不是AI成员，跳过: member_type=${currentMember?.member_type}`
+        `[useAIDecision] 当前座位不应执行AI: member_type=${currentMember?.member_type}, roomMode=${roomMode}`
       );
       return;
     }
 
     // 防止重复提交 - 使用轮次号作为锁，允许不同座位在同一轮次中依次执行
     if (submittingTurnRef.current === turnNo) {
-      logger.debug(`[useAIDecision] 轮次${turnNo}正在执行中，跳过`);
+      console.log(`[AI-DEBUG] 轮次${turnNo}正在执行中，跳过 (lock=${submittingTurnRef.current})`);
+      logger.debug(`[useAIDecision] 轮次${turnNo}正在执行中，跳过 (lock=${submittingTurnRef.current})`);
       return;
     }
 
+    console.log(`[AI-DEBUG] AI 准备执行，座位=${currentSeat}, 轮次=${turnNo}, 锁=${submittingTurnRef.current}`);
+    logger.debug(`[useAIDecision] AI 开始执行，座位=${currentSeat}, 轮次=${turnNo}`);
+
     const runAI = async () => {
+      console.log(`[AI-DEBUG] runAI 函数开始执行，座位=${currentSeat}, 轮次=${turnNo}`);
       submittingTurnRef.current = turnNo;
       const decisionStartTime = Date.now();
 
@@ -128,16 +174,23 @@ export function useAIDecision(
           freshState.status !== 'playing' ||
           freshState.currentSeat !== currentSeat
         ) {
+          console.log('[AI-DEBUG] 状态已变化，跳过');
           logger.debug(`[useAIDecision] 状态已变化，跳过`);
           return;
         }
 
-        // 再次确认是 AI 成员
+        // 再次确认可以执行AI（AI成员或练习模式的人类座位0）
         const currentMember = members.find((m) => m.seat_no === currentSeat);
-        if (!currentMember || currentMember.member_type !== 'ai') {
-          logger.debug(`[useAIDecision] 当前座位不是AI成员`);
+        const isAIMember = currentMember?.member_type === 'ai';
+        const shouldAIPlayForHuman = isPracticeMode && currentSeat === 0 && currentMember?.member_type === 'human';
+
+        if (!isAIMember && !shouldAIPlayForHuman) {
+          console.log('[AI-DEBUG] runAI中：当前座位不应执行AI');
+          logger.debug(`[useAIDecision] runAI中：当前座位不应执行AI: member_type=${currentMember?.member_type}`);
           return;
         }
+
+        console.log('[AI-DEBUG] runAI中：通过所有检查，准备获取AI系统');
 
         const lastAction = freshState.lastAction;
         const aiHand = await freshState.getAIHand(currentSeat);
@@ -196,8 +249,10 @@ export function useAIDecision(
 
               if (validCards.length !== move.cards.length) {
                 addDebugLog(
-                  `AI 卡牌已刷新，跳过此次提交 (${move.cards.length} -> ${validCards.length})`
+                  `AI 卡牌已刷新，释放锁并等待下次决策 (${move.cards.length} -> ${validCards.length})`
                 );
+                // 释放锁，允许下次决策重新执行
+                submittingTurnRef.current = null;
                 // 记录为失败但不报错
                 performanceMonitor.recordDecision({
                   timestamp: Date.now(),
@@ -227,7 +282,9 @@ export function useAIDecision(
                 'refreshed' in submitRes && submitRes.refreshed;
 
               if (isRefreshedError) {
-                addDebugLog('AI 状态已刷新，等待下次决策');
+                addDebugLog('AI 状态已刷新，释放锁并等待下次决策');
+                // 释放锁，允许下次决策重新执行
+                submittingTurnRef.current = null;
                 performanceMonitor.recordDecision({
                   timestamp: Date.now(),
                   seatNo: currentSeat,

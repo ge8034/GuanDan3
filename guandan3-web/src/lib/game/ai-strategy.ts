@@ -213,9 +213,38 @@ export function evaluateMove(
         // 提取实际牌值和炸弹张数：1000 * length + cardValue -> cardValue
         const bombLength = Math.floor(analysis.primaryValue / 1000);
         actualValue = analysis.primaryValue % 1000;
-        // 对于炸弹，优先选择张数更多的（更能压制）
-        score += bombLength * 500; // 张数越多分数越高
-        reasoning.push(`Bomb length bonus: +${bombLength * 500}`);
+
+        // 炸弹保留策略：只有在上家出大牌或炸弹时才考虑用炸弹
+        // 获取上家出牌的大小和类型
+        const lastPlayValue = lastPlay && lastPlay.length > 0 ? analyzeMove(lastPlay, levelRank)?.primaryValue : 0;
+        let lastPlayActualValue = lastPlayValue || 0;
+        let lastPlayIsBomb = false;
+        if (lastPlayValue && lastPlayValue >= 1000) {
+          lastPlayActualValue = lastPlayValue % 1000; // 上家也是炸弹
+          lastPlayIsBomb = true; // 标记上家出的是炸弹
+        }
+
+        // 只有在上家出非炸弹的小牌（单张、对子）或三张时才应用炸弹保留惩罚
+        // 如果上家出炸弹，应该用更大的炸弹压过（不惩罚）
+        const isLastPlaySmall = !lastPlayIsBomb && lastPlayActualValue < 10; // 上家出小牌（如7、8），且不是炸弹
+        const isLastPlayTriple = lastPlay && lastPlay.length === 3 && !lastPlayIsBomb; // 上家出三张，且不是炸弹
+
+        // 炸弹保留惩罚：除非必须用炸弹，否则大幅降低炸弹评分
+        if (isLastPlaySmall || isLastPlayTriple) {
+          // 用小炸弹压小牌或三张：大幅惩罚
+          score -= 800; // 炸弹保留惩罚
+          reasoning.push(`Bomb retention penalty: -800 (压小牌保留炸弹)`);
+
+          // 小炸弹额外惩罚（炸弹越小越应该保留）
+          if (actualValue < 10) {
+            score -= 200; // 小炸弹额外惩罚
+            reasoning.push(`Small bomb penalty: -200`);
+          }
+        } else {
+          // 上家出大牌或炸弹，可以用炸弹压过
+          score += bombLength * 500; // 张数越多分数越高
+          reasoning.push(`Bomb length bonus: +${bombLength * 500}`);
+        }
       }
 
       // 使用对数缩放来处理大值牌（Joker、级牌）
@@ -236,7 +265,7 @@ export function evaluateMove(
       reasoning.push(`Primary value bonus: ${1000 - normalizedValue * 20} (normalized: ${normalizedValue.toFixed(1)})`);
     }
 
-    // 跟牌时：多张牌稍微加分，但炸弹要扣分
+    // 跟牌时：多张牌稍微加分，但炸弹不加分
     const cardsPlayed = moveCards.length;
     if (analysis?.type !== 'bomb') {
       score += cardsPlayed * 2; // 非炸弹才加分
@@ -256,8 +285,27 @@ export function evaluateMove(
   // 领出时炸弹要大幅扣分（保留炸弹到最后），跟牌时炸弹也要扣分
   if (analysis?.type === 'bomb') {
     reasoning.push('Bomb play');
+
+    // 检测手牌是否主要是炸弹（比如4张相同牌）
+    // 在这种情况下，不应该大幅扣分，因为出三张后剩余单张无法出牌
+    const isOnlyBombOption = hand.length === moveCards.length &&
+                              hand.every(c => c.val === moveCards[0].val);
+
+    // 检测手牌是否全部由炸弹组成（每个牌值出现4次）
+    const cardCounts: Record<number, number> = {};
+    hand.forEach(c => {
+      cardCounts[c.val] = (cardCounts[c.val] || 0) + 1;
+    });
+    const isAllBombs = Object.values(cardCounts).length > 0 &&
+                       Object.values(cardCounts).every(count => count === 4);
+
     // 四带二（6张）扣分较少，因为能快速出牌
-    const penalty = moveCards.length > 4 ? 200 : 800;
+    // 如果手牌只有炸弹或全由炸弹组成，扣分应该减少
+    let penalty = moveCards.length > 4 ? 200 : 800;
+    if ((isOnlyBombOption || isAllBombs) && isLeading) {
+      penalty = 0; // 领牌且只有/全是炸弹时，不扣分
+      reasoning.push('Only/All bombs available, no penalty');
+    }
 
     // 如果用炸弹压单张，额外扣分（保留炸弹）
     if (lastPlay && lastPlay.length === 1) {
@@ -266,7 +314,9 @@ export function evaluateMove(
     }
 
     score -= penalty;
-    reasoning.push(`Bomb penalty -${penalty} (save for later)`);
+    if (penalty > 0) {
+      reasoning.push(`Bomb penalty -${penalty} (save for later)`);
+    }
 
     // 识别炸弹类型
     if (moveCards.length === 6) {
@@ -317,7 +367,21 @@ export function findOptimalMove(
   const lastMove =
     lastPlay && lastPlay.length > 0 ? analyzeMove(lastPlay, levelRank) : null;
 
-  const allPossibleMoves = [
+  // 检测手牌是否只有4张相同牌（炸弹情况）
+  // 如果是，且领牌，只考虑炸弹选项，不考虑三张、对子、单张
+  const isOnlyFourOfAKind = hand.length === 4 &&
+                             hand.every(c => c.val === hand[0].val);
+
+  // 检测手牌是否主要由炸弹组成（每个牌值出现4次）
+  // 例如：[7,7,7,7,8,8,8,8] 这种情况应该只考虑炸弹
+  const cardCounts: Record<number, number> = {};
+  hand.forEach(c => {
+    cardCounts[c.val] = (cardCounts[c.val] || 0) + 1;
+  });
+  const isAllBombs = Object.values(cardCounts).length > 0 &&
+                     Object.values(cardCounts).every(count => count === 4);
+
+  let allPossibleMoves = [
     ...analysis.singles,
     ...analysis.pairs,
     ...analysis.triples,
@@ -327,6 +391,12 @@ export function findOptimalMove(
     ...analysis.sequenceTriples,
     ...analysis.fullHouses,
   ];
+
+  // 如果手牌只有4张相同牌且领牌，只保留炸弹选项
+  // 或者手牌主要由炸弹组成（每个牌值出现4次），也只保留炸弹选项
+  if ((isOnlyFourOfAKind || isAllBombs) && isLeading && !lastPlay) {
+    allPossibleMoves = analysis.bombs;
+  }
 
   allPossibleMoves.forEach((move) => {
     const m = analyzeMove(move, levelRank);

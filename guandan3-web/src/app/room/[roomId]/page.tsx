@@ -99,37 +99,7 @@ export default function RoomPage() {
 
   useGameStats()
 
-  // ============ AI 调试 ============
-  const { debugLog, addDebugLog, agentStatuses } = useRoomAI(
-    roomId,
-    derivedState.isOwner,
-    gameState.gameStatus,
-    gameState.currentSeat,
-    gameState.turnNo,
-    gameState.members,
-    localState.difficulty
-  )
-
-  // ============ 动画状态 ============
-  const animations = useRoomAnimations({
-    gameStatus: gameState.gameStatus,
-    lastAction: gameState.lastAction,
-    currentSeat: gameState.currentSeat,
-    rankings: gameState.rankings,
-    mySeat: derivedState.mySeat,
-  })
-
-  // ============ 玩家头像数据 ============
-  const memoizedPlayerAvatars = useMemoizedPlayerAvatars({
-    mySeat: derivedState.mySeat,
-    currentSeat: gameState.currentSeat,
-    counts: gameState.counts,
-    members: gameState.members,
-    isOnline: derivedState.isOnline,
-    getRankTitle: (seat: number) => derivedState.getRankTitle(seat) ?? '',
-  })
-
-  // ============ 事件处理 ============
+  // ============ 事件处理 ============（必须在AI之前声明）
   // 创建 showToast 适配器，将 useToast 的格式转换为 useRoomHandlers 期望的格式
   const showToastAdapter = useCallback((options: { message: string; kind: string; timeoutMs?: number; action?: { label: string; onClick: () => void } }) => {
     // 将 'warning' 转换为 'info'，因为 useToast 只支持 'success' | 'error' | 'info'
@@ -153,6 +123,38 @@ export default function RoomPage() {
     realtimeHealthy,
   })
 
+  // ============ AI 调试 ============
+  const { debugLog, addDebugLog, agentStatuses } = useRoomAI(
+    roomId,
+    derivedState.isOwner,
+    gameState.gameStatus,
+    gameState.currentSeat,
+    gameState.turnNo,
+    gameState.members,
+    localState.difficulty,
+    gameState.currentRoom?.mode,  // 传递房间模式
+    handlers.selectedCardIds  // 传递选中的卡牌ID
+  )
+
+  // ============ 动画状态 ============
+  const animations = useRoomAnimations({
+    gameStatus: gameState.gameStatus,
+    lastAction: gameState.lastAction,
+    currentSeat: gameState.currentSeat,
+    rankings: gameState.rankings,
+    mySeat: derivedState.mySeat,
+  })
+
+  // ============ 玩家头像数据 ============
+  const memoizedPlayerAvatars = useMemoizedPlayerAvatars({
+    mySeat: derivedState.mySeat,
+    currentSeat: gameState.currentSeat,
+    counts: gameState.counts,
+    members: gameState.members,
+    isOnline: derivedState.isOnline,
+    getRankTitle: (seat: number) => derivedState.getRankTitle(seat) ?? '',
+  })
+
   // ============ 音效逻辑 ============
   const playSoundRef = useRef(playSound)
 
@@ -174,22 +176,34 @@ export default function RoomPage() {
   }, [gameState.gameStatus])
 
   // ============ 自动开始游戏（练习模式）============
+  // 练习模式：游戏创建后状态为 'deal'，需要调用 start_game 将状态转为 'playing'
+  // 条件：房间模式为 pve1v3、游戏状态为 'deal'、房间已加载、用户是房主
   const autoStartStartedRef = useRef(false)
   useEffect(() => {
+    // 调试日志
+    logger.debug('[AutoStart] 条件检查:', {
+      mode: gameState.currentRoom?.mode,
+      gameStatus: gameState.gameStatus,
+      roomLoaded,
+      isOwner: derivedState.isOwner,
+      started: autoStartStartedRef.current,
+      gameId: gameState.gameId,
+    })
+
     const shouldAutoStart =
       gameState.currentRoom?.mode === 'pve1v3' &&
       gameState.gameStatus === 'deal' &&
       roomLoaded &&
       derivedState.isOwner &&
-      !autoStartStartedRef.current &&
-      !gameState.gameId
+      !autoStartStartedRef.current
 
     if (shouldAutoStart) {
-      logger.debug('[AutoStart] 触发自动开始')
+      logger.debug('[AutoStart] 触发练习模式自动开始')
       autoStartStartedRef.current = true
       const timer = setTimeout(async () => {
         try {
           await gameState.startGameRef.current(roomId)
+          logger.debug('[AutoStart] startGame 调用完成')
         } catch (e) {
           logger.error('[AutoStart] Failed to start practice game:', e)
         }
@@ -202,7 +216,6 @@ export default function RoomPage() {
     gameState.gameStatus,
     roomLoaded,
     derivedState.isOwner,
-    gameState.gameId,
     roomId,
     gameState.startGameRef,
   ])
