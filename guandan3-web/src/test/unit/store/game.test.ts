@@ -185,7 +185,7 @@ describe('useGameStore.submitTurn', () => {
 
     const res = await useGameStore.getState().submitTurn('play', [cardA]);
 
-    expect(res.error).toBeDefined();
+    expect((res as { error?: unknown }).error).toBeDefined();
     expect(useGameStore.getState().myHand).toEqual([cardA, cardB]);
   });
 

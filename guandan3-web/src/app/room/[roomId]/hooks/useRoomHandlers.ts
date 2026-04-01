@@ -4,7 +4,7 @@
  * 管理所有用户交互事件处理逻辑
  */
 
-import { useState, useCallback, MutableRefObject } from 'react'
+import { useState, useCallback, useEffect, MutableRefObject, useRef } from 'react'
 import type { Card } from '@/lib/store/game'
 import { useGameStore } from '@/lib/store/game'
 import { mapSupabaseErrorToMessage } from '@/lib/utils/supabaseErrors'
@@ -40,7 +40,7 @@ interface RoomHandlersOptions {
 
   // UI callbacks - 使用更灵活的类型以适配不同的 showToast 签名
   showToast: (options: { message: string; kind: string; timeoutMs?: number; action?: { label: string; onClick: () => void } }) => void
-  playSound: (sound: string) => void
+  playSound: Function
 
   // Derived state
   realtimeHealthy: boolean
@@ -83,6 +83,35 @@ export function useRoomHandlers(
 
   // 本地状态：选中的卡牌 ID
   const [selectedCardIds, setSelectedCardIds] = useState<number[]>([])
+
+  // 保存上一次的手牌 ID 集合，用于检测手牌变化
+  const prevHandIdsRef = useRef<Set<number>>(new Set())
+
+  // 当手牌刷新时，清除不再存在的选中卡牌
+  // 修复：Realtime 更新会触发 fetchGame 刷新手牌，但 UI 的选中状态未同步
+  useEffect(() => {
+    const currentHandIds = new Set(myHand.map((c) => c.id))
+    const prevHandIds = prevHandIdsRef.current
+
+    // 检测手牌是否发生变化（新发牌、其他玩家出牌导致的手牌刷新）
+    const handChanged =
+      currentHandIds.size !== prevHandIds.size ||
+      Array.from(currentHandIds).some((id) => !prevHandIds.has(id))
+
+    if (handChanged) {
+      // 过滤掉已不存在的卡牌 ID（使用函数式更新确保获取最新值）
+      setSelectedCardIds((prevSelectedIds) => {
+        const validSelectedIds = prevSelectedIds.filter((id) =>
+          currentHandIds.has(id)
+        )
+        return validSelectedIds
+      })
+
+      // 更新引用
+      prevHandIdsRef.current = currentHandIds
+    }
+    // 只依赖 myHand，不依赖 selectedCardIds，避免无限循环
+  }, [myHand])
 
   // 开始游戏
   const handleStart = useCallback(async () => {
@@ -168,6 +197,18 @@ export function useRoomHandlers(
       return
     }
 
+    // 验证所有选中的卡牌仍在手牌中
+    // 防止：手牌因 Realtime 更新刷新后，已选中的卡牌不再存在
+    const currentHandIds = new Set(myHand.map((c) => c.id))
+    const missingCards = selectedCardIds.filter((id) => !currentHandIds.has(id))
+
+    if (missingCards.length > 0) {
+      // 清理无效的选中状态并静默返回
+      // 这样可以避免在 AI 回合时弹出多个提示
+      setSelectedCardIds((prev) => prev.filter((id) => currentHandIds.has(id)))
+      return
+    }
+
     const selectedCards = myHand.filter((c) => selectedCardIds.includes(c.id))
     const myMove = analyzeMove(selectedCards, levelRank)
     if (!myMove) {
@@ -203,6 +244,11 @@ export function useRoomHandlers(
       selectedCards
     )
     if (result && typeof result === 'object' && 'error' in result && result.error) {
+      // 如果状态已刷新（竞态条件），清除选择并静默返回
+      if ('refreshed' in result && result.refreshed) {
+        setSelectedCardIds([])
+        return
+      }
       const errorMessage =
         result.error instanceof Error
           ? result.error.message
@@ -227,6 +273,11 @@ export function useRoomHandlers(
   const handlePass = useCallback(async () => {
     const result = await useGameStore.getState().submitTurn('pass')
     if (result && typeof result === 'object' && 'error' in result && result.error) {
+      // 如果状态已刷新（竞态条件），清除选择并静默返回
+      if ('refreshed' in result && result.refreshed) {
+        setSelectedCardIds([])
+        return
+      }
       const errorMessage =
         result.error instanceof Error
           ? result.error.message

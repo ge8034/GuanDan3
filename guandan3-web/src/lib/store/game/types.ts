@@ -41,7 +41,7 @@ export type GameRow = {
   }
   state_private?: {
     hands?: Record<string, Card[]>
-  }
+  } & Record<string, Card[] | undefined> // 支持直接索引 state_private['0'], state_private['1'], etc.
 }
 
 /**

@@ -17,10 +17,6 @@ export type HandAreaProps = {
   mySeat: number
   gameStatus: string
   getRankTitle: (seatNo: number) => string | null
-  /** 是否可以过牌
-   * @description 掼蛋游戏规则：第一个出牌的玩家（lastAction为空）不能过牌
-   * 因为还没有人出过牌，没有可以"过"的牌
-   */
   canPass: boolean
 }
 

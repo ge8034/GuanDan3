@@ -33,6 +33,7 @@ export async function submitTurn(
     type === 'play' &&
     cards.length > 0 &&
     state.myHand.length > 0 &&
+    // 验证：所有要出的牌都必须在手牌中
     cards.every((pc) => state.myHand.some((c) => c.id === pc.id));
 
   if (shouldOptimisticUpdate) {
@@ -58,9 +59,12 @@ export async function submitTurn(
       error.code === 'P0001' && error.message.includes('turn_no_mismatch');
     const isNotYourTurn =
       error.code === 'P0001' && error.message.includes('not_your_turn');
+    const isCardNotFound =
+      error.code === 'P0001' && error.message.includes('Card not found in hand');
 
     // 错误日志处理
-    if (!isTurnNoMismatch && !isNotYourTurn) {
+    // Card not found 是竞态条件导致的预期错误（Realtime 更新刷新手牌）
+    if (!isTurnNoMismatch && !isNotYourTurn && !isCardNotFound) {
       // 未知错误：生产环境记录简要日志，开发环境记录详细日志
       if (isDev()) {
         devError(
@@ -92,6 +96,28 @@ export async function submitTurn(
         return { error, refreshed: true, newState: freshGame };
       }
     }
+
+    // 处理卡牌未找到错误（竞态条件：手牌在 Realtime 更新中刷新）
+    if (isCardNotFound) {
+      devWarn('Card not found (hand refreshed). Fetching fresh state...');
+      const { data: freshGame } = await supabase
+        .from('games')
+        .select('id,room_id,status,turn_no,current_seat,state_public,state_private')
+        .eq('id', state.gameId)
+        .single();
+
+      if (freshGame) {
+        if (isDev())
+          devLog('State refreshed after card not found');
+        state.setGame({
+          turnNo: freshGame.turn_no,
+          currentSeat: freshGame.current_seat,
+          status: freshGame.status,
+        });
+        return { error, refreshed: true, newState: freshGame };
+      }
+    }
+
     return { error };
   } else {
     // 成功：更新本地状态
@@ -100,13 +126,25 @@ export async function submitTurn(
         turn_no: number;
         current_seat: number;
         status: string;
-        rankings?: number[];
+        rankings?: number[] | { [key: string]: number } | null;
       };
+
+      // 处理 rankings 类型（可能是数组或 jsonb 对象）
+      let rankingsArray: number[] = [];
+      if (result.rankings) {
+        if (Array.isArray(result.rankings)) {
+          rankingsArray = result.rankings;
+        } else if (typeof result.rankings === 'object') {
+          // jsonb 对象，转换为数组
+          rankingsArray = Object.values(result.rankings).filter((v): v is number => typeof v === 'number');
+        }
+      }
+
       state.setGame({
         turnNo: result.turn_no,
         currentSeat: result.current_seat,
         status: result.status as 'deal' | 'playing' | 'paused' | 'finished',
-        rankings: result.rankings || state.rankings,
+        rankings: rankingsArray.length > 0 ? rankingsArray : state.rankings,
       });
     }
     return { data };
