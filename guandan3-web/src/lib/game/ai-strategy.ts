@@ -178,6 +178,10 @@ export function evaluateMove(
     score += 20;
     reasoning.push('Leading play');
 
+    // 检测是否为级牌牌型（用于额外加分）
+    const isLevelCardPlay = moveCards.some(c => c.val === levelRank);
+    let levelCardBonus = 0;
+
     // 领出时：鼓励出小牌、多张牌（保留大牌和炸弹）
     if (analysis && analysis.primaryValue) {
       // 炸弹的主值包含基数（如1000），需要提取实际牌值
@@ -186,13 +190,32 @@ export function evaluateMove(
         // 提取实际牌值：1000 * length + cardValue -> cardValue
         actualValue = analysis.primaryValue % 1000;
       }
+
+      // 修复问题K/X/Z：级牌牌型的primaryValue bonus过低
+      // 正常公式：score += 500 - actualValue * 5
+      // 但级牌的actualValue是50/60，导致bonus很低(200/250)
+      // 普通牌的actualValue是2-14，bonus较高(430-490)
+      // 解决方案：为级牌牌型添加额外加分，使其评分合理
+
       score += 500 - actualValue * 5; // 主值越小分数越高
       reasoning.push(`Primary value bonus: ${500 - actualValue * 5}`);
+
+      // 级牌牌型额外加分（修正级牌bonus过低的问题）
+      if (isLevelCardPlay && actualValue >= 50) {
+        // 级牌对子、三张等需要额外加分来抵消primaryValue bonus的不足
+        // 差异约250分，给予足够的额外加分
+        levelCardBonus = 300;
+        score += levelCardBonus;
+        reasoning.push(`Level card bonus: +${levelCardBonus}`);
+      }
     }
 
     // 非炸弹多张牌加分（增加权重，鼓励出对子、三张等）
     if (analysis?.type !== 'bomb') {
-      // 对子、三张等牌型额外加分
+      // 修复问题BD/BF：为长牌型（三带二、飞机、连对）添加额外加分
+      // 这些牌型能快速出牌，应该优先于短牌型
+
+      // 对子、三张等基础牌型额外加分
       if (moveCards.length === 2) {
         score += 50; // 对子额外加分
         reasoning.push(`Pair bonus: 50`);
@@ -200,6 +223,28 @@ export function evaluateMove(
         score += 80; // 三张额外加分
         reasoning.push(`Triple bonus: 80`);
       }
+
+      // 长牌型额外加分（三带二、飞机、连对）
+      if (analysis?.type === 'fullhouse') {
+        // 修复问题BD：三带二应该比三张有更高评分
+        // 三带二一次出5张，剩下0张；三张一次出3张，剩下对子需要再一轮
+        score += 100; // 三带二额外加分
+        reasoning.push(`Fullhouse bonus: 100`);
+      } else if (analysis?.type === 'sequenceTriples') {
+        // 修复问题BF：飞机应该比三张有更高评分
+        // 飞机一次出6+张，远快于出三张
+        score += 150; // 飞机额外加分
+        reasoning.push(`Plane bonus: 150`);
+      } else if (analysis?.type === 'sequencePairs') {
+        // 连对额外加分
+        score += 120; // 连对额外加分
+        reasoning.push(`Sequence pairs bonus: 120`);
+      } else if (analysis?.type === 'straight') {
+        // 顺子额外加分
+        score += 100; // 顺子额外加分
+        reasoning.push(`Straight bonus: 100`);
+      }
+
       score += moveCards.length * 15; // 基础多张牌加分（提高从10到15）
       reasoning.push(`Cards played bonus: ${moveCards.length * 15}`);
     }

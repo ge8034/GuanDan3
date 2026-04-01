@@ -217,15 +217,40 @@ export function findSequenceTriples(
 
   const sortedVals = Array.from(valMap.keys()).sort((a, b) => a - b);
 
-  for (let i = 0; i < sortedVals.length - 2; i++) {
-    const sequenceVals = sortedVals.slice(i, i + 3);
-    if (sequenceVals[2] - sequenceVals[0] === 2) {
-      const perValTriples = sequenceVals.map((v) =>
-        generateCombinations(valMap.get(v) || [], 3)
+  // 飞机需要至少2个连续的三张
+  for (let i = 0; i < sortedVals.length - 1; i++) {
+    // 检查当前值和下一个值是否连续（相差1）
+    if (sortedVals[i + 1] - sortedVals[i] === 1) {
+      // 检查两个值是否都至少有3张牌
+      if (valMap.get(sortedVals[i])!.length >= 3 &&
+          valMap.get(sortedVals[i + 1])!.length >= 3) {
+        // 生成这两个连续三张的组合
+        const perValTriples = [
+          generateCombinations(valMap.get(sortedVals[i]) || [], 3),
+          generateCombinations(valMap.get(sortedVals[i + 1]) || [], 3),
+        ];
+        if (perValTriples.some((x) => x.length === 0)) continue;
+        const combinations = generateCartesianProduct(perValTriples);
+        sequenceTriples.push(...combinations.map((group) => group.flat()));
+      }
+    }
+
+    // 如果有3个连续的值，也可以生成3连的飞机
+    if (i + 2 < sortedVals.length &&
+        sortedVals[i + 2] - sortedVals[i] === 2) {
+      const sequenceVals = sortedVals.slice(i, i + 3);
+      // 检查每个值是否都至少有3张牌
+      const allHaveThree = sequenceVals.every(v =>
+        valMap.get(v) && valMap.get(v)!.length >= 3
       );
-      if (perValTriples.some((x) => x.length === 0)) continue;
-      const combinations = generateCartesianProduct(perValTriples);
-      sequenceTriples.push(...combinations.map((group) => group.flat()));
+      if (allHaveThree) {
+        const perValTriples = sequenceVals.map((v) =>
+          generateCombinations(valMap.get(v) || [], 3)
+        );
+        if (perValTriples.some((x) => x.length === 0)) continue;
+        const combinations = generateCartesianProduct(perValTriples);
+        sequenceTriples.push(...combinations.map((group) => group.flat()));
+      }
     }
   }
 
