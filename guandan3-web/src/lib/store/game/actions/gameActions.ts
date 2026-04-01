@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase/client'
 import { devError, devLog, devWarn, isDev } from '@/lib/utils/devLog'
+import { logger } from '@/lib/utils/logger'
 import type { GameState, Card, GameRow, LastAction } from '../types'
 import type { TurnRow } from '../types'
 import { normalizeRecentTurns, computeLastActionFromRecentTurns } from '../utils/normalizers'
