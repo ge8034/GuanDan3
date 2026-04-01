@@ -119,6 +119,45 @@ class AISystemManager {
   }
 
   /**
+   * 修复问题#30: 清理过期系统（超过一定时间未使用）
+   * @param maxAgeMs 最大存活时间（毫秒），默认30分钟
+   */
+  disposeStaleSystems(maxAgeMs: number = 30 * 60 * 1000): void {
+    const now = Date.now()
+    const staleRoomIds: string[] = []
+
+    for (const [roomId, system] of this.systems.entries()) {
+      const age = now - system.createdAt
+      if (age > maxAgeMs) {
+        staleRoomIds.push(roomId)
+      }
+    }
+
+    if (staleRoomIds.length > 0) {
+      devLog(`[AISystemManager] 清理 ${staleRoomIds.length} 个过期系统:`, staleRoomIds)
+      staleRoomIds.forEach(roomId => this.disposeSystem(roomId))
+    }
+  }
+
+  /**
+   * 修复问题#30: 启动定期清理过期系统
+   * @param intervalMs 清理间隔（毫秒），默认5分钟
+   */
+  startPeriodicCleanup(intervalMs: number = 5 * 60 * 1000): () => void {
+    devLog(`[AISystemManager] 启动定期清理，间隔: ${intervalMs}ms`)
+
+    const intervalId = setInterval(() => {
+      this.disposeStaleSystems()
+    }, intervalMs)
+
+    // 返回清理函数
+    return () => {
+      clearInterval(intervalId)
+      devLog(`[AISystemManager] 停止定期清理`)
+    }
+  }
+
+  /**
    * 销毁所有系统
    */
   disposeAll(): void {

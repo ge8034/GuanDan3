@@ -4,6 +4,7 @@ import { ThemeProvider } from '@/lib/theme/theme-context'
 import NoiseOverlay from '@/components/effects/NoiseOverlay'
 import Navigation from '@/components/Navigation'
 import PerformanceSetup from '@/components/performance/PerformanceSetup'
+import AISystemSetup from '@/components/ai/AISystemSetup'
 import MonitoringComponents from '@/components/monitoring/MonitoringComponents'
 import { PWAProvider, OfflineIndicator, UpdateBanner } from '@/components/pwa'
 
@@ -40,6 +41,7 @@ export default function RootLayout({
         <PWAProvider>
           <ThemeProvider>
             <PerformanceSetup />
+            <AISystemSetup />
             <Navigation />
             <NoiseOverlay />
             <MonitoringComponents />

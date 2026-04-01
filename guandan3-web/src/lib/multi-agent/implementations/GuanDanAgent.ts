@@ -111,21 +111,25 @@ export class GuanDanAgent extends WorkerAgent {
       this.cardCounter = new CardCounter(payload.levelRank);
     }
 
-    // AI思考时间：快速响应模式（测试/开发优化）
+    // 修复问题#23: AI思考时间
+    // 测试环境跳过延迟，加快测试速度
     // easy: 0.1-0.2秒, medium: 0.05-0.1秒, hard: 0-0.05秒
+    const isTestMode = process.env.NODE_ENV === 'test' || process.env.CI === 'true';
     let minTime = 0;
-    let maxTime = 50;
+    let maxTime = isTestMode ? 0 : 50; // 测试模式无延迟
     if (this.difficulty === 'easy') {
-      minTime = 100;
-      maxTime = 200;
+      minTime = isTestMode ? 0 : 100;
+      maxTime = isTestMode ? 0 : 200;
     } else if (this.difficulty === 'medium') {
-      minTime = 50;
-      maxTime = 100;
+      minTime = isTestMode ? 0 : 50;
+      maxTime = isTestMode ? 0 : 100;
     }
     const thinkingTime = Math.floor(
       Math.random() * (maxTime - minTime) + minTime
     );
-    await new Promise((resolve) => setTimeout(resolve, thinkingTime));
+    if (thinkingTime > 0) {
+      await new Promise((resolve) => setTimeout(resolve, thinkingTime));
+    }
 
     try {
       await this.logThinking(

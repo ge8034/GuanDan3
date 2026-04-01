@@ -10,6 +10,8 @@ export class TaskDispatcher {
   private teamManager: TeamManager;
   private messageBus: MessageBus;
   private isProcessing: boolean = false; // 修复问题#28: 防止并发执行
+  // 修复问题#26: 存储待处理的Promise resolve/reject
+  private pendingPromises: Map<TaskId, { resolve: (value: any) => void; reject: (reason: any) => void; timeout: NodeJS.Timeout }> = new Map();
 
   constructor(teamManager: TeamManager) {
     this.teamManager = teamManager;
@@ -121,6 +123,15 @@ devLogCat(LogCategory.AGENT, `[TaskDispatcher] 可用 agents: ${availableAgents.
       const result = message.payload;
       this.completedTasks.set(result.taskId, result);
 
+      // 修复问题#26: 立即resolve等待的Promise（事件驱动而非轮询）
+      const pending = this.pendingPromises.get(result.taskId);
+      if (pending) {
+        const { resolve, timeout } = pending;
+        clearTimeout(timeout);
+        resolve(result);
+        this.pendingPromises.delete(result.taskId);
+      }
+
       // Check if more tasks can be processed now that an agent is free
       this.processQueue();
     }
@@ -130,37 +141,23 @@ devLogCat(LogCategory.AGENT, `[TaskDispatcher] 可用 agents: ${availableAgents.
     return this.completedTasks.get(taskId);
   }
 
-  // Helper to subscribe to specific task completion
+  // 修复问题#26: Helper to subscribe to specific task completion（事件驱动）
   public waitForTaskResult(taskId: TaskId, timeoutMs = 10000): Promise<any> {
+    // Check if task is already completed
+    const existingResult = this.completedTasks.get(taskId);
+    if (existingResult) {
+      return Promise.resolve(existingResult);
+    }
+
     return new Promise((resolve, reject) => {
-      // Check if task is already completed
-      const existingResult = this.completedTasks.get(taskId);
-      if (existingResult) {
-        resolve(existingResult);
-        return;
-      }
-
-      let resolved = false;
-
-      const timer = setTimeout(() => {
-        if (!resolved) {
-          resolved = true;
-          clearInterval(interval);
-          reject(new Error(`Task ${taskId} timeout after ${timeoutMs}ms`));
-        }
+      // 设置超时
+      const timeout = setTimeout(() => {
+        this.pendingPromises.delete(taskId);
+        reject(new Error(`Task ${taskId} timeout after ${timeoutMs}ms`));
       }, timeoutMs);
 
-      const interval = setInterval(() => {
-        if (resolved) return;
-
-        const res = this.completedTasks.get(taskId);
-        if (res) {
-          resolved = true;
-          clearInterval(interval);
-          clearTimeout(timer);
-          resolve(res);
-        }
-      }, 100);
+      // 存储Promise处理器，等待handleTaskResult调用
+      this.pendingPromises.set(taskId, { resolve, reject, timeout });
     });
   }
 }
