@@ -44,6 +44,9 @@ export function useAIDecision(
   // 这样避免了不同座位之间的阻塞，同时保证了同一轮次的并发安全
   const submittingTurnRef = useRef<number | null>(null);
 
+  // 记录每个座位连续失败次数，用于防止无限循环
+  const consecutiveFailuresRef = useRef<Record<number, number>>({});
+
   // AI 决策执行
   /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
@@ -97,11 +100,27 @@ export function useAIDecision(
       return;
     }
 
+    // 修复问题#7: 检查连续失败次数，防止无限循环
+    const failures = consecutiveFailuresRef.current[currentSeat] || 0;
+    if (failures >= 3) {
+      logger.warn(`[useAIDecision] 座位${currentSeat}连续失败${failures}次，跳过本次执行`);
+      // 在轮次变化时重置失败计数
+      if (submittingTurnRef.current !== null && submittingTurnRef.current !== turnNo) {
+        consecutiveFailuresRef.current[currentSeat] = 0;
+      } else {
+        return;
+      }
+    }
+
     // 防止重复提交 - 使用轮次号作为锁，允许不同座位在同一轮次中依次执行
     if (submittingTurnRef.current === turnNo) {
       logger.debug(`[useAIDecision] 轮次${turnNo}正在执行中，跳过 (lock=${submittingTurnRef.current})`);
       return;
     }
+
+    // 修复问题#2: 在useEffect主体中立即设置锁，而不是在runAI内部
+    // 这样可以防止useEffect多次触发导致多个runAI并发执行
+    submittingTurnRef.current = turnNo;
 
     logger.debug(`[useAIDecision] AI 开始执行，座位=${currentSeat}, 轮次=${turnNo}`);
 
@@ -118,20 +137,22 @@ export function useAIDecision(
 
         await new Promise(resolve => setTimeout(resolve, waitTime));
 
-        // 再次检查是否有选牌
+        // 修复问题#4: 从最新store读取selectedCardIds，而不是使用闭包值
         const freshStateAfterWait = useGameStore.getState();
-        const hasSelectedCards = selectedCardIds && selectedCardIds.length > 0;
+        const currentSelectedIds = freshStateAfterWait.selectedCardIds || [];
+        const hasSelectedCards = currentSelectedIds.length > 0;
 
         if (hasSelectedCards) {
           console.log(`[AI-DEBUG] 人类玩家已选牌，AI跳过`);
-          submittingTurnRef.current = null; // 释放锁
+          // 释放锁并重置失败计数
+          submittingTurnRef.current = null;
+          consecutiveFailuresRef.current[currentSeat] = 0;
           return; // 人类已操作，AI不执行
         }
 
         console.log(`[AI-DEBUG] 人类玩家未操作，AI接管执行`);
       }
 
-      submittingTurnRef.current = turnNo;
       const decisionStartTime = Date.now();
 
       logger.debug(
@@ -192,6 +213,18 @@ export function useAIDecision(
 
         const lastAction = freshState.lastAction;
         const aiHand = await freshState.getAIHand(currentSeat);
+
+        // 修复问题#3: 检查手牌是否为空，如果为空则跳过决策
+        if (!aiHand || aiHand.length === 0) {
+          logger.warn(`[useAIDecision] 座位${currentSeat}手牌为空，跳过决策`);
+          // 释放锁并增加失败计数
+          submittingTurnRef.current = null;
+          consecutiveFailuresRef.current[currentSeat] = (consecutiveFailuresRef.current[currentSeat] || 0) + 1;
+          return;
+        }
+
+        // 重置失败计数（成功获取手牌）
+        consecutiveFailuresRef.current[currentSeat] = 0;
 
         // 创建任务
         const task: Task = {
@@ -339,7 +372,20 @@ export function useAIDecision(
           }
         }
       } catch (e: unknown) {
-        logger.error('[useAIDecision] AI 异常:', e);
+        // 修复问题#6: 记录完整的错误信息，而不是"[Object]"
+        const errorMessage = e instanceof Error ? e.message : String(e);
+        const errorDetails = e instanceof Error ? {
+          message: e.message,
+          stack: e.stack,
+          name: e.name,
+        } : { raw: String(e) };
+
+        logger.error('[useAIDecision] AI 异常:', {
+          seatNo: currentSeat,
+          turnNo,
+          error: errorDetails,
+        });
+
         const decisionTime = Date.now() - decisionStartTime;
         performanceMonitor.recordDecision({
           timestamp: Date.now(),
@@ -349,11 +395,14 @@ export function useAIDecision(
           cardCount: 0,
           decisionTime,
           success: false,
-          errorMessage: e instanceof Error ? e.message : '未知错误',
+          errorMessage,
         });
+
+        // 增加失败计数
+        consecutiveFailuresRef.current[currentSeat] = (consecutiveFailuresRef.current[currentSeat] || 0) + 1;
       } finally {
         clearTimeout(timeoutId);
-        // 重置锁
+        // 重置锁 - 确保无论如何都释放锁
         submittingTurnRef.current = null;
         logger.debug(
           `[useAIDecision] 完成，耗时: ${Date.now() - decisionStartTime}ms`
@@ -363,6 +412,7 @@ export function useAIDecision(
 
     runAI();
   }, [
+    // 修复问题#1: 添加缺失的依赖项
     gameStatus,
     currentSeat,
     turnNo,
@@ -370,6 +420,8 @@ export function useAIDecision(
     roomId,
     difficulty,
     members,
+    roomMode,           // 修复: 练习模式判断需要此依赖
+    selectedCardIds,    // 修复: 练习模式选牌检查需要此依赖
     addDebugLog,
   ]);
   /* eslint-enable react-hooks/exhaustive-deps */
