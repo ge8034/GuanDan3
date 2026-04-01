@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useGameStore } from '@/lib/store/game';
+import type { Card } from '@/lib/store/game';
 import { RoomMember } from '@/lib/store/room';
 import { logger } from '@/lib/utils/logger';
 import { AIPerformanceMonitor } from '@/lib/utils/aiPerformanceMonitor';
@@ -188,6 +189,30 @@ export function useAIDecision(
               `AI 决策: ${move.type} ${move.cards?.length || 0} 张 (${decisionTime}ms)`
             );
 
+            // 验证卡牌仍在手牌中（防止竞态条件）
+            if (move.type === 'play' && move.cards && move.cards.length > 0) {
+              const currentHandIds = new Set(freshState.myHand.map((c: Card) => c.id));
+              const validCards = move.cards.filter((c: Card) => currentHandIds.has(c.id));
+
+              if (validCards.length !== move.cards.length) {
+                addDebugLog(
+                  `AI 卡牌已刷新，跳过此次提交 (${move.cards.length} -> ${validCards.length})`
+                );
+                // 记录为失败但不报错
+                performanceMonitor.recordDecision({
+                  timestamp: Date.now(),
+                  seatNo: currentSeat,
+                  difficulty,
+                  moveType: move.type,
+                  cardCount: move.cards.length,
+                  decisionTime,
+                  success: false,
+                  errorMessage: 'Cards refreshed before submit',
+                });
+                return; // 跳过此次提交，等待下次决策
+              }
+            }
+
             const submitRes = await freshState.submitTurn(
               move.type,
               move.cards
@@ -197,6 +222,25 @@ export function useAIDecision(
               typeof submitRes === 'object' &&
               'error' in submitRes
             ) {
+              // 检查是否是状态刷新导致的预期错误
+              const isRefreshedError =
+                'refreshed' in submitRes && submitRes.refreshed;
+
+              if (isRefreshedError) {
+                addDebugLog('AI 状态已刷新，等待下次决策');
+                performanceMonitor.recordDecision({
+                  timestamp: Date.now(),
+                  seatNo: currentSeat,
+                  difficulty,
+                  moveType: move.type,
+                  cardCount: move.cards?.length || 0,
+                  decisionTime,
+                  success: false,
+                  errorMessage: 'State refreshed (expected race condition)',
+                });
+                return;
+              }
+
               addDebugLog(
                 `AI 提交失败: ${(submitRes as { error?: { message?: string } }).error?.message || '未知错误'}`
               );
