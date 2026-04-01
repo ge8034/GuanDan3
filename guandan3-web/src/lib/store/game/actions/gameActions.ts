@@ -1,6 +1,5 @@
 import { supabase } from '@/lib/supabase/client'
 import { devError, devLog, devWarn, isDev } from '@/lib/utils/devLog'
-import { logger } from '@/lib/utils/logger'
 import type { GameState, Card, GameRow, LastAction } from '../types'
 import type { TurnRow } from '../types'
 import { normalizeRecentTurns, computeLastActionFromRecentTurns } from '../utils/normalizers'
@@ -217,16 +216,16 @@ export async function getAIHand(this: GameState, seatNo: number): Promise<Card[]
 
   // 验证参数
   if (!gameId) {
-    logger.debug('[getAIHand] gameId 为空，跳过')
+    devLog('[getAIHand] gameId 为空，跳过')
     return []
   }
 
   if (seatNo < 0 || seatNo > 3) {
-    logger.warn('[getAIHand] 座位号无效:', seatNo)
+    devWarn('[getAIHand] 座位号无效:', seatNo)
     return []
   }
 
-  logger.debug('[getAIHand] 调用 RPC:', { gameId, seatNo })
+  devLog('[getAIHand] 调用 RPC:', { gameId, seatNo })
 
   const { data, error } = await supabase.rpc('get_ai_hand', {
     p_game_id: gameId,
@@ -234,7 +233,7 @@ export async function getAIHand(this: GameState, seatNo: number): Promise<Card[]
   })
 
   if (error) {
-    logger.error('[getAIHand] RPC 错误:', {
+    devError('[getAIHand] RPC 错误:', {
       error,
       gameId,
       seatNo,
@@ -246,7 +245,7 @@ export async function getAIHand(this: GameState, seatNo: number): Promise<Card[]
     // 如果游戏不存在，返回空数组（可能游戏尚未开始）
     if (error.message?.includes('Game not found') ||
         error.message?.includes('游戏不存在')) {
-      logger.debug('[getAIHand] 游戏不存在，返回空数组')
+      devLog('[getAIHand] 游戏不存在，返回空数组')
       return []
     }
 
