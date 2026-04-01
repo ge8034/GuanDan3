@@ -107,8 +107,25 @@ export async function setupGameRpcMocks(
     // 重置手牌
     setMockHandCards([...getMockHandCards()]);
 
-    // 获取当前手牌
+    // 获取当前手牌（人类玩家，座位0）
     const currentHandCards = getMockHandCards();
+
+    // 为所有4个座位生成手牌
+    const generateAIHand = (seatNo: number) => {
+      return Array.from({ length: 27 }, (_, i) => ({
+        id: seatNo * 100 + i + 1,
+        suit: ['S', 'H', 'D', 'C'][Math.floor((seatNo * 27 + i) / 13) % 4] as any,
+        rank: ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4', '3', '2'][(seatNo * 27 + i) % 13] as any,
+        val: 14 - ((seatNo * 27 + i) % 13),
+      }));
+    };
+
+    // 初始化AI手牌
+    (global as any).aiHands = {
+      '1': generateAIHand(1),
+      '2': generateAIHand(2),
+      '3': generateAIHand(3),
+    };
 
     await route.fulfill({
       status: 200,
@@ -129,6 +146,9 @@ export async function setupGameRpcMocks(
           state_private: {
             hands: {
               '0': currentHandCards,
+              '1': (global as any).aiHands['1'],
+              '2': (global as any).aiHands['2'],
+              '3': (global as any).aiHands['3'],
             },
           },
           created_at: new Date().toISOString(),
@@ -217,6 +237,78 @@ export async function setupGameRpcMocks(
     console.log(
       `Mock submit_turn: next turnNo=${turnNo}, next currentSeat=${currentSeat}`
     );
+
+    // 修复问题#29: 模拟所有AI玩家依次出牌，然后返回最终状态
+    // 这样可以确保游戏状态正确更新，不需要依赖自定义事件
+    if (currentSeat !== 0) {
+      console.log(`Next seat is AI (${currentSeat}), simulating all AI turns...`);
+
+      // 模拟所有AI玩家依次出牌
+      let simTurnNo = turnNo;
+      let simCurrentSeat = currentSeat;
+      const aiTurnResults = [];
+
+      // 模拟所有AI座位（1、2、3）依次出牌
+      while (simCurrentSeat !== 0) {
+        if (!(global as any).aiHands) {
+          (global as any).aiHands = {};
+        }
+        if (!(global as any).aiHands[simCurrentSeat]) {
+          (global as any).aiHands[simCurrentSeat] = Array.from(
+            { length: 27 },
+            (_, i) => ({
+              id: simCurrentSeat * 100 + i + 1,
+              suit: ['S', 'H', 'D', 'C'][
+                Math.floor((simCurrentSeat * 27 + i) / 13) % 4
+              ] as any,
+              rank: [
+                'A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4', '3', '2'
+              ][(simCurrentSeat * 27 + i) % 13] as any,
+              val: 14 - ((simCurrentSeat * 27 + i) % 13),
+            })
+          );
+        }
+
+        let aiHand = (global as any).aiHands[simCurrentSeat];
+        const cardsToPlay = Math.min(Math.floor(Math.random() * 3) + 1, aiHand.length);
+        const playedCards = aiHand.slice(0, cardsToPlay);
+
+        // 更新手牌
+        (global as any).aiHands[simCurrentSeat] = aiHand.slice(cardsToPlay);
+
+        // 记录本次AI出牌结果
+        aiTurnResults.push({
+          seatNo: simCurrentSeat,
+          cardsPlayed: cardsToPlay,
+          remaining: aiHand.length - cardsToPlay
+        });
+
+        console.log(`Mock AI ${simCurrentSeat} 出牌: ${playedCards.map((c: any) => c.val).join(',')}, 剩余: ${aiHand.length - cardsToPlay}张`);
+
+        // 移动到下一个座位
+        simTurnNo++;
+        simCurrentSeat = (simCurrentSeat + 1) % 4;
+      }
+
+      // 更新全局状态到最终状态（轮回到人类玩家）
+      (global as any).turnNo = simTurnNo;
+      (global as any).currentSeat = 0; // 轮回到人类玩家
+
+      // 返回最终的游戏状态（当前座位是0，人类玩家的回合）
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([
+          {
+            turn_no: simTurnNo,
+            current_seat: 0, // 人类玩家的回合
+            status: 'playing',
+            rankings: [],
+          },
+        ]),
+      });
+      return;
+    }
 
     // 返回数组格式，与实际 RPC 一致
     await route.fulfill({
