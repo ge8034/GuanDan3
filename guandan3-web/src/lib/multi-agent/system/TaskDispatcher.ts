@@ -9,6 +9,7 @@ export class TaskDispatcher {
   private completedTasks: Map<TaskId, any> = new Map();
   private teamManager: TeamManager;
   private messageBus: MessageBus;
+  private isProcessing: boolean = false; // 修复问题#28: 防止并发执行
 
   constructor(teamManager: TeamManager) {
     this.teamManager = teamManager;
@@ -27,7 +28,23 @@ devLogCat(LogCategory.AGENT, `[TaskDispatcher] 提交 ${tasks.length} 个任务�
 
   // Intelligent Matching (Capability + Seat + Load)
   private async processQueue(): Promise<void> {
+    // 修复问题#28: 防止并发执行
+    if (this.isProcessing) {
+devLogCat(LogCategory.AGENT, `[TaskDispatcher] 队列正在处理中，跳过本次调用`);
+      return;
+    }
     if (this.taskQueue.length === 0) return;
+
+    this.isProcessing = true;
+    try {
+      await this.processQueueInternal();
+    } finally {
+      this.isProcessing = false;
+    }
+  }
+
+  // 内部队列处理逻辑
+  private async processQueueInternal(): Promise<void> {
 
     // Get all idle agents from TeamManager
     const availableAgents = this.teamManager.getAllAgentsByStatus(AgentStatus.IDLE);
