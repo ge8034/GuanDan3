@@ -42,7 +42,7 @@ export function useAIDecision(
   const performanceMonitor = AIPerformanceMonitor.getInstance();
   // 使用轮次号作为锁，每个轮次只能有一个AI在执行
   // 这样避免了不同座位之间的阻塞，同时保证了同一轮次的并发安全
-  const submittingTurnRef = useRef<number | null>(null);
+  const submittingTurnRef = useRef<string | null>(null);
 
   // 记录每个座位连续失败次数，用于防止无限循环
   const consecutiveFailuresRef = useRef<Record<number, number>>({});
@@ -151,7 +151,7 @@ export function useAIDecision(
 
         // 修复问题#4: 从最新store读取selectedCardIds，而不是使用闭包值
         const freshStateAfterWait = useGameStore.getState();
-        const currentSelectedIds = freshStateAfterWait.selectedCardIds || [];
+        const currentSelectedIds = selectedCardIds || [];
         const hasSelectedCards = currentSelectedIds.length > 0;
 
         if (hasSelectedCards) {
@@ -328,6 +328,26 @@ export function useAIDecision(
                 });
                 return; // 跳过此次提交，等待下次决策
               }
+            }
+
+            // 提交前最后验证：检查turn_no是否仍然正确（防止竞态条件）
+            const latestState = useGameStore.getState();
+            if (latestState.turnNo !== turnNo || latestState.currentSeat !== currentSeat) {
+              addDebugLog(
+                `AI 状态在决策期间变化：turnNo ${turnNo}->${latestState.turnNo}, currentSeat ${currentSeat}->${latestState.currentSeat}`
+              );
+              submittingTurnRef.current = null;
+              performanceMonitor.recordDecision({
+                timestamp: Date.now(),
+                seatNo: currentSeat,
+                difficulty,
+                moveType: move.type,
+                cardCount: move.cards?.length || 0,
+                decisionTime,
+                success: false,
+                errorMessage: 'State changed during decision',
+              });
+              return;
             }
 
             const submitRes = await freshState.submitTurn(
