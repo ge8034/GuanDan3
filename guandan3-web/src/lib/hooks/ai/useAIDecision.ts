@@ -51,18 +51,6 @@ export function useAIDecision(
     const shouldRunAI =
       gameStatus === 'playing' && isOwner && members && members.length > 0;
 
-    // 强制输出调试信息（不受DEBUG标志影响）
-    console.log('[AI-DEBUG] useAIDecision 触发检查:', {
-      gameStatus,
-      isOwner,
-      currentSeat,
-      turnNo,
-      membersCount: members?.length || 0,
-      members: members?.map(m => ({ seat: m.seat_no, type: m.member_type })),
-      shouldRunAI,
-      lockValue: submittingTurnRef.current,
-    });
-
     logger.debug('[useAIDecision] 触发检查:', {
       gameStatus,
       isOwner,
@@ -74,9 +62,6 @@ export function useAIDecision(
     });
 
     if (!shouldRunAI) {
-      if (!isOwner) console.log('[AI-DEBUG] 跳过：不是房主');
-      if (gameStatus !== 'playing') console.log('[AI-DEBUG] 跳过：gameStatus不是playing，是', gameStatus);
-      if (!members || members.length === 0) console.log('[AI-DEBUG] 跳过：members为空');
       return;
     }
 
@@ -87,7 +72,10 @@ export function useAIDecision(
     // 但只有在人类玩家没有选牌的情况下才执行
     const isPracticeMode = roomMode === 'pve1v3';
     const isHumanSeatZero = currentSeat === 0 && currentMember?.member_type === 'human';
-    const shouldAIPlayForHuman = isPracticeMode && isHumanSeatZero && (!selectedCardIds || selectedCardIds.length === 0);
+    const hasSelectedCards = selectedCardIds && selectedCardIds.length > 0;
+
+    // 给人类玩家一个思考时间：如果是练习模式且轮到人类玩家，添加延迟后再执行AI
+    const shouldAIPlayForHuman = isPracticeMode && isHumanSeatZero && !hasSelectedCards;
 
     const shouldExecuteAI = isAIMember || shouldAIPlayForHuman;
 
@@ -102,16 +90,7 @@ export function useAIDecision(
       shouldExecuteAI,
     });
 
-    console.log('[AI-DEBUG] 座位检查详情:', {
-      currentSeat,
-      isAIMember,
-      isPracticeMode,
-      shouldExecuteAI,
-      selectedCardIdsCount: selectedCardIds?.length || 0,
-    });
-
     if (!shouldExecuteAI) {
-      console.log('[AI-DEBUG] 跳过：当前座位不应执行AI');
       logger.debug(
         `[useAIDecision] 当前座位不应执行AI: member_type=${currentMember?.member_type}, roomMode=${roomMode}`
       );
@@ -120,16 +99,38 @@ export function useAIDecision(
 
     // 防止重复提交 - 使用轮次号作为锁，允许不同座位在同一轮次中依次执行
     if (submittingTurnRef.current === turnNo) {
-      console.log(`[AI-DEBUG] 轮次${turnNo}正在执行中，跳过 (lock=${submittingTurnRef.current})`);
       logger.debug(`[useAIDecision] 轮次${turnNo}正在执行中，跳过 (lock=${submittingTurnRef.current})`);
       return;
     }
 
-    console.log(`[AI-DEBUG] AI 准备执行，座位=${currentSeat}, 轮次=${turnNo}, 锁=${submittingTurnRef.current}`);
     logger.debug(`[useAIDecision] AI 开始执行，座位=${currentSeat}, 轮次=${turnNo}`);
 
     const runAI = async () => {
       console.log(`[AI-DEBUG] runAI 函数开始执行，座位=${currentSeat}, 轮次=${turnNo}`);
+
+      // 练习模式：给人类玩家思考时间
+      const isPracticeMode = roomMode === 'pve1v3';
+      const isHumanSeatZero = currentSeat === 0 && members.find((m) => m.seat_no === currentSeat)?.member_type === 'human';
+
+      if (isPracticeMode && isHumanSeatZero) {
+        const waitTime = 5000; // 等待5秒给人类玩家操作
+        console.log(`[AI-DEBUG] 练习模式：等待${waitTime}ms让人类玩家操作...`);
+
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+
+        // 再次检查是否有选牌
+        const freshStateAfterWait = useGameStore.getState();
+        const hasSelectedCards = selectedCardIds && selectedCardIds.length > 0;
+
+        if (hasSelectedCards) {
+          console.log(`[AI-DEBUG] 人类玩家已选牌，AI跳过`);
+          submittingTurnRef.current = null; // 释放锁
+          return; // 人类已操作，AI不执行
+        }
+
+        console.log(`[AI-DEBUG] 人类玩家未操作，AI接管执行`);
+      }
+
       submittingTurnRef.current = turnNo;
       const decisionStartTime = Date.now();
 
@@ -185,12 +186,9 @@ export function useAIDecision(
         const shouldAIPlayForHuman = isPracticeMode && currentSeat === 0 && currentMember?.member_type === 'human';
 
         if (!isAIMember && !shouldAIPlayForHuman) {
-          console.log('[AI-DEBUG] runAI中：当前座位不应执行AI');
           logger.debug(`[useAIDecision] runAI中：当前座位不应执行AI: member_type=${currentMember?.member_type}`);
           return;
         }
-
-        console.log('[AI-DEBUG] runAI中：通过所有检查，准备获取AI系统');
 
         const lastAction = freshState.lastAction;
         const aiHand = await freshState.getAIHand(currentSeat);

@@ -224,9 +224,18 @@ export function evaluateMove(
           lastPlayIsBomb = true; // 标记上家出的是炸弹
         }
 
+        // 计算上家出牌的原始值（不使用级牌特殊值）
+        // 级牌的primaryValue是50+，但我们需要判断原始牌面值来决定是否保留炸弹
+        let lastPlayRawValue = 0;
+        if (lastPlay && lastPlay.length > 0) {
+          // 取上家出牌的平均原始值作为判断标准
+          lastPlayRawValue = lastPlay.reduce((sum, card) => sum + card.val, 0) / lastPlay.length;
+        }
+
         // 只有在上家出非炸弹的小牌（单张、对子）或三张时才应用炸弹保留惩罚
         // 如果上家出炸弹，应该用更大的炸弹压过（不惩罚）
-        const isLastPlaySmall = !lastPlayIsBomb && lastPlayActualValue < 10; // 上家出小牌（如7、8），且不是炸弹
+        // 使用原始值判断（级牌2的原始值是2，而不是50+）
+        const isLastPlaySmall = !lastPlayIsBomb && lastPlayRawValue < 10; // 上家出小牌（如7、8），且不是炸弹
         const isLastPlayTriple = lastPlay && lastPlay.length === 3 && !lastPlayIsBomb; // 上家出三张，且不是炸弹
 
         // 炸弹保留惩罚：除非必须用炸弹，否则大幅降低炸弹评分
@@ -409,10 +418,6 @@ export function findOptimalMove(
     if (canBeatResult) validMoves.push({ type: 'play', cards: move });
   });
 
-  if (validMoves.length === 0) {
-    return { type: 'pass' };
-  }
-
   if (
     teammateSituation &&
     teammateSituation.needsSupport &&
@@ -430,7 +435,19 @@ export function findOptimalMove(
     }
   }
 
-  const evaluatedMoves = validMoves.map((move) =>
+  // 构建待评估的移动列表：包含所有可出的牌以及pass选项
+  // 这样可以让AI在有牌可出时也考虑pass的收益（如保留炸弹）
+  const movesToEvaluate = [...validMoves];
+  if (lastMove && lastMove.type !== 'pass') {
+    // 跟牌时，pass永远是一个选项
+    movesToEvaluate.push({ type: 'pass' });
+  }
+
+  if (movesToEvaluate.length === 0) {
+    return { type: 'pass' };
+  }
+
+  const evaluatedMoves = movesToEvaluate.map((move) =>
     evaluateMove(move, hand, lastPlay, levelRank, difficulty, isLeading)
   );
 

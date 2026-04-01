@@ -11,11 +11,12 @@ export async function fetchGame(this: GameState, roomId: string): Promise<void> 
   if (isDev()) devLog('[fetchGame] Called for room:', roomId)
 
   // 1. 获取活跃游戏
+  // 注意：需要包含 'deal' 状态以支持练习模式的初始状态
   const { data: games, error: gamesError } = await supabase
     .from('games')
     .select('id,room_id,status,turn_no,current_seat,state_public,state_private')
     .eq('room_id', roomId)
-    .in('status', ['playing', 'paused', 'finished'])
+    .in('status', ['deal', 'playing', 'paused', 'finished'])
 
   const game = games && games.length > 0 ? games[0] : null
 
@@ -86,27 +87,53 @@ async function fetchPlayerHand(this: GameState, gameId: string, roomId: string, 
     devLog('[fetchGame] Hand lookup:', {
       hasStatePrivate: !!statePrivate,
       hasHandsInStatePrivate: !!statePrivate?.hands,
-      handsKeys: statePrivate?.hands ? Object.keys(statePrivate.hands) : [],
+      statePrivateKeys: statePrivate ? Object.keys(statePrivate) : [],
       mySeatNo,
       myUid
     })
   }
 
+  // 检测 state_private 的结构
+  // 新结构：{"0": [...], "1": [...], ...}
+  // 旧结构：{"hands": {"0": [...], ...}}
+  const isNewStructure = statePrivate && !statePrivate.hands && Object.keys(statePrivate).some(k => ['0', '1', '2', '3'].includes(k))
+
   // 练习模式回退：使用第一个可用座位
-  if (mySeatNo === undefined && statePrivate?.hands) {
-    mySeatNo = statePrivate.hands['0'] ? 0
-      : statePrivate.hands['1'] ? 1
-      : statePrivate.hands['2'] ? 2
-      : statePrivate.hands['3'] ? 3
-      : undefined
+  if (mySeatNo === undefined) {
+    if (isNewStructure) {
+      // 新结构：直接从 state_private 读取
+      mySeatNo = statePrivate['0'] ? 0
+        : statePrivate['1'] ? 1
+        : statePrivate['2'] ? 2
+        : statePrivate['3'] ? 3
+        : undefined
+    } else if (statePrivate?.hands) {
+      // 旧结构：从 state_private.hands 读取
+      mySeatNo = statePrivate.hands['0'] ? 0
+        : statePrivate.hands['1'] ? 1
+        : statePrivate.hands['2'] ? 2
+        : statePrivate.hands['3'] ? 3
+        : undefined
+    }
     if (mySeatNo !== undefined && isDev()) {
       devLog('[fetchGame] Using fallback seat_no:', mySeatNo)
     }
   }
 
   // 从 state_private 获取手牌
-  if (statePrivate?.hands && mySeatNo !== undefined) {
-    const handData = statePrivate.hands[String(mySeatNo)] || statePrivate.hands[mySeatNo]
+  if (mySeatNo !== undefined) {
+    let handData: unknown = null
+
+    if (isNewStructure) {
+      // 新结构：直接从 state_private 读取
+      handData = statePrivate[String(mySeatNo)] || statePrivate[mySeatNo]
+      if (isDev()) devLog('[fetchGame] Using new state_private structure')
+    } else if (statePrivate?.hands) {
+      // 旧结构：从 state_private.hands 读取
+      handData = statePrivate.hands[String(mySeatNo)] || statePrivate.hands[mySeatNo]
+      if (isDev()) devLog('[fetchGame] Using old state_private.hands structure')
+    }
+
     if (handData && Array.isArray(handData)) {
       myHand = handData as Card[]
       if (isDev()) devLog('[fetchGame] Got hand from state_private:', { cardsCount: myHand.length, seatNo: mySeatNo })
@@ -163,7 +190,9 @@ async function fetchPlayerHand(this: GameState, gameId: string, roomId: string, 
     this.updateHand(sortedHand)
     if (isDev()) devLog('[fetchGame] myHand 已更新')
   } else {
-    if (isDev()) devLog('[fetchGame] No hand data found for seatNo:', mySeatNo, 'state_private:', statePrivate)
+    if (isDev()) {
+      devLog('[fetchGame] No hand data found for seatNo:', mySeatNo, 'state_private keys:', statePrivate ? Object.keys(statePrivate) : 'null')
+    }
   }
 }
 
@@ -184,7 +213,19 @@ export async function startGame(this: GameState, roomId: string): Promise<void> 
  */
 export async function getAIHand(this: GameState, seatNo: number): Promise<Card[]> {
   const { gameId } = this
-  if (!gameId) return []
+
+  // 验证参数
+  if (!gameId) {
+    logger.debug('[getAIHand] gameId 为空，跳过')
+    return []
+  }
+
+  if (seatNo < 0 || seatNo > 3) {
+    logger.warn('[getAIHand] 座位号无效:', seatNo)
+    return []
+  }
+
+  logger.debug('[getAIHand] 调用 RPC:', { gameId, seatNo })
 
   const { data, error } = await supabase.rpc('get_ai_hand', {
     p_game_id: gameId,
@@ -192,7 +233,22 @@ export async function getAIHand(this: GameState, seatNo: number): Promise<Card[]
   })
 
   if (error) {
-    devError('getAIHand error:', error)
+    logger.error('[getAIHand] RPC 错误:', {
+      error,
+      gameId,
+      seatNo,
+      message: error.message,
+      details: error.details,
+      hint: error.hint
+    })
+
+    // 如果游戏不存在，返回空数组（可能游戏尚未开始）
+    if (error.message?.includes('Game not found') ||
+        error.message?.includes('游戏不存在')) {
+      logger.debug('[getAIHand] 游戏不存在，返回空数组')
+      return []
+    }
+
     return []
   }
 
