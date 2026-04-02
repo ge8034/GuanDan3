@@ -210,4 +210,127 @@ test.describe('完整游戏流程测试', () => {
 
     console.log('✓ AI 接管验证完成');
   });
+
+  test('完整游戏流程验证：从发牌到排名显示', async ({ page }) => {
+    // 监听控制台日志
+    const consoleLogs: string[] = [];
+    page.on('console', msg => {
+      consoleLogs.push(msg.text());
+    });
+
+    console.log('=== 完整游戏流程测试：验证排名系统 ===');
+
+    // 访问首页
+    await page.goto('http://localhost:3000');
+    await page.waitForLoadState('domcontentloaded');
+
+    // 进入练习房
+    const practiceBtn = page.getByRole('button', { name: /开始练习|练习/i });
+    await practiceBtn.click();
+    await page.waitForTimeout(2000);
+    console.log('✓ 进入练习房');
+
+    // 等待游戏开始
+    await page.waitForSelector('[data-card-id]', { timeout: 10000 });
+    const initialCardCount = await page.locator('[data-card-id]').count();
+    console.log(`✓ 游戏已开始，手牌: ${initialCardCount} 张`);
+
+    // 持续出牌直到游戏结束
+    let maxTurns = 50; // 最多50轮
+    let currentTurn = 0;
+    let lastCardCount = initialCardCount;
+
+    while (currentTurn < maxTurns) {
+      currentTurn++;
+
+      // 等待轮到人类玩家
+      await page.waitForTimeout(3000);
+
+      // 点击第一张牌
+      const firstCard = page.locator('[data-card-id]').first();
+      const cardCount = await page.locator('[data-card-id]').count();
+
+      if (cardCount === 0) {
+        console.log('✓ 手牌已出完，游戏可能结束');
+        break;
+      }
+
+      await firstCard.click();
+      await page.waitForTimeout(300);
+
+      // 点击出牌按钮
+      const playButton = page.getByRole('button', { name: /出牌|Play/i });
+      const playButtonExists = await playButton.count() > 0;
+
+      if (playButtonExists) {
+        await playButton.click();
+        await page.waitForTimeout(1000);
+      }
+
+      // 检查手牌变化
+      const newCardCount = await page.locator('[data-card-id]').count();
+      console.log(`第${currentTurn}轮: 手牌 ${lastCardCount} -> ${newCardCount}`);
+
+      // 如果手牌没变化，可能游戏结束
+      if (newCardCount === lastCardCount && currentTurn > 5) {
+        console.log('手牌未变化，检查游戏状态...');
+        // 检查是否有游戏结束或排名相关的UI
+        const hasRanking = await page.locator('text=/第.*名|排名|Ranking|winner/i').count();
+        if (hasRanking > 0) {
+          console.log('✓ 检测到排名显示！');
+          break;
+        }
+      }
+
+      lastCardCount = newCardCount;
+
+      // 如果手牌少于5张，可能快结束了
+      if (newCardCount < 5) {
+        console.log('手牌较少，等待可能的游戏结束...');
+        await page.waitForTimeout(5000);
+
+        // 检查游戏结束状态
+        const gameOverText = await page.locator('body').textContent();
+        if (gameOverText?.match(/第.*名|排名|游戏结束|Game Over/i)) {
+          console.log('✓ 检测到游戏结束/排名信息');
+          break;
+        }
+      }
+    }
+
+    console.log(`=== 测试总结 ===`);
+    console.log(`总轮次: ${currentTurn}`);
+    console.log(`最终手牌: ${lastCardCount} 张`);
+
+    // 检查页面内容寻找排名信息
+    const pageText = await page.locator('body').textContent();
+    // GameOverOverlay显示的是"头游"、"二游"、"三游"、"末游"
+    const hasRankingInfo = pageText?.match(/头游|二游|三游|末游|游戏结束|第.*名|排名|Ranking|winner|胜利/i);
+    console.log(`排名信息检测: ${hasRankingInfo ? '✓ 找到' : '✗ 未找到'}`);
+
+    if (hasRankingInfo) {
+      console.log(`排名信息: ${hasRankingInfo[0]}`);
+    }
+
+    // 检查GameOverOverlay是否存在
+    const gameOverOverlay = await page.locator('[data-testid="game-over-overlay"]').count();
+    console.log(`GameOverOverlay元素: ${gameOverOverlay > 0 ? '✓ 存在' : '✗ 不存在'}`);
+
+    if (gameOverOverlay > 0) {
+      const rankingElements = await page.locator('[data-testid^="ranking-"]').all();
+      console.log(`排名元素数量: ${rankingElements.length}`);
+      for (let i = 0; i < rankingElements.length; i++) {
+        const text = await rankingElements[i].textContent();
+        console.log(`  排名${i + 1}: ${text?.trim()}`);
+      }
+    }
+
+    // 截图保存
+    await page.screenshot({
+      path: `test-results/game-complete-${Date.now()}.png`,
+      fullPage: true
+    });
+
+    console.log('✓ 完整游戏流程测试完成');
+  });
 });

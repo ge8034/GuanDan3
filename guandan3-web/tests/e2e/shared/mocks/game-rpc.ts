@@ -167,6 +167,11 @@ export async function setupGameRpcMocks(
     let currentSeat = (global as any).currentSeat ?? 0;
     let turnNo = (global as any).turnNo ?? 0;
 
+    // 初始化rankings数组
+    if (!(global as any).rankings) {
+      (global as any).rankings = [];
+    }
+
     // 提取出牌信息
     const payload = postData?.p_payload || {};
     const playedCards = payload.cards || [];
@@ -185,6 +190,14 @@ export async function setupGameRpcMocks(
       console.log(
         `Updated seat 0 hand: ${currentHandCards.length} cards remaining`
       );
+
+      // 检查人类玩家是否出完牌，加入排名
+      const rankings = (global as any).rankings || [];
+      if (currentHandCards.length === 0 && !rankings.includes(currentSeat)) {
+        rankings.push(currentSeat);
+        (global as any).rankings = rankings;
+        console.log(`✅ 座位${currentSeat}出完牌，排名: ${rankings.length}`);
+      }
     } else {
       // AI玩家 (座位1-3)
       if (!(global as any).aiHands) {
@@ -224,6 +237,14 @@ export async function setupGameRpcMocks(
       console.log(
         `Updated seat ${currentSeat} AI hand: ${aiHand.length} cards remaining`
       );
+
+      // 检查AI是否出完牌，加入排名
+      const rankings = (global as any).rankings || [];
+      if (aiHand.length === 0 && !rankings.includes(currentSeat)) {
+        rankings.push(currentSeat);
+        (global as any).rankings = rankings;
+        console.log(`✅ 座位${currentSeat}出完牌，排名: ${rankings.length}`);
+      }
     }
 
     // 更新游戏状态 - 轮转到下一个座位
@@ -270,20 +291,44 @@ export async function setupGameRpcMocks(
         }
 
         let aiHand = (global as any).aiHands[simCurrentSeat];
+
+        // 如果AI手牌已经是0，加入排名并跳过
+        if (aiHand.length === 0) {
+          const rankings = (global as any).rankings || [];
+          if (!rankings.includes(simCurrentSeat)) {
+            rankings.push(simCurrentSeat);
+            (global as any).rankings = rankings;
+            console.log(`✅ 座位${simCurrentSeat}已出完牌，排名: ${rankings.length}`);
+          }
+          // 移动到下一个座位
+          simTurnNo++;
+          simCurrentSeat = (simCurrentSeat + 1) % 4;
+          continue;
+        }
+
         const cardsToPlay = Math.min(Math.floor(Math.random() * 3) + 1, aiHand.length);
         const playedCards = aiHand.slice(0, cardsToPlay);
 
         // 更新手牌
         (global as any).aiHands[simCurrentSeat] = aiHand.slice(cardsToPlay);
+        const newAiHand = (global as any).aiHands[simCurrentSeat];
+
+        // 检查AI是否出完牌，加入排名
+        const rankings = (global as any).rankings || [];
+        if (newAiHand.length === 0 && !rankings.includes(simCurrentSeat)) {
+          rankings.push(simCurrentSeat);
+          (global as any).rankings = rankings;
+          console.log(`✅ 座位${simCurrentSeat}出完牌，排名: ${rankings.length}`);
+        }
 
         // 记录本次AI出牌结果
         aiTurnResults.push({
           seatNo: simCurrentSeat,
           cardsPlayed: cardsToPlay,
-          remaining: aiHand.length - cardsToPlay
+          remaining: newAiHand.length
         });
 
-        console.log(`Mock AI ${simCurrentSeat} 出牌: ${playedCards.map((c: any) => c.val).join(',')}, 剩余: ${aiHand.length - cardsToPlay}张`);
+        console.log(`Mock AI ${simCurrentSeat} 出牌: ${playedCards.map((c: any) => c.val).join(',')}, 剩余: ${newAiHand.length}张`);
 
         // 移动到下一个座位
         simTurnNo++;
@@ -294,6 +339,10 @@ export async function setupGameRpcMocks(
       (global as any).turnNo = simTurnNo;
       (global as any).currentSeat = 0; // 轮回到人类玩家
 
+      // 检查游戏是否结束
+      const rankings = (global as any).rankings || [];
+      const gameStatus = rankings.length >= 4 ? 'finished' : 'playing';
+
       // 返回最终的游戏状态（当前座位是0，人类玩家的回合）
       await route.fulfill({
         status: 200,
@@ -302,13 +351,17 @@ export async function setupGameRpcMocks(
           {
             turn_no: simTurnNo,
             current_seat: 0, // 人类玩家的回合
-            status: 'playing',
-            rankings: [],
+            status: gameStatus,
+            rankings: rankings,
           },
         ]),
       });
       return;
     }
+
+    // 检查游戏是否结束
+    const rankings = (global as any).rankings || [];
+    const gameStatus = rankings.length >= 4 ? 'finished' : 'playing';
 
     // 返回数组格式，与实际 RPC 一致
     await route.fulfill({
@@ -318,8 +371,8 @@ export async function setupGameRpcMocks(
         {
           turn_no: turnNo,
           current_seat: currentSeat,
-          status: 'playing',
-          rankings: [],
+          status: gameStatus,
+          rankings: rankings,
         },
       ]),
     });

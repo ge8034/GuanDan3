@@ -61,7 +61,7 @@ export async function smartWaitNetworkIdle(
   const { timeout = TEST_TIMEOUTS.SLOW } = options
 
   try {
-    await page.waitForLoadState('networkidle', timeout })
+    await page.waitForLoadState('networkidle', { timeout })
   } catch (error) {
     console.log('[智能等待] 网络未完全空闲，但继续执行')
   }

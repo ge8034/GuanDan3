@@ -23,8 +23,8 @@ export async function setupGameApiMocks(
       if (url.includes('room_id=eq.')) {
         const roomId = getUrlParam(url, 'room_id');
 
-        // 只有在游戏已经通过start_game创建后才返回游戏数据
-        // 检查是否有mockGameId（由start_game RPC设置）
+        // 检查是否有 mockGameId（由 start_game RPC 设置）
+        // 注意：查询现在包含 'deal' 状态，所以即使在 'deal' 状态也会返回游戏数据
         if (!(global as any).mockGameId) {
           // 练习房还没有开始游戏，返回空数组
           console.log('[Get Games] No game started yet, returning empty');
@@ -41,9 +41,24 @@ export async function setupGameApiMocks(
         const currentSeat = (global as any).currentSeat ?? 0;
         const turnNo = (global as any).turnNo ?? 0;
 
+        // 获取排名和游戏状态
+        const rankings = (global as any).rankings || [];
+        const gameStatus = rankings.length >= 4 ? 'finished' : 'playing';
+
         console.log(
-          `[Get Games] Returning game state: currentSeat=${currentSeat}, turnNo=${turnNo}`
+          `[Get Games] Returning game state: currentSeat=${currentSeat}, turnNo=${turnNo}, status=${gameStatus}, rankings=[${rankings.join(',')}]`
         );
+
+        // 获取AI手牌
+        const aiHands = (global as any).aiHands || {};
+
+        // 计算当前手牌数量
+        const counts = [
+          currentHandCards.length,
+          (aiHands['1'] || []).length,
+          (aiHands['2'] || []).length,
+          (aiHands['3'] || []).length,
+        ];
 
         await route.fulfill({
           status: 200,
@@ -52,18 +67,21 @@ export async function setupGameApiMocks(
             {
               id: (global as any).mockGameId || generateMockId('game'),
               room_id: roomId,
-              status: 'playing',
+              status: gameStatus,
               turn_no: turnNo,
               current_seat: currentSeat,
               level_rank: 2,
               state_public: {
-                counts: [27, 27, 27, 27],
-                rankings: [],
+                counts: counts,
+                rankings: rankings,
                 levelRank: 2,
               },
               state_private: {
                 hands: {
                   '0': currentHandCards,
+                  '1': aiHands['1'] || [],
+                  '2': aiHands['2'] || [],
+                  '3': aiHands['3'] || [],
                 },
               },
               created_at: new Date().toISOString(),
