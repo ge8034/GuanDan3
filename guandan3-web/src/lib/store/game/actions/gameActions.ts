@@ -12,11 +12,12 @@ export async function fetchGame(this: GameState, roomId: string): Promise<void> 
 
   // 1. 获取活跃游戏
   // 注意：需要包含 'deal' 状态以支持练习模式的初始状态
+  // 使用 or() 代替 in() 避免400错误
   const { data: games, error: gamesError } = await supabase
     .from('games')
     .select('id,room_id,status,turn_no,current_seat,state_public,state_private,paused_by,paused_at,pause_reason')
     .eq('room_id', roomId)
-    .in('status', ['deal', 'playing', 'paused', 'finished'])
+    .or('status.in.(deal,playing,paused,finished)')
 
   const game = games && games.length > 0 ? games[0] : null
 
@@ -206,7 +207,7 @@ export async function startGame(this: GameState, roomId: string): Promise<void> 
     .from('games')
     .select('id')
     .eq('room_id', roomId)
-    .in('status', ['playing', 'deal', 'paused'])
+    .or('status.in.(playing,deal,paused)')
     .limit(1)
 
   if (existingGames && existingGames.length > 0) {
