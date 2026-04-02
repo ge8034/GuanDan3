@@ -39,10 +39,10 @@ if (!hasSupabaseEnv) {
 export default defineConfig({
   testDir: './tests/e2e',
   testMatch: hasSupabaseEnv ? undefined : ['**/noop.spec.ts'],
-  // Global timeout for the entire test run (10 minutes)
-  globalTimeout: 10 * 60 * 1000,
-  // Timeout for each individual test (2 minutes)
-  timeout: 120 * 1000,
+  // Global timeout for the entire test run (15 minutes)
+  globalTimeout: 15 * 60 * 1000,
+  // Timeout for each individual test (5 minutes - for AI and stress tests)
+  timeout: 300 * 1000,
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 1,

@@ -1,13 +1,12 @@
 import { supabase } from '@/lib/supabase/optimized-client'
 import { GameStats, PlayerStats, CardPlayStats, TeamStats, TimeStats, AchievementStats } from '@/types/game-stats'
 
-import { logger } from '@/lib/utils/logger'
 export interface GameEventData {
   game_id: string
   user_id: string
   event_type: 'card_played' | 'trick_won' | 'bomb_used' | 'rocket_used' | 'perfect_round' | 'game_end'
   timestamp: number
-  data?: Record<string, unknown>
+  data?: Record<string, any>
 }
 
 export class StatsCollectionService {
@@ -20,33 +19,11 @@ export class StatsCollectionService {
   private rocketCount = 0
   private perfectRoundCount = 0
   private gameStartTime: number = 0
-  // 功能标志：统计表是否可用（默认禁用，避免网络错误）
-  private statsEnabled = false
-  private statsChecked = false
 
   private constructor() {
     this.flushInterval = setInterval(() => {
       this.flushEvents()
     }, 5000)
-  }
-
-  // 检查统计表是否可用
-  private async checkStatsAvailability(): Promise<void> {
-    if (this.statsChecked) return
-
-    try {
-      const { error } = await supabase
-        .from('player_stats')
-        .select('id')
-        .limit(1)
-      // 如果表不存在或其他错误，禁用统计功能
-      if (error) {
-        this.statsEnabled = false
-      }
-    } catch {
-      this.statsEnabled = false
-    }
-    this.statsChecked = true
   }
 
   static getInstance(): StatsCollectionService {
@@ -83,11 +60,8 @@ export class StatsCollectionService {
   }
 
   recordCardPlay(cardId: string, cardRank: string, cardSuit: string, position: number): void {
-    // 如果统计功能已禁用，直接返回
-    if (!this.statsEnabled) return
-
     if (!this.currentGameData) {
-      logger.warn('No active game to record card play')
+      console.warn('No active game to record card play')
       return
     }
 
@@ -111,10 +85,8 @@ export class StatsCollectionService {
   }
 
   recordTrickWon(trickNumber: number, points: number): void {
-    if (!this.statsEnabled) return
-
     if (!this.currentGameData) {
-      logger.warn('No active game to record trick')
+      console.warn('No active game to record trick')
       return
     }
 
@@ -136,10 +108,8 @@ export class StatsCollectionService {
   }
 
   recordBombUsed(): void {
-    if (!this.statsEnabled) return
-
     if (!this.currentGameData) {
-      logger.warn('No active game to record bomb')
+      console.warn('No active game to record bomb')
       return
     }
 
@@ -155,10 +125,8 @@ export class StatsCollectionService {
   }
 
   recordRocketUsed(): void {
-    if (!this.statsEnabled) return
-
     if (!this.currentGameData) {
-      logger.warn('No active game to record rocket')
+      console.warn('No active game to record rocket')
       return
     }
 
@@ -174,10 +142,8 @@ export class StatsCollectionService {
   }
 
   recordPerfectRound(): void {
-    if (!this.statsEnabled) return
-
     if (!this.currentGameData) {
-      logger.warn('No active game to record perfect round')
+      console.warn('No active game to record perfect round')
       return
     }
 
@@ -194,7 +160,7 @@ export class StatsCollectionService {
 
   endGame(result: 'win' | 'lose' | 'draw', teamScore: number, opponentScore: number): void {
     if (!this.currentGameData) {
-      logger.warn('No active game to end')
+      console.warn('No active game to end')
       return
     }
 
@@ -229,79 +195,39 @@ export class StatsCollectionService {
       return
     }
 
-    // 检查统计表是否可用（延迟检查，避免影响启动）
-    if (!this.statsChecked) {
-      await this.checkStatsAvailability()
-    }
-    if (!this.statsEnabled) {
-      this.eventBuffer = []
-      return
-    }
-
     const events = [...this.eventBuffer]
     this.eventBuffer = []
 
     try {
-      const { error } = await supabase.from('game_events').insert(events)
-      if (error) {
-        logger.error('[stats] Failed to flush game events:', error)
-        // 保留事件以便重试
-        this.eventBuffer.unshift(...events)
-      }
-    } catch (error: unknown) {
-      // 只在非404/表不存在错误时才保留事件重试
-      const err = error as { message?: string; code?: string }
-      const isTableNotFound = err.message?.includes('404') ||
-                              err.message?.includes('PGRST116') ||
-                              err.message?.includes('PGRST205') ||
-                              err.message?.includes('game_events') ||
-                              err.code === 'PGRST116' ||
-                              err.code === 'PGRST205'
-      if (!isTableNotFound) {
-        logger.error('[stats] Failed to flush game events:', error)
-        this.eventBuffer.unshift(...events)
-      }
+      await supabase.from('game_events').insert(events)
+    } catch (error) {
+      console.error('Failed to flush game events:', error)
+      this.eventBuffer.unshift(...events)
     }
   }
 
   async saveGameStats(): Promise<void> {
     if (!this.currentGameData) {
-      return
-    }
-
-    // 检查统计表是否可用
-    await this.checkStatsAvailability()
-    if (!this.statsEnabled) {
-      this.currentGameData = null
+      console.warn('No game stats to save')
       return
     }
 
     try {
       const { error } = await supabase.from('game_stats').insert(this.currentGameData as GameStats)
 
-      // 如果表不存在或其他可选功能错误，静默处理
-      if (error && error.code !== 'PGRST116' && error.code !== 'PGRST205') {
-        logger.error('[stats] Failed to save game stats:', error)
-      }
-
-      await this.updatePlayerStats().catch(() => {})
-      await this.updateCardPlayStats().catch(() => {})
-      await this.updateTimeStats().catch(() => {})
-
-      this.currentGameData = null
-    } catch (error: unknown) {
-      // 在非404/表不存在错误时才抛出
-      const err = error as { message?: string; code?: string }
-      const isTableNotFound = err.message?.includes('404') ||
-                              err.message?.includes('PGRST116') ||
-                              err.message?.includes('PGRST205') ||
-                              err.code === 'PGRST116' ||
-                              err.code === 'PGRST205'
-      if (!isTableNotFound) {
-        logger.error('[stats] Failed to save game stats:', error)
+      if (error) {
+        console.error('Failed to save game stats:', error)
         throw error
       }
+
+      await this.updatePlayerStats()
+      await this.updateCardPlayStats()
+      await this.updateTimeStats()
+
       this.currentGameData = null
+    } catch (error) {
+      console.error('Failed to save game stats:', error)
+      throw error
     }
   }
 
@@ -310,94 +236,81 @@ export class StatsCollectionService {
       return
     }
 
-    try {
-      const { data: existingStats, error: queryError } = await supabase
+    const { data: existingStats } = await supabase
+      .from('player_stats')
+      .select('*')
+      .eq('user_id', this.currentGameData.user_id!)
+      .single()
+
+    const isWin = this.currentGameData.result === 'win'
+
+    if (existingStats) {
+      const totalGames = existingStats.total_games + 1
+      const wins = existingStats.wins + (isWin ? 1 : 0)
+      const losses = existingStats.losses + (isWin ? 0 : 1)
+      const draws = existingStats.draws + (this.currentGameData.result === 'draw' ? 1 : 0)
+      const winRate = (wins / totalGames) * 100
+
+      const currentStreak = isWin ? existingStats.current_win_streak + 1 : 0
+      const longestStreak = Math.max(existingStats.longest_win_streak, currentStreak)
+
+      const { error } = await supabase
         .from('player_stats')
-        .select('*')
+        .update({
+          total_games: totalGames,
+          wins,
+          losses,
+          draws,
+          win_rate: winRate,
+          total_score: existingStats.total_score + this.currentGameData.team_score!,
+          average_score: (existingStats.total_score + this.currentGameData.team_score!) / totalGames,
+          total_duration: existingStats.total_duration + this.currentGameData.duration,
+          average_duration: (existingStats.total_duration + this.currentGameData.duration) / totalGames,
+          total_cards_played: existingStats.total_cards_played + (this.currentGameData.cards_played || 0),
+          total_tricks_won: existingStats.total_tricks_won + (this.currentGameData.tricks_won || 0),
+          total_bombs_used: existingStats.total_bombs_used + (this.currentGameData.bombs_used || 0),
+          total_rockets_used: existingStats.total_rockets_used + (this.currentGameData.rockets_used || 0),
+          perfect_games: existingStats.perfect_games + (this.currentGameData.perfect_rounds! > 0 ? 1 : 0),
+          longest_win_streak: longestStreak,
+          current_win_streak: currentStreak,
+          updated_at: new Date().toISOString()
+        })
         .eq('user_id', this.currentGameData.user_id!)
-        .maybeSingle()
 
-      // 如果表不存在或其他错误（可选统计表），静默返回
-      if (queryError) {
-        return
+      if (error) {
+        console.error('Failed to update player stats:', error)
       }
+    } else {
+      const winRate = isWin ? 100 : 0
+      const { error } = await supabase
+        .from('player_stats')
+        .insert({
+          id: crypto.randomUUID(),
+          user_id: this.currentGameData.user_id!,
+          total_games: 1,
+          wins: isWin ? 1 : 0,
+          losses: isWin ? 0 : 1,
+          draws: this.currentGameData.result === 'draw' ? 1 : 0,
+          win_rate: winRate,
+          total_score: this.currentGameData.team_score!,
+          average_score: this.currentGameData.team_score!,
+          total_duration: this.currentGameData.duration,
+          average_duration: this.currentGameData.duration,
+          total_cards_played: this.currentGameData.cards_played || 0,
+          total_tricks_won: this.currentGameData.tricks_won || 0,
+          total_bombs_used: this.currentGameData.bombs_used || 0,
+          total_rockets_used: this.currentGameData.rockets_used || 0,
+          perfect_games: this.currentGameData.perfect_rounds! > 0 ? 1 : 0,
+          longest_win_streak: isWin ? 1 : 0,
+          current_win_streak: isWin ? 1 : 0,
+          rank_points: 1000,
+          rank: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
 
-      const isWin = this.currentGameData.result === 'win'
-
-      if (existingStats) {
-        const totalGames = existingStats.total_games + 1
-        const wins = existingStats.wins + (isWin ? 1 : 0)
-        const losses = existingStats.losses + (isWin ? 0 : 1)
-        const draws = existingStats.draws + (this.currentGameData.result === 'draw' ? 1 : 0)
-        const winRate = (wins / totalGames) * 100
-
-        const currentStreak = isWin ? existingStats.current_win_streak + 1 : 0
-        const longestStreak = Math.max(existingStats.longest_win_streak, currentStreak)
-
-        const { error } = await supabase
-          .from('player_stats')
-          .update({
-            total_games: totalGames,
-            wins,
-            losses,
-            draws,
-            win_rate: winRate,
-            total_score: existingStats.total_score + this.currentGameData.team_score!,
-            average_score: (existingStats.total_score + this.currentGameData.team_score!) / totalGames,
-            total_duration: existingStats.total_duration + this.currentGameData.duration,
-            average_duration: (existingStats.total_duration + this.currentGameData.duration) / totalGames,
-            total_cards_played: existingStats.total_cards_played + (this.currentGameData.cards_played || 0),
-            total_tricks_won: existingStats.total_tricks_won + (this.currentGameData.tricks_won || 0),
-            total_bombs_used: existingStats.total_bombs_used + (this.currentGameData.bombs_used || 0),
-            total_rockets_used: existingStats.total_rockets_used + (this.currentGameData.rockets_used || 0),
-            perfect_games: existingStats.perfect_games + (this.currentGameData.perfect_rounds! > 0 ? 1 : 0),
-            longest_win_streak: longestStreak,
-            current_win_streak: currentStreak,
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', this.currentGameData.user_id!)
-
-        if (error && error.code !== 'PGRST116') {
-          logger.error('Failed to update player stats:', error)
-        }
-      } else {
-        const winRate = isWin ? 100 : 0
-        const { error } = await supabase
-          .from('player_stats')
-          .insert({
-            id: crypto.randomUUID(),
-            user_id: this.currentGameData.user_id!,
-            total_games: 1,
-            wins: isWin ? 1 : 0,
-            losses: isWin ? 0 : 1,
-            draws: this.currentGameData.result === 'draw' ? 1 : 0,
-            win_rate: winRate,
-            total_score: this.currentGameData.team_score!,
-            average_score: this.currentGameData.team_score!,
-            total_duration: this.currentGameData.duration,
-            average_duration: this.currentGameData.duration,
-            total_cards_played: this.currentGameData.cards_played || 0,
-            total_tricks_won: this.currentGameData.tricks_won || 0,
-            total_bombs_used: this.currentGameData.bombs_used || 0,
-            total_rockets_used: this.currentGameData.rockets_used || 0,
-            perfect_games: this.currentGameData.perfect_rounds! > 0 ? 1 : 0,
-            longest_win_streak: isWin ? 1 : 0,
-            current_win_streak: isWin ? 1 : 0,
-            rank_points: 1000,
-            rank: 0,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
-
-        if (error && error.code !== 'PGRST116') {
-          logger.error('Failed to create player stats:', error)
-        }
-      }
-    } catch (error: unknown) {
-      // 静默忽略表不存在的错误
-      const err = error as { message?: string; code?: string }
-      if (!err.message?.includes('PGRST116') && err.code !== 'PGRST116') {
-        logger.error('Failed to update player stats:', error)
+      if (error) {
+        console.error('Failed to create player stats:', error)
       }
     }
   }
@@ -407,36 +320,31 @@ export class StatsCollectionService {
       return
     }
 
-    try {
-      const updates = Array.from(this.cardPlayCounts.entries()).map(([key, count]) => {
-        const [cardRank, cardSuit] = key.split('_')
-        return {
-          user_id: this.currentGameData?.user_id || '',
-          card_rank: cardRank,
-          card_suit: cardSuit,
-          play_count: count,
-          win_count: Math.floor(count * 0.5),
-          lose_count: Math.floor(count * 0.5),
-          win_rate: 50,
-          average_position: Math.random() * 10 + 1,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
-      })
+    const updates = Array.from(this.cardPlayCounts.entries()).map(([key, count]) => {
+      const [cardRank, cardSuit] = key.split('_')
+      return {
+        user_id: this.currentGameData?.user_id || '',
+        card_rank: cardRank,
+        card_suit: cardSuit,
+        play_count: count,
+        win_count: Math.floor(count * 0.5),
+        lose_count: Math.floor(count * 0.5),
+        win_rate: 50,
+        average_position: Math.random() * 10 + 1,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    })
 
+    try {
       for (const update of updates) {
-        const { data: existing, error: queryError } = await supabase
+        const { data: existing } = await supabase
           .from('card_play_stats')
           .select('*')
           .eq('user_id', update.user_id)
           .eq('card_rank', update.card_rank)
           .eq('card_suit', update.card_suit)
-          .maybeSingle()
-
-        // 如果表不存在或返回406（可选统计表），跳过
-        if (queryError && (queryError.code === 'PGRST116' || queryError.message?.includes('406'))) {
-          return
-        }
+          .single()
 
         if (existing) {
           await supabase
@@ -458,12 +366,8 @@ export class StatsCollectionService {
             })
         }
       }
-    } catch (error: unknown) {
-      // 静默忽略表不存在的错误
-      const err = error as { message?: string; code?: string }
-      if (!err.message?.includes('PGRST116') && err.code !== 'PGRST116') {
-        logger.error('Failed to update card play stats:', error)
-      }
+    } catch (error) {
+      console.error('Failed to update card play stats:', error)
     }
   }
 
@@ -472,68 +376,55 @@ export class StatsCollectionService {
       return
     }
 
-    try {
-      const now = new Date()
-      const hour = now.getHours()
-      const dayOfWeek = now.getDay()
+    const now = new Date()
+    const hour = now.getHours()
+    const dayOfWeek = now.getDay()
 
-      const { data: existing, error: queryError } = await supabase
+    const { data: existing } = await supabase
+      .from('time_stats')
+      .select('*')
+      .eq('user_id', this.currentGameData.user_id!)
+      .eq('hour', hour)
+      .eq('day_of_week', dayOfWeek)
+      .single()
+
+    const isWin = this.currentGameData.result === 'win'
+
+    if (existing) {
+      const gamesPlayed = existing.games_played + 1
+      const wins = existing.wins + (isWin ? 1 : 0)
+      const losses = existing.losses + (isWin ? 0 : 1)
+      const winRate = (wins / gamesPlayed) * 100
+
+      await supabase
         .from('time_stats')
-        .select('*')
-        .eq('user_id', this.currentGameData.user_id!)
-        .eq('hour', hour)
-        .eq('day_of_week', dayOfWeek)
-        .maybeSingle()
-
-      // 如果表不存在或其他错误（可选统计表），静默返回
-      if (queryError) {
-        return
-      }
-
-      const isWin = this.currentGameData.result === 'win'
-
-      if (existing) {
-        const gamesPlayed = existing.games_played + 1
-        const wins = existing.wins + (isWin ? 1 : 0)
-        const losses = existing.losses + (isWin ? 0 : 1)
-        const winRate = (wins / gamesPlayed) * 100
-
-        await supabase
-          .from('time_stats')
-          .update({
-            games_played: gamesPlayed,
-            wins,
-            losses,
-            win_rate: winRate,
-            average_score: (existing.total_score + this.currentGameData.team_score!) / gamesPlayed,
-            total_duration: existing.total_duration + this.currentGameData.duration,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', existing.id)
-      } else {
-        await supabase
-          .from('time_stats')
-          .insert({
-            id: crypto.randomUUID(),
-            user_id: this.currentGameData.user_id!,
-            hour,
-            day_of_week: dayOfWeek,
-            games_played: 1,
-            wins: isWin ? 1 : 0,
-            losses: isWin ? 0 : 1,
-            win_rate: isWin ? 100 : 0,
-            average_score: this.currentGameData.team_score || 0,
-            total_duration: this.currentGameData.duration || 0,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
-      }
-    } catch (error: unknown) {
-      // 静默忽略表不存在的错误
-      const err = error as { message?: string; code?: string }
-      if (!err.message?.includes('PGRST116') && err.code !== 'PGRST116') {
-        logger.error('Failed to update time stats:', error)
-      }
+        .update({
+          games_played: gamesPlayed,
+          wins,
+          losses,
+          win_rate: winRate,
+          average_score: (existing.total_score + this.currentGameData.team_score!) / gamesPlayed,
+          total_duration: existing.total_duration + this.currentGameData.duration,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existing.id)
+    } else {
+      await supabase
+        .from('time_stats')
+        .insert({
+          id: crypto.randomUUID(),
+          user_id: this.currentGameData.user_id!,
+          hour,
+          day_of_week: dayOfWeek,
+          games_played: 1,
+          wins: isWin ? 1 : 0,
+          losses: isWin ? 0 : 1,
+          win_rate: isWin ? 100 : 0,
+          average_score: this.currentGameData.team_score || 0,
+          total_duration: this.currentGameData.duration || 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
     }
   }
 

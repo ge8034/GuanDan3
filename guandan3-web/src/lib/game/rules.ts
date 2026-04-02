@@ -1,4 +1,5 @@
 import { Card } from '@/lib/store/game'
+import { JOKER_VALUES, LEVEL_CARD_VALUES, BOMB_VALUES, HAND_LENGTHS } from './rules-constants'
 
 /**
  * 牌型类型
@@ -29,6 +30,154 @@ export interface Move {
 }
 
 /**
+ * 卡牌值统计接口
+ *
+ * 用于存储和分析卡牌值的出现次数
+ */
+interface CardValueCounts {
+  /** 原始值（val）出现次数映射 */
+  counts: Record<number, number>
+  /** 唯一原始值数组 */
+  uniqueValues: number[]
+  /** 排序后的原始值数组 */
+  sortedValues: number[]
+}
+
+/**
+ * 统计卡牌值出现次数
+ *
+ * @param rawVals - 原始卡牌值数组
+ * @returns 卡牌值统计对象
+ * 
+ * @example
+ * \`\`\`ts
+ * countCardValues([3, 3, 5, 5, 5])
+ * // 返回 { counts: { 3: 2, 5: 3 }, uniqueValues: [3, 5], sortedValues: [3, 3, 5, 5, 5] }
+ * \`\`\`
+ */
+function countCardValues(rawVals: number[]): CardValueCounts {
+  const counts: Record<number, number> = {}
+  for (const v of rawVals) {
+    counts[v] = (counts[v] || 0) + 1
+  }
+  const uniqueValues = Array.from(new Set(rawVals))
+  const sortedValues = [...rawVals].sort((a, b) => a - b)
+  
+  return { counts, uniqueValues, sortedValues }
+}
+
+/**
+ * 检查数组是否为连续序列
+ *
+ * @param values - 已排序的数值数组
+ * @returns 是否为连续序列
+ */
+function isConsecutive(values: number[]): boolean {
+  for (let i = 1; i < values.length; i++) {
+    if (values[i] !== values[i - 1] + 1) {
+      return false
+    }
+  }
+  return true
+}
+
+/**
+ * 判断是否为有效顺子
+ *
+ * @param uniqueRawVals - 唯一原始值数组（已排序）
+ * @param rawVals - 原始值数组（已排序）
+ * @param cardCount - 总卡牌数
+ * @returns 是否为有效顺子
+ */
+function isValidStraight(uniqueRawVals: number[], rawVals: number[], cardCount: number): boolean {
+  if (cardCount < HAND_LENGTHS.MIN_STRAIGHT) return false
+  if (uniqueRawVals.length !== cardCount) return false
+  if (!isConsecutive(uniqueRawVals)) return false
+  
+  // 顺子不能包含2和王
+  return rawVals.every((v) => v !== 15 && v !== 17)
+}
+
+/**
+ * 判断是否为有效连对
+ *
+ * @param counts - 原始值统计对象
+ * @param cardCount - 总卡牌数
+ * @returns 连对的最大值，无效返回 null
+ */
+function getSequencePairsMaxValue(counts: CardValueCounts, cardCount: number): number | null {
+  if (cardCount < HAND_LENGTHS.MIN_SEQUENCE_PAIRS * 2 || cardCount % 2 !== 0) {
+    return null
+  }
+  
+  // 找出所有出现2次的值
+  const pairVals = counts.uniqueValues
+    .filter((v) => counts.counts[v] === 2)
+    .sort((a, b) => a - b)
+  
+  if (pairVals.length < HAND_LENGTHS.MIN_SEQUENCE_PAIRS || pairVals.length * 2 !== cardCount) {
+    return null
+  }
+  
+  if (!isConsecutive(pairVals)) {
+    return null
+  }
+  
+  return pairVals[pairVals.length - 1]
+}
+
+/**
+ * 判断是否为有效连三（飞机不带翅膀）
+ *
+ * @param counts - 原始值统计对象
+ * @param cardCount - 总卡牌数
+ * @returns 连三的最大值，无效返回 null
+ */
+function getSequenceTriplesMaxValue(counts: CardValueCounts, cardCount: number): number | null {
+  if (cardCount < HAND_LENGTHS.MIN_SEQUENCE_TRIPLES * 3 || cardCount % 3 !== 0) {
+    return null
+  }
+  
+  // 找出所有出现3次的值
+  const tripleVals = counts.uniqueValues
+    .filter((v) => counts.counts[v] === 3)
+    .sort((a, b) => a - b)
+  
+  if (tripleVals.length < HAND_LENGTHS.MIN_SEQUENCE_TRIPLES || tripleVals.length * 3 !== cardCount) {
+    return null
+  }
+  
+  if (!isConsecutive(tripleVals)) {
+    return null
+  }
+  
+  return tripleVals[tripleVals.length - 1]
+}
+
+/**
+ * 判断是否为有效三带二
+ *
+ * @param counts - 原始值统计对象
+ * @param cards - 卡牌数组
+ * @param levelRank - 级牌点数
+ * @returns 三带二的主值，无效返回 null
+ */
+function getFullHousePrimaryValue(counts: CardValueCounts, cards: Card[], levelRank: number): number | null {
+  const countValues = Object.values(counts.counts)
+  
+  // 必须恰好有3张相同和2张相同
+  if (!countValues.includes(3) || !countValues.includes(2) || countValues.length !== 2) {
+    return null
+  }
+  
+  // 找到三张的值
+  const tripleVal = counts.uniqueValues.find((v) => counts.counts[v] === 3)
+  if (!tripleVal) return null
+  
+  const tripleCards = cards.filter((c) => c.val === tripleVal)
+  return getCardValue(tripleCards[0], levelRank)
+}
+/**
  * 获取卡牌在掼蛋规则中的有效值
  *
  * 根据掼蛋规则计算卡牌的强度值：
@@ -41,22 +190,22 @@ export interface Move {
  * @returns 卡牌有效值
  *
  * @example
- * ```ts
+ * \`\`\`ts
  * getCardValue({ suit: 'J', rank: 'hr', val: 17 }, 15) // 返回 200（红王）
  * getCardValue({ suit: 'H', rank: '15', val: 15 }, 15) // 返回 60（红桃级牌）
  * getCardValue({ suit: 'S', rank: 'A', val: 14 }, 15)   // 返回 14（普通A）
- * ```
+ * \`\`\`
  */
 export function getCardValue(card: Card, levelRank: number): number {
   // 大小王
   if (card.suit === 'J') {
-    return card.rank === 'hr' ? 200 : 100
+    return card.rank === 'hr' ? JOKER_VALUES.RED : JOKER_VALUES.BLACK
   }
 
   // 级牌 - 大于A（掼蛋核心规则）
   if (card.val === levelRank) {
     // 红桃级牌逢人配，值最大
-    return card.suit === 'H' ? 60 : 50
+    return card.suit === 'H' ? LEVEL_CARD_VALUES.RED_LEVEL : LEVEL_CARD_VALUES.NORMAL
   }
 
   // 普通牌：A=14, K=13, ..., 2=2
@@ -74,7 +223,7 @@ export function getCardValue(card: Card, levelRank: number): number {
  * @returns 出牌动作对象，无效牌型返回 null
  *
  * @example
- * ```ts
+ * \`\`\`ts
  * // 单张
  * analyzeMove([{ id: 101, val: 14, suit: 'S', rank: 'A' }], 15)
  * // 返回 { type: 'single', cards: [...], primaryValue: 14 }
@@ -94,7 +243,7 @@ export function getCardValue(card: Card, levelRank: number): number {
  *   { id: 415, val: 15, suit: 'D', rank: '15' }
  * ], 15)
  * // 返回 { type: 'bomb', cards: [...], primaryValue: 50 }
- * ```
+ * \`\`\`
  *
  * @remarks
  * 牌型识别规则：
@@ -108,18 +257,17 @@ export function getCardValue(card: Card, levelRank: number): number {
  * - 炸弹：4 张相同点数 或 4 张王
  */
 export function analyzeMove(cards: Card[], levelRank: number): Move | null {
-  if (cards.length === 0) return { type: 'pass', cards: [], primaryValue: 0 }
+  if (cards.length === 0) {
+    return { type: 'pass', cards: [], primaryValue: 0 }
+  }
 
-  const values = cards
-    .map((c) => getCardValue(c, levelRank))
-    .sort((a, b) => a - b)
-  const uniqueValues = Array.from(new Set(values))
-  const rawVals = cards.map((c) => c.val).sort((a, b) => a - b)
-  const uniqueRawVals = Array.from(new Set(rawVals))
-  const ranks = cards.map((c) => c.rank)
-  const uniqueRanks = Array.from(new Set(ranks))
+  // 提前计算常用数据
+  const rawVals = cards.map((c) => c.val)
+  const counts = countCardValues(rawVals)
+  const values = cards.map((c) => getCardValue(c, levelRank)).sort((a, b) => a - b)
   const hasJoker = cards.some((c) => c.suit === 'J')
   const hasLevel = cards.some((c) => c.val === levelRank)
+  const uniqueRawValsCount = counts.uniqueValues.length
 
   // ========== 单张 ==========
   if (cards.length === 1) {
@@ -127,133 +275,73 @@ export function analyzeMove(cards: Card[], levelRank: number): Move | null {
   }
 
   // ========== 对子 ==========
-  // 使用原始值判断是否相同（级牌对子：红桃级牌+其他花色级牌=有效对子）
-  if (cards.length === 2 && uniqueRawVals.length === 1) {
+  if (cards.length === 2 && uniqueRawValsCount === 1) {
     // 级牌对子使用最大值（逢人配的红桃级牌）
-    const isLevelPair = rawVals[0] === levelRank
-    const primaryValue = isLevelPair ? values[values.length - 1] : values[0]
+    const primaryValue = rawVals[0] === levelRank
+      ? values[values.length - 1]
+      : values[0]
     return { type: 'pair', cards, primaryValue }
   }
 
   // ========== 三张 ==========
-  // 使用原始值判断是否相同
-  if (cards.length === 3 && uniqueRawVals.length === 1) {
+  if (cards.length === 3 && uniqueRawValsCount === 1) {
     // 级牌三张使用最大值（逢人配的红桃级牌）
-    const isLevelTriple = rawVals[0] === levelRank
-    const primaryValue = isLevelTriple ? values[values.length - 1] : values[0]
+    const primaryValue = rawVals[0] === levelRank
+      ? values[values.length - 1]
+      : values[0]
     return { type: 'triple', cards, primaryValue }
   }
 
-  // ========== 炸弹检测（4张王，最大炸弹）==========
+  // ========== 炸弹检测 ==========
+  // 王炸（4张王，最大炸弹）
   if (cards.length === 4 && hasJoker && !hasLevel) {
-    return { type: 'bomb', cards, primaryValue: 10000 }
+    return { type: 'bomb', cards, primaryValue: BOMB_VALUES.JOKER_BOMB }
   }
-
-  // 炸弹检测（级牌炸弹：4张级牌，红桃级牌+其他花色级牌+其他两张级牌）
-  // 级牌炸弹优先检查，因为级牌炸弹的优先级高于普通炸弹
-  if (cards.length >= 4 && hasLevel && uniqueRawVals.length === 1) {
-    // 级牌炸弹 = 5000 * 张数 + 主值
-    const primaryValue = 5000 * cards.length + values[values.length - 1]
+  
+  // 级牌炸弹（优先于普通炸弹检查）
+  if (cards.length >= 4 && hasLevel && uniqueRawValsCount === 1) {
+    const primaryValue = BOMB_VALUES.LEVEL_BASE * cards.length + values[values.length - 1]
+    return { type: 'bomb', cards, primaryValue }
+  }
+  
+  // 普通炸弹（4张及以上相同）
+  if (cards.length >= 4 && uniqueRawValsCount === 1) {
+    const primaryValue = BOMB_VALUES.NORMAL_BASE * cards.length + values[values.length - 1]
     return { type: 'bomb', cards, primaryValue }
   }
 
-  // 炸弹检测（4张及以上相同）
-  if (cards.length >= 4 && uniqueRawVals.length === 1) {
-    // 普通炸弹 = 1000 * 张数 + 主值
-    const primaryValue = 1000 * cards.length + values[values.length - 1]
-    return { type: 'bomb', cards, primaryValue }
-  }
-
-  // ========== 三带二（3张相同+2张相同）==========
+  // ========== 三带二 ==========
   if (cards.length === 5) {
-    const counts: Record<number, number> = {}
-    for (const v of rawVals) counts[v] = (counts[v] || 0) + 1
-    const countValues = Object.values(counts)
-
-    // 检查是否有3张相同和2张相同（必须恰好这两种模式）
-    if (countValues.includes(3) && countValues.includes(2) && countValues.length === 2) {
-      const tripleVal = Object.keys(counts).find((v) => counts[Number(v)] === 3)
-      if (tripleVal) {
-        const tripleCards = cards.filter((c) => c.val === Number(tripleVal))
-        return {
-          type: 'fullhouse',
-          cards,
-          primaryValue: getCardValue(tripleCards[0], levelRank),
-        }
-      }
+    const primaryValue = getFullHousePrimaryValue(counts, cards, levelRank)
+    if (primaryValue !== null) {
+      return { type: 'fullhouse', cards, primaryValue }
     }
   }
 
-  // ========== 连对（飞机带翅膀）==========
-  if (cards.length >= 6 && cards.length % 2 === 0) {
-    const pairCounts: Record<number, number> = {}
-    for (const v of rawVals) pairCounts[v] = (pairCounts[v] || 0) + 1
-    const pairVals = Object.keys(pairCounts)
-      .map((v) => Number(v))
-      .filter((v) => pairCounts[v] === 2)
-      .sort((a, b) => a - b)
-
-    if (pairVals.length >= 3 && pairVals.length * 2 === cards.length) {
-      let isSeq = true
-      for (let i = 1; i < pairVals.length; i++) {
-        if (pairVals[i] !== pairVals[i - 1] + 1) {
-          isSeq = false
-          break
-        }
-      }
-      if (isSeq) {
-        return {
-          type: 'sequencePairs',
-          cards,
-          primaryValue: pairVals[pairVals.length - 1],
-        }
-      }
-    }
+  // ========== 连对 ==========
+  const sequencePairsMaxValue = getSequencePairsMaxValue(counts, cards.length)
+  if (sequencePairsMaxValue !== null) {
+    return { type: 'sequencePairs', cards, primaryValue: sequencePairsMaxValue }
   }
 
-  // ========== 飞机（连续三张，不带翅膀）==========
-  if (cards.length >= 6 && cards.length % 3 === 0) {
-    const tripleCounts: Record<number, number> = {}
-    for (const v of rawVals) tripleCounts[v] = (tripleCounts[v] || 0) + 1
-    const tripleVals = Object.keys(tripleCounts)
-      .map((v) => Number(v))
-      .filter((v) => tripleCounts[v] === 3)
-      .sort((a, b) => a - b)
-
-    if (tripleVals.length >= 2 && tripleVals.length * 3 === cards.length) {
-      let isSeq = true
-      for (let i = 1; i < tripleVals.length; i++) {
-        if (tripleVals[i] !== tripleVals[i - 1] + 1) {
-          isSeq = false
-          break
-        }
-      }
-      if (isSeq) {
-        return {
-          type: 'sequenceTriples',
-          cards,
-          primaryValue: tripleVals[tripleVals.length - 1],
-        }
-      }
-    }
+  // ========== 连三（飞机不带翅膀）==========
+  const sequenceTriplesMaxValue = getSequenceTriplesMaxValue(counts, cards.length)
+  if (sequenceTriplesMaxValue !== null) {
+    return { type: 'sequenceTriples', cards, primaryValue: sequenceTriplesMaxValue }
   }
 
-  // ========== 顺子（5张及以上连续，不能包含2和王）==========
-  if (cards.length >= 5 && !hasJoker) {
-    // 顺子必须所有牌的值都不同
-    const allUnique = uniqueRawVals.length === cards.length
-    const isSeq = uniqueRawVals.every((v, i) => i === 0 || v === rawVals[i - 1] + 1)
-    const noTwoOrBigTwo = rawVals.every((v) => v !== 15 && v !== 17)
-    if (allUnique && isSeq && noTwoOrBigTwo) {
-      // 顺子的primaryValue使用最大牌的原始值，不使用级牌特殊值
-      // 这样可以正确比较顺子大小
-      return { type: 'straight', cards, primaryValue: rawVals[rawVals.length - 1] }
+  // ========== 顺子 ==========
+  if (!hasJoker && isValidStraight(counts.uniqueValues, counts.sortedValues, cards.length)) {
+    // 顺子的primaryValue使用最大牌的原始值，不使用级牌特殊值
+    return { 
+      type: 'straight', 
+      cards, 
+      primaryValue: counts.sortedValues[counts.sortedValues.length - 1] 
     }
   }
 
   return null
 }
-
 /**
  * 判断出牌 A 是否能压过出牌 B
  *
@@ -267,7 +355,7 @@ export function analyzeMove(cards: Card[], levelRank: number): Move | null {
  * @returns 是否可以压过
  *
  * @example
- * ```ts
+ * \`\`\`ts
  * const myPair = { type: 'pair', cards: [...], primaryValue: 15 }
  * const theirPair = { type: 'pair', cards: [...], primaryValue: 14 }
  * canBeat(myPair, theirPair) // 返回 true（15 对子压 14 对子）
@@ -275,7 +363,7 @@ export function analyzeMove(cards: Card[], levelRank: number): Move | null {
  * const myBomb = { type: 'bomb', cards: [...], primaryValue: 50 }
  * const theirStraight = { type: 'straight', cards: [...], primaryValue: 14 }
  * canBeat(myBomb, theirStraight) // 返回 true（炸弹压顺子）
- * ```
+ * \`\`\`
  */
 export function canBeat(moveA: Move, moveB: Move): boolean {
   if (moveA.type === 'pass') return false

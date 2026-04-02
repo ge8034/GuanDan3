@@ -1,4 +1,5 @@
 import { Card } from '@/lib/store/game'
+import { TRIBUTE_THRESHOLDS } from './rules-constants'
 import { getCardValue } from './rules'
 
 export interface TributeResult {
@@ -64,7 +65,7 @@ export function analyzeResistCapability(hand: Card[], levelRank: number): Resist
   const sortedCards = nonJokerCards.sort((a, b) => b.val - a.val)
   const bestCard = sortedCards[0]
 
-  if (bestCard.val >= 14) { // A or higher
+  if (bestCard.val >= TRIBUTE_THRESHOLDS.AGGRESSIVE_CARD) { // A or higher
     return {
       canResist: true,
       reason: '最大进贡牌为A或更大，建议抗贡',
@@ -72,8 +73,8 @@ export function analyzeResistCapability(hand: Card[], levelRank: number): Resist
     }
   }
 
-  const highCards = nonJokerCards.filter(card => card.val >= 10)
-  if (highCards.length >= 3) {
+  const highCards = nonJokerCards.filter(card => card.val >= TRIBUTE_THRESHOLDS.MEDIUM_HIGH_CARD)
+  if (highCards.length >= TRIBUTE_THRESHOLDS.HIGH_CARD_COUNT) {
     return {
       canResist: true,
       reason: '有3张以上大牌（10及以上），建议抗贡',
@@ -81,8 +82,8 @@ export function analyzeResistCapability(hand: Card[], levelRank: number): Resist
     }
   }
 
-  const veryHighCards = nonJokerCards.filter(card => card.val >= 12) // Q and above
-  if (veryHighCards.length >= 2) {
+  const veryHighCards = nonJokerCards.filter(card => card.val >= TRIBUTE_THRESHOLDS.HIGH_CARD) // Q and above
+  if (veryHighCards.length >= TRIBUTE_THRESHOLDS.VERY_HIGH_CARD_COUNT) {
     return {
       canResist: true,
       reason: '有2张以上大牌（Q及以上），可以抗贡',
@@ -110,7 +111,7 @@ export function findBestTributeCard(hand: Card[], levelRank: number): Card | nul
     if (card.suit === 'J') return false
     // 级牌可以进贡（新规则）
     // 进贡牌必须>=10（新规则）
-    if (card.val < 10) return false
+    if (card.val < TRIBUTE_THRESHOLDS.MIN_CARD_VALUE) return false
     return true
   })
 
@@ -307,7 +308,7 @@ export function validateTributeCard(
   }
 
   // 进贡牌必须>=10
-  if (card.val < 10) {
+  if (card.val < TRIBUTE_THRESHOLDS.MIN_CARD_VALUE) {
     return { valid: false, reason: '进贡牌必须大于等于10' }
   }
 

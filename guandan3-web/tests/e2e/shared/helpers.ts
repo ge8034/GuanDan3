@@ -2,10 +2,123 @@
  * E2E测试共享工具函数
  */
 
-import type { Page } from '@playwright/test'
+import type { Page, Locator } from '@playwright/test'
 import type { MockCard, MockAuthUser, MockGameHand, MockGame, MockRoom, MockRoomMember } from './types'
 import { MOCK_HAND_CARDS } from './mock-data'
 import { PLAYER_SEAT } from './types'
+
+/**
+ * 智能等待游戏进展
+ * 等待手牌数量变化或游戏结束，避免固定等待时间
+ *
+ * @param page - Playwright页面对象
+ * @param options - 配置选项
+ * @returns Promise<{progressMade: boolean, gameEnded: boolean, cardCount: number}>
+ */
+export async function waitForGameProgress(
+  page: Page,
+  options: {
+    maxWaitTime?: number // 最大等待时间（毫秒），默认60000ms
+    checkInterval?: number // 检查间隔（毫秒），默认2000ms
+    previousCardCount?: number // 之前的卡牌数量
+  } = {}
+): Promise<{ progressMade: boolean; gameEnded: boolean; cardCount: number }> {
+  const {
+    maxWaitTime = 60000,
+    checkInterval = 2000,
+    previousCardCount = 27,
+  } = options
+
+  const startTime = Date.now()
+  let currentCardCount = previousCardCount
+
+  while (Date.now() - startTime < maxWaitTime) {
+    // 检查游戏是否结束
+    const hasRanking = await page.locator('[data-testid="ranking-display"]').isVisible().catch(() => false)
+    if (hasRanking) {
+      return { progressMade: true, gameEnded: true, cardCount: currentCardCount }
+    }
+
+    // 检查手牌数量
+    currentCardCount = await page.locator('[data-card-id]').count()
+
+    // 如果手牌数量有变化，说明有进展
+    if (currentCardCount !== previousCardCount) {
+      return { progressMade: true, gameEnded: false, cardCount: currentCardCount }
+    }
+
+    // 等待一段时间后再次检查
+    await page.waitForTimeout(checkInterval)
+  }
+
+  // 超时返回当前状态
+  return { progressMade: false, gameEnded: false, cardCount: currentCardCount }
+}
+
+/**
+ * 智能等待AI出牌
+ * 通过检测手牌数量变化来判断AI是否出牌，避免固定等待
+ *
+ * @param page - Playwright页面对象
+ * @param options - 配置选项
+ * @returns Promise<boolean> - AI是否成功出牌
+ */
+export async function waitForAIPlay(
+  page: Page,
+  options: {
+    maxWaitTime?: number // 最大等待时间（毫秒），默认30000ms
+    checkInterval?: number // 检查间隔（毫秒），默认1500ms
+  } = {}
+): Promise<boolean> {
+  const { maxWaitTime = 30000, checkInterval = 1500 } = options
+
+  const previousCardCount = await page.locator('[data-card-id]').count()
+  const result = await waitForGameProgress(page, {
+    maxWaitTime,
+    checkInterval,
+    previousCardCount,
+  })
+
+  return result.progressMade
+}
+
+/**
+ * 智能等待游戏结束
+ * 检测排行榜或游戏结束文本
+ *
+ * @param page - Playwright页面对象
+ * @param options - 配置选项
+ * @returns Promise<boolean> - 游戏是否结束
+ */
+export async function waitForGameEnd(
+  page: Page,
+  options: {
+    maxWaitTime?: number // 最大等待时间（毫秒），默认120000ms
+    checkInterval?: number // 检查间隔（毫秒），默认3000ms
+  } = {}
+): Promise<boolean> {
+  const { maxWaitTime = 120000, checkInterval = 3000 } = options
+
+  const startTime = Date.now()
+
+  while (Date.now() - startTime < maxWaitTime) {
+    // 检查排行榜
+    const hasRanking = await page.locator('[data-testid="ranking-display"]').isVisible().catch(() => false)
+    if (hasRanking) {
+      return true
+    }
+
+    // 检查游戏结束文本
+    const hasGameOverText = await page.getByText(/游戏结束|Game Over|获胜/i).isVisible().catch(() => false)
+    if (hasGameOverText) {
+      return true
+    }
+
+    await page.waitForTimeout(checkInterval)
+  }
+
+  return false
+}
 
 /**
  * 创建mock JWT token

@@ -140,9 +140,17 @@ describe('AI 系统集成测试', () => {
         { id: 5, suit: 'S' as const, rank: '7', val: 7 }
       ]
 
-      const move = analyzeMove(hand, 10)
-      const strength = calculateHandStrength(hand.length, move?.primaryValue || 0, move?.type || 'single')
-      
+      // 使用单张牌进行测试（这是最简单的有效牌型）
+      const singleCard = [hand[0]]
+      const move = analyzeMove(singleCard, 10)
+      expect(move).not.toBeNull()
+
+      const strength = calculateHandStrength({
+        cardCount: singleCard.length,
+        playedValue: move!.primaryValue,
+        playedType: move!.type
+      })
+
       expect(strength).toBeDefined()
       expect(strength).toBeGreaterThan(0)
       expect(strength).toBeLessThanOrEqual(100)
@@ -157,9 +165,13 @@ describe('AI 系统集成测试', () => {
         { id: 5, suit: 'S' as const, rank: '7', val: 7 }
       ]
 
-      const move = analyzeMove(hand, 10)
-      const risk = assessRisk(move?.cards || [], hand, 10, true)
-      
+      // 使用单张牌进行测试
+      const singleCard = [hand[0]]
+      const move = analyzeMove(singleCard, 10)
+      expect(move).not.toBeNull()
+
+      const risk = assessRisk(move!.cards, hand, 10, true)
+
       expect(risk).toBeDefined()
       expect(risk).toBeGreaterThanOrEqual(0)
       expect(risk).toBeLessThanOrEqual(100)

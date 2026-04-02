@@ -1,12 +1,28 @@
 import { Card } from '@/lib/store/game';
 
+// ============================================================================
+// 核心 AI 类型
+// ============================================================================
+
 /**
  * AI 出牌动作
  *
  * 表示 AI 决定的出牌或过牌动作。
+ *
+ * @example
+ * ```ts
+ * // 出牌动作
+ * const playMove: AIMove = {
+ *   type: 'play',
+ *   cards: [card1, card2, card3]
+ * };
+ *
+ * // 过牌动作
+ * const passMove: AIMove = { type: 'pass' };
+ * ```
  */
 export interface AIMove {
-  /** 动作类型 */
+  /** 动作类型：'play' 表示出牌，'pass' 表示过牌 */
   type: 'play' | 'pass';
   /** 出牌时包含的卡牌，过牌时为 undefined */
   cards?: Card[];
@@ -18,13 +34,25 @@ export interface AIMove {
  * - **easy**: 简单模式，AI 随机出牌
  * - **medium**: 中等模式，AI 基础策略
  * - **hard**: 困难模式，AI 高级策略
+ *
+ * @example
+ * ```ts
+ * const difficulty: AIDifficulty = 'medium';
+ * const move = decideMove(hand, lastMove, 2, difficulty, true);
+ * ```
  */
 export type AIDifficulty = 'easy' | 'medium' | 'hard';
+
+// ============================================================================
+// 决策分析类型
+// ============================================================================
 
 /**
  * AI 决策指标
  *
  * 记录 AI 决策时的各项指标，用于分析和优化。
+ *
+ * @internal
  */
 export interface AIDecisionMetrics {
   /** 决策耗时（毫秒） */
@@ -47,6 +75,13 @@ export interface AIDecisionMetrics {
  * 手牌分析结果
  *
  * 对手牌进行全面分析后得出的各种牌型组合。
+ *
+ * @example
+ * ```ts
+ * const analysis = analyzeHand(hand, 2);
+ * console.log('对子数量:', analysis.pairs.length);
+ * console.log('炸弹数量:', analysis.bombs.length);
+ * ```
  */
 export interface HandAnalysis {
   /** 可出的单张组合 */
@@ -71,6 +106,8 @@ export interface HandAnalysis {
  * 卡牌分布分析
  *
  * 手牌的花色、点数分布统计。
+ *
+ * @internal
  */
 export interface CardDistribution {
   /** 各花色数量 */
@@ -89,6 +126,8 @@ export interface CardDistribution {
  * 出牌评估结果
  *
  * 对某个出牌选项进行评估的结果。
+ *
+ * @internal
  */
 export interface MoveEvaluation {
   /** 出牌动作 */
@@ -107,6 +146,14 @@ export interface MoveEvaluation {
  * 队友情况分析
  *
  * 分析队友在当前局面的状态。
+ *
+ * @example
+ * ```ts
+ * const situation = assessTeammateSituation(gameState, teammateSeat);
+ * if (situation.needsSupport) {
+ *   // 调整策略以支援队友
+ * }
+ * ```
  */
 export interface TeammateSituation {
   /** 队友是否当前领出 */
@@ -117,4 +164,50 @@ export interface TeammateSituation {
   needsSupport: boolean;
   /** 队友是否能够领出 */
   canLead: boolean;
+}
+
+// ============================================================================
+// 性能统计类型
+// ============================================================================
+
+/**
+ * AI 性能统计
+ *
+ * AI 决策的性能统计数据。
+ *
+ * @internal
+ */
+export interface AIPerformanceStats {
+  /** 总决策次数 */
+  totalDecisions: number;
+  /** 平均决策时间（毫秒） */
+  avgDecisionTime: number;
+  /** 领牌次数 */
+  leadCount: number;
+  /** 跟牌次数 */
+  followCount: number;
+  /** 过牌次数 */
+  passCount: number;
+  /** 各类型出牌分布 */
+  cardTypeDistribution: Record<string, number>;
+}
+
+/**
+ * 最近的性能数据
+ *
+ * 最近的 N 次决策的性能数据。
+ *
+ * @internal
+ */
+export interface AIPerformanceSnapshot {
+  /** 快照时间戳 */
+  timestamp: number;
+  /** 决策次数 */
+  count: number;
+  /** 平均耗时 */
+  avgTime: number;
+  /** 最长耗时 */
+  maxTime: number;
+  /** 最短耗时 */
+  minTime: number;
 }

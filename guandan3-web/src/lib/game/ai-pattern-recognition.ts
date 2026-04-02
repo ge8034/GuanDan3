@@ -1,101 +1,243 @@
 import { Card } from '@/lib/store/game';
-import { getCardValue } from './rules';
 import { HandAnalysis } from './ai-types';
 
-export function findSingles(cards: Card[], levelRank: number): Card[][] {
-  const singles: Card[][] = [];
-  const used = new Set<number>();
+// ============================================================================
+// 常量定义
+// ============================================================================
 
-  cards.forEach((card) => {
+/** 最小顺子长度 */
+const MIN_STRAIGHT_LENGTH = 5;
+
+/** 最小连对长度 */
+const MIN_SEQUENCE_PAIR_LENGTH = 3;
+
+/** 最小飞机长度 */
+const MIN_SEQUENCE_TRIPLE_LENGTH = 2;
+
+/** 炸弹最小张数 */
+const MIN_BOMB_SIZE = 4;
+
+// ============================================================================
+// 类型定义
+// ============================================================================
+
+/** 卡牌值映射表（按原始val值分组） */
+type ValueMap = Map<number, Card[]>;
+
+/** 卡牌组 */
+type CardGroup = readonly Card[];
+
+/** 组合生成器结果类型 */
+type Combinations<T> = readonly T[][];
+
+// ============================================================================
+// 工具函数
+// ============================================================================
+
+/**
+ * 构建值映射表
+ * 将卡牌按原始val值分组，用于后续模式识别
+ *
+ * @param cards - 卡牌数组
+ * @returns 值映射表
+ */
+function buildValueMap(cards: readonly Card[]): ValueMap {
+  const map = new Map<number, Card[]>();
+
+  for (const card of cards) {
+    const val = card.val;
+    if (!map.has(val)) {
+      map.set(val, []);
+    }
+    map.get(val)!.push(card);
+  }
+
+  return map;
+}
+
+/**
+ * 生成组合（迭代实现，避免递归栈溢出）
+ *
+ * @param items - 项目数组
+ * @param size - 组合大小
+ * @returns 所有可能的组合
+ */
+function* generateCombinations<T>(
+  items: readonly T[],
+  size: number
+): Generator<T[]> {
+  if (size === 0) {
+    yield [];
+    return;
+  }
+  if (size > items.length) {
+    return;
+  }
+
+  const indices = Array.from({ length: size }, (_, i) => i);
+
+  while (true) {
+    yield indices.map((i) => items[i]);
+
+    // 找到第一个可以递增的索引
+    let i = size - 1;
+    while (i >= 0 && indices[i] === items.length - size + i) {
+      i--;
+    }
+
+    if (i < 0) break;
+
+    indices[i]++;
+    for (let j = i + 1; j < size; j++) {
+      indices[j] = indices[j - 1] + 1;
+    }
+  }
+}
+
+/**
+ * 生成笛卡尔积（迭代实现）
+ *
+ * @param lists - 数组列表
+ * @returns 笛卡尔积结果
+ */
+function* generateCartesianProduct<T>(
+  lists: readonly T[][]
+): Generator<T[]> {
+  if (lists.length === 0) {
+    yield [];
+    return;
+  }
+
+  const result: T[] = [];
+  const maxIndices = lists.map((list) => list.length - 1);
+  const indices = new Array(lists.length).fill(0);
+
+  while (true) {
+    yield lists.flatMap((list, i) => list[indices[i]]);
+
+    // 找到第一个可以递增的索引
+    let i = lists.length - 1;
+    while (i >= 0 && indices[i] >= maxIndices[i]) {
+      i--;
+    }
+
+    if (i < 0) break;
+
+    indices[i]++;
+    for (let j = i + 1; j < lists.length; j++) {
+      indices[j] = 0;
+    }
+  }
+}
+
+/**
+ * 检查连续性
+ *
+ * @param sorted - 已排序的数值数组
+ * @param expectedLength - 期望的连续长度
+ * @returns 是否连续
+ */
+function checkConsecutive(
+  sorted: readonly number[],
+  expectedLength: number
+): boolean {
+  if (sorted.length < expectedLength) return false;
+  return sorted[expectedLength - 1] - sorted[0] === expectedLength - 1;
+}
+
+// ============================================================================
+// 模式识别函数
+// ============================================================================
+
+/**
+ * 查找单张
+ *
+ * @param cards - 卡牌数组
+ * @param _levelRank - 级牌点数（保持API兼容性，未使用）
+ * @returns 所有单张组合
+ */
+export function findSingles(cards: Card[], _levelRank?: number): Card[][] {
+  const used = new Set<number>();
+  const singles: Card[][] = [];
+
+  for (const card of cards) {
     if (!used.has(card.id)) {
       used.add(card.id);
       singles.push([card]);
     }
-  });
+  }
 
   return singles;
 }
 
-export function findPairs(cards: Card[], levelRank: number): Card[][] {
+/**
+ * 查找对子
+ *
+ * @param cards - 卡牌数组
+ * @param _levelRank - 级牌点数（保持API兼容性，未使用）
+ * @returns 所有对子组合
+ */
+export function findPairs(cards: Card[], _levelRank?: number): Card[][] {
   const pairs: Card[][] = [];
-  const valueMap = new Map<number, Card[]>();
+  const valueMap = buildValueMap(cards);
 
-  // 使用原始 val 值分组（级牌对子：红桃级牌+其他花色级牌=有效对子）
-  cards.forEach((card) => {
-    const val = card.val;
-    if (!valueMap.has(val)) {
-      valueMap.set(val, []);
-    }
-    valueMap.get(val)!.push(card);
-  });
-
-  valueMap.forEach((cardsWithSameValue) => {
-    for (let i = 0; i < cardsWithSameValue.length - 1; i++) {
-      for (let j = i + 1; j < cardsWithSameValue.length; j++) {
-        pairs.push([cardsWithSameValue[i], cardsWithSameValue[j]]);
+  for (const [_, cardsWithSameValue] of valueMap) {
+    if (cardsWithSameValue.length >= 2) {
+      for (const combo of generateCombinations(cardsWithSameValue, 2)) {
+        pairs.push([...combo]);
       }
     }
-  });
+  }
 
   return pairs;
 }
 
-export function findTriples(cards: Card[], levelRank: number): Card[][] {
+/**
+ * 查找三张
+ *
+ * @param cards - 卡牌数组
+ * @param _levelRank - 级牌点数（保持API兼容性，未使用）
+ * @returns 所有三张组合
+ */
+export function findTriples(cards: Card[], _levelRank?: number): Card[][] {
   const triples: Card[][] = [];
-  const valueMap = new Map<number, Card[]>();
+  const valueMap = buildValueMap(cards);
 
-  // 使用原始 val 值分组（级牌三张：红桃级牌+其他两张级牌=有效三张）
-  cards.forEach((card) => {
-    const val = card.val;
-    if (!valueMap.has(val)) {
-      valueMap.set(val, []);
-    }
-    valueMap.get(val)!.push(card);
-  });
-
-  valueMap.forEach((cardsWithSameValue) => {
+  for (const [_, cardsWithSameValue] of valueMap) {
     if (cardsWithSameValue.length >= 3) {
-      for (let i = 0; i < cardsWithSameValue.length - 2; i++) {
-        for (let j = i + 1; j < cardsWithSameValue.length - 1; j++) {
-          for (let k = j + 1; k < cardsWithSameValue.length; k++) {
-            triples.push([
-              cardsWithSameValue[i],
-              cardsWithSameValue[j],
-              cardsWithSameValue[k],
-            ]);
-          }
-        }
+      for (const combo of generateCombinations(cardsWithSameValue, 3)) {
+        triples.push([...combo]);
       }
     }
-  });
+  }
 
   return triples;
 }
 
-export function findBombs(cards: Card[], levelRank: number): Card[][] {
+/**
+ * 查找炸弹
+ *
+ * @param cards - 卡牌数组
+ * @param _levelRank - 级牌点数（保持API兼容性，未使用）
+ * @returns 所有炸弹组合
+ */
+export function findBombs(cards: Card[], _levelRank?: number): Card[][] {
   const bombs: Card[][] = [];
-  const valueMap = new Map<number, Card[]>();
+  const valueMap = buildValueMap(cards);
+
+  // 普通炸弹（4张或更多相同点数）
+  for (const [_, cardsWithSameValue] of valueMap) {
+    if (cardsWithSameValue.length >= MIN_BOMB_SIZE) {
+      for (let size = MIN_BOMB_SIZE; size <= cardsWithSameValue.length; size++) {
+        for (const combo of generateCombinations(cardsWithSameValue, size)) {
+          bombs.push([...combo]);
+        }
+      }
+    }
+  }
+
+  // 王牌炸弹
   const jokers = cards.filter((c) => c.suit === 'J');
-
-  // 使用原始 val 值分组（级牌炸弹：所有级牌=有效炸弹）
-  cards.forEach((card) => {
-    if (card.suit !== 'J') {
-      const val = card.val;
-      if (!valueMap.has(val)) {
-        valueMap.set(val, []);
-      }
-      valueMap.get(val)!.push(card);
-    }
-  });
-
-  valueMap.forEach((cardsWithSameValue) => {
-    if (cardsWithSameValue.length >= 4) {
-      for (let size = 4; size <= cardsWithSameValue.length; size++) {
-        bombs.push(...generateCombinations(cardsWithSameValue, size));
-      }
-    }
-  });
-
   if (jokers.length >= 2) {
     bombs.push(jokers);
   }
@@ -103,153 +245,156 @@ export function findBombs(cards: Card[], levelRank: number): Card[][] {
   return bombs;
 }
 
-export function findStraights(cards: Card[], levelRank: number): Card[][] {
+/**
+ * 查找顺子
+ *
+ * @param cards - 卡牌数组
+ * @param _levelRank - 级牌点数（保持API兼容性，未使用）
+ * @returns 所有顺子组合
+ */
+export function findStraights(cards: Card[], _levelRank?: number): Card[][] {
   const straights: Card[][] = [];
-  const valMap = new Map<number, Card[]>();
+  const valueMap = buildValueMap(cards);
 
-  // 使用原始 val 建立映射（顺子连续性基于原始值）
-  cards.forEach((card) => {
-    const val = card.val;
-    if (!valMap.has(val)) {
-      valMap.set(val, []);
-    }
-    valMap.get(val)!.push(card);
-  });
+  const sortedVals = Array.from(valueMap.keys()).sort((a, b) => a - b);
 
-  const sortedVals = Array.from(valMap.keys()).sort((a, b) => a - b);
+  for (let i = 0; i <= sortedVals.length - MIN_STRAIGHT_LENGTH; i++) {
+    const window = sortedVals.slice(i, i + MIN_STRAIGHT_LENGTH);
 
-  for (let i = 0; i < sortedVals.length - 4; i++) {
-    const straightVals = sortedVals.slice(i, i + 5);
-    if (straightVals[4] - straightVals[0] === 4) {
-      const lists = straightVals.map((v) => valMap.get(v)!).filter(Boolean);
-      const combinations = generateCartesianProduct(lists);
-      straights.push(...combinations);
+    if (checkConsecutive(window, MIN_STRAIGHT_LENGTH)) {
+      const lists = window
+        .map((v) => valueMap.get(v))
+        .filter((list): list is Card[] => list !== undefined);
+
+      for (const combo of generateCartesianProduct(lists)) {
+        straights.push([...combo]);
+      }
     }
   }
 
   return straights;
 }
 
-export function findFullHouses(cards: Card[], levelRank: number): Card[][] {
+/**
+ * 查找三带二（葫芦）
+ *
+ * @param cards - 卡牌数组
+ * @param _levelRank - 级牌点数（保持API兼容性，未使用）
+ * @returns 所有三带二组合
+ */
+export function findFullHouses(cards: Card[], _levelRank?: number): Card[][] {
   const fullHouses: Card[][] = [];
-  const valueMap = new Map<number, Card[]>();
+  const valueMap = buildValueMap(cards);
 
-  // 使用原始 val 值分组（三带二）
-  cards.forEach((card) => {
-    const val = card.val;
-    if (!valueMap.has(val)) {
-      valueMap.set(val, []);
+  // 分离三张和对子
+  const tripleEntries: Array<[number, Card[]]> = [];
+  const pairEntries: Array<[number, Card[]]> = [];
+
+  for (const [value, cardsWithSameValue] of valueMap) {
+    if (cardsWithSameValue.length >= 3) {
+      tripleEntries.push([value, cardsWithSameValue]);
     }
-    valueMap.get(val)!.push(card);
-  });
+    if (cardsWithSameValue.length >= 2) {
+      pairEntries.push([value, cardsWithSameValue]);
+    }
+  }
 
-  const triples = Array.from(valueMap.entries())
-    .filter(([_, cards]) => cards.length >= 3)
-    .map(([value, cards]) => ({ value, cards }));
-
-  const pairs = Array.from(valueMap.entries())
-    .filter(([_, cards]) => cards.length >= 2)
-    .map(([value, cards]) => ({ value, cards }));
-
-  triples.forEach((triple) => {
-    pairs.forEach((pair) => {
-      if (triple.value !== pair.value) {
-        const tripleCombinations = generateCombinations(triple.cards, 3);
-        const pairCombinations = generateCombinations(pair.cards, 2);
-
-        tripleCombinations.forEach((tripleCombo) => {
-          pairCombinations.forEach((pairCombo) => {
+  // 生成所有三带二组合
+  for (const [tripleValue, tripleCards] of tripleEntries) {
+    for (const tripleCombo of generateCombinations(tripleCards, 3)) {
+      for (const [pairValue, pairCards] of pairEntries) {
+        if (pairValue !== tripleValue) {
+          for (const pairCombo of generateCombinations(pairCards, 2)) {
             fullHouses.push([...tripleCombo, ...pairCombo]);
-          });
-        });
+          }
+        }
       }
-    });
-  });
+    }
+  }
 
   return fullHouses;
 }
 
-export function findSequencePairs(cards: Card[], levelRank: number): Card[][] {
+/**
+ * 查找连对
+ *
+ * @param cards - 卡牌数组
+ * @param _levelRank - 级牌点数（保持API兼容性，未使用）
+ * @returns 所有连对组合
+ */
+export function findSequencePairs(cards: Card[], _levelRank?: number): Card[][] {
   const sequencePairs: Card[][] = [];
-  const valMap = new Map<number, Card[]>();
+  const valueMap = buildValueMap(cards);
 
-  // 使用原始 val 建立映射（连对连续性基于原始值）
-  cards.forEach((card) => {
-    const val = card.val;
-    if (!valMap.has(val)) {
-      valMap.set(val, []);
-    }
-    valMap.get(val)!.push(card);
-  });
+  const sortedVals = Array.from(valueMap.keys()).sort((a, b) => a - b);
 
-  const sortedVals = Array.from(valMap.keys()).sort((a, b) => a - b);
+  for (let i = 0; i <= sortedVals.length - MIN_SEQUENCE_PAIR_LENGTH; i++) {
+    const window = sortedVals.slice(i, i + MIN_SEQUENCE_PAIR_LENGTH);
 
-  for (let i = 0; i < sortedVals.length - 2; i++) {
-    const sequenceVals = sortedVals.slice(i, i + 3);
-    if (sequenceVals[2] - sequenceVals[0] === 2) {
-      const perValPairs = sequenceVals.map((v) =>
-        generateCombinations(valMap.get(v) || [], 2)
-      );
-      if (perValPairs.some((x) => x.length === 0)) continue;
-      const combinations = generateCartesianProduct(perValPairs);
-      sequencePairs.push(...combinations.map((group) => group.flat()));
+    if (checkConsecutive(window, MIN_SEQUENCE_PAIR_LENGTH)) {
+      const perValPairs = window
+        .map((v) => {
+          const cards = valueMap.get(v);
+          return cards && cards.length >= 2
+            ? Array.from(generateCombinations(cards, 2))
+            : [];
+        })
+        .filter((combos) => combos.length > 0);
+
+      if (perValPairs.length === MIN_SEQUENCE_PAIR_LENGTH) {
+        for (const combo of generateCartesianProduct(perValPairs)) {
+          sequencePairs.push(combo.flat());
+        }
+      }
     }
   }
 
   return sequencePairs;
 }
 
-export function findSequenceTriples(
-  cards: Card[],
-  levelRank: number
-): Card[][] {
+/**
+ * 查找飞机（连续三张）
+ *
+ * @param cards - 卡牌数组
+ * @param _levelRank - 级牌点数（保持API兼容性，未使用）
+ * @returns 所有飞机组合
+ */
+export function findSequenceTriples(cards: Card[], _levelRank?: number): Card[][] {
   const sequenceTriples: Card[][] = [];
-  const valMap = new Map<number, Card[]>();
+  const valueMap = buildValueMap(cards);
 
-  // 使用原始 val 建立映射（飞机连续性基于原始值）
-  cards.forEach((card) => {
-    const val = card.val;
-    if (!valMap.has(val)) {
-      valMap.set(val, []);
-    }
-    valMap.get(val)!.push(card);
-  });
+  const sortedVals = Array.from(valueMap.keys()).sort((a, b) => a - b);
 
-  const sortedVals = Array.from(valMap.keys()).sort((a, b) => a - b);
+  // 查找所有连续的三张组
+  for (let start = 0; start < sortedVals.length; start++) {
+    const sequences: Card[][] = [];
 
-  // 飞机需要至少2个连续的三张
-  for (let i = 0; i < sortedVals.length - 1; i++) {
-    // 检查当前值和下一个值是否连续（相差1）
-    if (sortedVals[i + 1] - sortedVals[i] === 1) {
-      // 检查两个值是否都至少有3张牌
-      if (valMap.get(sortedVals[i])!.length >= 3 &&
-          valMap.get(sortedVals[i + 1])!.length >= 3) {
-        // 生成这两个连续三张的组合
-        const perValTriples = [
-          generateCombinations(valMap.get(sortedVals[i]) || [], 3),
-          generateCombinations(valMap.get(sortedVals[i + 1]) || [], 3),
-        ];
-        if (perValTriples.some((x) => x.length === 0)) continue;
-        const combinations = generateCartesianProduct(perValTriples);
-        sequenceTriples.push(...combinations.map((group) => group.flat()));
-      }
-    }
+    // 查找从start开始的连续序列
+    for (let len = MIN_SEQUENCE_TRIPLE_LENGTH; len <= sortedVals.length - start; len++) {
+      const window = sortedVals.slice(start, start + len);
 
-    // 如果有3个连续的值，也可以生成3连的飞机
-    if (i + 2 < sortedVals.length &&
-        sortedVals[i + 2] - sortedVals[i] === 2) {
-      const sequenceVals = sortedVals.slice(i, i + 3);
-      // 检查每个值是否都至少有3张牌
-      const allHaveThree = sequenceVals.every(v =>
-        valMap.get(v) && valMap.get(v)!.length >= 3
+      // 检查是否连续
+      if (!checkConsecutive(window, len)) break;
+
+      // 检查每个值是否都有至少3张牌
+      const allHaveThree = window.every(
+        (v) => valueMap.get(v) && valueMap.get(v)!.length >= 3
       );
-      if (allHaveThree) {
-        const perValTriples = sequenceVals.map((v) =>
-          generateCombinations(valMap.get(v) || [], 3)
-        );
-        if (perValTriples.some((x) => x.length === 0)) continue;
-        const combinations = generateCartesianProduct(perValTriples);
-        sequenceTriples.push(...combinations.map((group) => group.flat()));
+
+      if (!allHaveThree) continue;
+
+      // 生成这个序列的所有组合
+      const perValTriples = window
+        .map((v) => {
+          const cards = valueMap.get(v);
+          return cards ? Array.from(generateCombinations(cards, 3)) : [];
+        })
+        .filter((combos) => combos.length > 0);
+
+      if (perValTriples.length === len) {
+        for (const combo of generateCartesianProduct(perValTriples)) {
+          sequenceTriples.push(combo.flat());
+        }
       }
     }
   }
@@ -257,46 +402,76 @@ export function findSequenceTriples(
   return sequenceTriples;
 }
 
-function generateCombinations<T>(items: T[], size: number): T[][] {
-  if (size === 0) return [[]];
-  if (size > items.length) return [];
-
-  const result: T[][] = [];
-
-  function combine(start: number, combo: T[]) {
-    if (combo.length === size) {
-      result.push([...combo]);
-      return;
-    }
-
-    for (let i = start; i < items.length; i++) {
-      combo.push(items[i]);
-      combine(i + 1, combo);
-      combo.pop();
-    }
-  }
-
-  combine(0, []);
-  return result;
-}
-
-function generateCartesianProduct<T>(lists: T[][]): T[][] {
-  if (lists.length === 0) return [[]];
-  return lists.reduce<T[][]>(
-    (acc, list) => acc.flatMap((a) => list.map((item) => [...a, item])),
-    [[]]
-  );
-}
-
+/**
+ * 分析手牌的所有可能牌型
+ * 这是主要的入口函数，调用所有牌型识别函数
+ *
+ * @param cards - 卡牌数组
+ * @returns 手牌分析结果
+ */
 export function analyzeHand(cards: Card[], levelRank: number): HandAnalysis {
   return {
-    singles: findSingles(cards, levelRank),
-    pairs: findPairs(cards, levelRank),
-    triples: findTriples(cards, levelRank),
-    bombs: findBombs(cards, levelRank),
-    straights: findStraights(cards, levelRank),
-    sequencePairs: findSequencePairs(cards, levelRank),
-    sequenceTriples: findSequenceTriples(cards, levelRank),
-    fullHouses: findFullHouses(cards, levelRank),
+    singles: findSingles(cards),
+    pairs: findPairs(cards),
+    triples: findTriples(cards),
+    bombs: findBombs(cards),
+    straights: findStraights(cards),
+    sequencePairs: findSequencePairs(cards),
+    sequenceTriples: findSequenceTriples(cards),
+    fullHouses: findFullHouses(cards),
   };
+}
+
+/**
+ * 查找所有可打败指定牌型的牌
+ * 优化的查找函数，避免重复计算
+ *
+ * @param hand - 手牌
+ * @param target - 目标牌型
+ * @param levelRank - 级牌点数
+ * @returns 可打败的牌型列表
+ */
+export function findBeatableMoves(
+  hand: readonly Card[],
+  target: readonly Card[],
+  levelRank: number
+): readonly Card[][] {
+  const analysis = analyzeHand([...hand], levelRank);
+  const targetLength = target.length;
+
+  // 根据目标牌型筛选可能的打败牌型
+  const possibleMoves: Card[][] = [];
+
+  // 炸弹可以打败任何牌
+  possibleMoves.push(...analysis.bombs);
+
+  // 相同长度的牌型可以尝试打败
+  switch (targetLength) {
+    case 1:
+      possibleMoves.push(...analysis.singles);
+      break;
+    case 2:
+      possibleMoves.push(...analysis.pairs);
+      break;
+    case 3:
+      possibleMoves.push(...analysis.triples);
+      break;
+    case 5:
+      possibleMoves.push(...analysis.fullHouses, ...analysis.straights);
+      break;
+    default:
+      // 长牌型
+      if (targetLength >= MIN_STRAIGHT_LENGTH) {
+        possibleMoves.push(...analysis.straights);
+      }
+      if (targetLength % 2 === 0 && targetLength >= MIN_SEQUENCE_PAIR_LENGTH * 2) {
+        possibleMoves.push(...analysis.sequencePairs);
+      }
+      if (targetLength % 3 === 0 && targetLength >= MIN_SEQUENCE_TRIPLE_LENGTH * 3) {
+        possibleMoves.push(...analysis.sequenceTriples);
+      }
+      break;
+  }
+
+  return possibleMoves;
 }

@@ -304,9 +304,40 @@ export function useAIDecision(
                 const currentHandIds = new Set(freshState.myHand.map((c: Card) => c.id));
                 validCards = move.cards.filter((c: Card) => currentHandIds.has(c.id));
               } else {
-                // AI玩家：使用aiHand验证（这是AI刚刚决策时获取的手牌）
-                const aiHandIds = new Set(aiHand.map((c: Card) => c.id));
-                validCards = move.cards.filter((c: Card) => aiHandIds.has(c.id));
+                // AI玩家：重新获取最新的手牌进行验证，而不是使用决策时的aiHand
+                // 这样可以检测到手牌是否在决策期间被刷新
+                const latestAIHand = await freshState.getAIHand(currentSeat);
+                const latestAIHandIds = new Set(latestAIHand.map((c: Card) => c.id));
+
+                // 检查手牌是否发生了变化
+                const originalAIHandIds = new Set(aiHand.map((c: Card) => c.id));
+                const handChanged =
+                  latestAIHandIds.size !== originalAIHandIds.size ||
+                  Array.from(latestAIHandIds).some((id) => !originalAIHandIds.has(id));
+
+                if (handChanged) {
+                  // 手牌已刷新，所有决策的卡牌都无效
+                  addDebugLog(
+                    `AI 卡牌已刷新，释放锁并等待下次决策 (手牌ID集合已变化)`
+                  );
+                  // 释放锁，允许下次决策重新执行
+                  submittingTurnRef.current = null;
+                  // 记录为失败但不报错
+                  performanceMonitor.recordDecision({
+                    timestamp: Date.now(),
+                    seatNo: currentSeat,
+                    difficulty,
+                    moveType: move.type,
+                    cardCount: move.cards.length,
+                    decisionTime,
+                    success: false,
+                    errorMessage: 'Cards refreshed during decision',
+                  });
+                  return; // 跳过此次提交，等待下次决策
+                }
+
+                // 手牌未变化，验证决策的卡牌是否仍在手牌中
+                validCards = move.cards.filter((c: Card) => latestAIHandIds.has(c.id));
               }
 
               if (validCards.length !== move.cards.length) {

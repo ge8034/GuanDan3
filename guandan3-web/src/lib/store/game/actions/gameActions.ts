@@ -14,7 +14,7 @@ export async function fetchGame(this: GameState, roomId: string): Promise<void> 
   // 注意：需要包含 'deal' 状态以支持练习模式的初始状态
   const { data: games, error: gamesError } = await supabase
     .from('games')
-    .select('id,room_id,status,turn_no,current_seat,state_public,state_private')
+    .select('id,room_id,status,turn_no,current_seat,state_public,state_private,paused_by,paused_at,pause_reason')
     .eq('room_id', roomId)
     .in('status', ['deal', 'playing', 'paused', 'finished'])
 
@@ -48,9 +48,9 @@ export async function fetchGame(this: GameState, roomId: string): Promise<void> 
     levelRank,
     counts,
     rankings,
-    pausedBy: null,
-    pausedAt: null,
-    pauseReason: null
+    pausedBy: (game as any).paused_by || null,
+    pausedAt: (game as any).paused_at || null,
+    pauseReason: (game as any).pause_reason || null
   })
 
   // 2. 获取玩家手牌

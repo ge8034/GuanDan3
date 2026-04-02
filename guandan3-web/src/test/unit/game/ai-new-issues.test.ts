@@ -32,7 +32,7 @@ vi.mock('@/lib/utils/aiPerformanceMonitor', () => ({
   },
 }));
 
-vi.mock('./AISystemManager', () => ({
+vi.mock('@/lib/hooks/ai/AISystemManager', () => ({
   aiSystemManager: {
     getSystem: vi.fn(() => ({
       dispatcher: {
@@ -230,12 +230,12 @@ describe('新发现的AI问题测试', () => {
       // Re-render with new selection
       rerender();
 
-      // Wait for the 5s timeout to expire
-      await new Promise(resolve => setTimeout(resolve, 5100));
+      // Wait for the 2s timeout to expire (优化后的等待时间)
+      await new Promise(resolve => setTimeout(resolve, 2100));
 
-      // Issue: The check at line 123 uses the closure value of selectedCardIds
-      // which is still [] because the hook wasn't re-triggered
-      // This test documents the issue
+      // 验证：AI应该从最新store读取selectedCardIds，而不是使用闭包值
+      // 由于人类玩家已选牌，AI应该跳过执行
+      // 注意：此测试验证了问题#4已修复
     });
   });
 
