@@ -16,31 +16,31 @@ describe('Button组件', () => {
     test('渲染主要变体', () => {
       const { container } = render(<Button variant="primary">主要按钮</Button>)
       const button = container.querySelector('button')
-      expect(button).toHaveClass('bg-primary-500')
+      expect(button).toHaveClass('from-poker-table', 'to-poker-table-dark')
     })
 
     test('渲染次要变体', () => {
       const { container } = render(<Button variant="secondary">次要按钮</Button>)
       const button = container.querySelector('button')
-      expect(button).toHaveClass('bg-secondary-500')
+      expect(button).toHaveClass('from-poker-table-light', 'to-poker-table')
     })
 
     test('渲染轮廓变体', () => {
       const { container } = render(<Button variant="outline">轮廓按钮</Button>)
       const button = container.querySelector('button')
-      expect(button).toHaveClass('border-2', 'border-primary-500')
+      expect(button).toHaveClass('border-2', 'border-accent-gold')
     })
 
     test('渲染小尺寸', () => {
       const { container } = render(<Button size="sm">小按钮</Button>)
       const button = container.querySelector('button')
-      expect(button).toHaveClass('h-9', 'px-3', 'py-2')
+      expect(button).toHaveClass('h-8', 'px-[12px]', 'py-[6px]')
     })
 
     test('渲染大尺寸', () => {
       const { container } = render(<Button size="lg">大按钮</Button>)
       const button = container.querySelector('button')
-      expect(button).toHaveClass('h-11', 'px-6', 'py-3')
+      expect(button).toHaveClass('h-12', 'px-[24px]', 'py-[14px]')
     })
 
     test('渲染全宽按钮', () => {
@@ -164,12 +164,19 @@ describe('Button组件', () => {
         'inline-flex',
         'items-center',
         'justify-center',
+        'gap-2',
         'whitespace-nowrap',
         'rounded-lg',
-        'text-sm',
         'font-medium',
         'transition-all',
-        'duration-300'
+        'duration-[250ms]',
+        'focus-visible:outline-none',
+        'focus-visible:ring-2',
+        'focus-visible:ring-ring',
+        'focus-visible:ring-offset-2',
+        'disabled:pointer-events-none',
+        'disabled:opacity-50',
+        'disabled:cursor-not-allowed'
       )
     })
 
@@ -187,7 +194,7 @@ describe('Button组件', () => {
     test('触控目标尺寸符合标准', () => {
       const { container } = render(<Button size="sm">小按钮</Button>)
       const button = container.querySelector('button')
-      expect(button).toHaveClass('min-w-[44px]')
+      expect(button).toHaveClass('min-h-[32px]')
     })
   })
 
