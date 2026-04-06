@@ -92,7 +92,7 @@ describe('AI问题系统性搜索', () => {
     it('问题E：AI领牌时出三张而非炸弹', () => {
       const hand = [
         createCard(1, 7), createCard(2, 7), createCard(3, 7), createCard(4, 7), // 炸弹7
-        createCard(5, 5), createCard(6, 5), createCard(5, 5), // 三张5
+        createCard(5, 5), createCard(6, 5), createCard(7, 5), // 三张5
       ];
       const move = decideMove(hand, null, 2, 'hard', true);
 

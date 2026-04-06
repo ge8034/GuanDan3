@@ -291,6 +291,28 @@ describe('useGameStore.fetchGame', () => {
     const gameQuery = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      or: vi.fn().mockResolvedValue({
+        data: [
+          {
+            id: 'g-finished',
+            status: 'finished',
+            turn_no: 9,
+            current_seat: 2,
+            state_public: { counts: [0, 1, 2, 3], rankings: [0, 1, 2, 3] },
+            state_private: {
+              hands: {
+                '0': [
+                  // 座位0的手牌
+                  makeCard({ id: 1, suit: 'H', rank: '2', val: 2 }),
+                  makeCard({ id: 2, suit: 'S', rank: 'A', val: 14 }),
+                  makeCard({ id: 3, suit: 'D', rank: 'K', val: 13 }),
+                ],
+              },
+            },
+          },
+        ],
+        error: null,
+      }),
       in: vi.fn().mockResolvedValue({
         data: [
           {
@@ -358,6 +380,18 @@ describe('useGameStore.fetchGame', () => {
     const gameQuery = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      or: vi.fn().mockResolvedValue({
+        data: [
+          {
+            id: 'g-1',
+            status: 'playing',
+            turn_no: 1,
+            current_seat: 0,
+            state_public: { counts: [27, 27, 27, 27], rankings: [] },
+          },
+        ],
+        error: null,
+      }),
       in: vi.fn().mockResolvedValue({
         data: [
           {
@@ -438,6 +472,10 @@ describe('useGameStore.fetchGame', () => {
     const gameQuery = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      or: vi.fn().mockResolvedValue({
+        data: [],
+        error: null,
+      }),
       in: vi.fn().mockResolvedValue({
         data: [],
         error: null,
@@ -460,6 +498,7 @@ describe('useGameStore.fetchGame', () => {
     const gameQuery = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      or: vi.fn().mockResolvedValue({ data: null, error: new Error('game error') }),
       in: vi
         .fn()
         .mockResolvedValue({ data: null, error: new Error('game error') }),
@@ -475,6 +514,18 @@ describe('useGameStore.fetchGame', () => {
     const gameQuery = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      or: vi.fn().mockResolvedValue({
+        data: [
+          {
+            id: 'g-1',
+            status: 'playing',
+            turn_no: 1,
+            current_seat: 0,
+            state_public: { counts: [27, 27, 27, 27], rankings: [] },
+          },
+        ],
+        error: null,
+      }),
       in: vi.fn().mockResolvedValue({
         data: [
           {

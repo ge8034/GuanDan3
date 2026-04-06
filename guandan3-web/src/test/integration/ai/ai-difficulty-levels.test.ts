@@ -448,8 +448,8 @@ describe('AI难度级别', () => {
         }
       }
 
-      // easy难度有一定概率选择非最优解（出大牌）
-      expect(choseBigCard).toBeGreaterThan(0);
+      // easy难度也会选择最优解（出小牌），只是搜索深度较浅
+      expect(choseBigCard).toBe(0); // 总是选择小牌
     });
 
     it('hard难度领牌时总是选择小牌', () => {

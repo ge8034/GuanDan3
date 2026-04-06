@@ -72,6 +72,10 @@ describe('游戏状态同步集成测试', () => {
         return {
           select: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnValue({
+              or: vi.fn().mockResolvedValue({
+                data: [],
+                error: null
+              }),
               in: vi.fn().mockReturnValue({
                 order: vi.fn().mockReturnValue({
                   limit: vi.fn().mockResolvedValue({
@@ -198,6 +202,10 @@ describe('游戏状态同步集成测试', () => {
           return {
             select: vi.fn().mockReturnValue({
               eq: vi.fn().mockReturnValue({
+                or: vi.fn().mockResolvedValue({
+                  data: [mockGame],
+                  error: null
+                }),
                 in: vi.fn().mockResolvedValue({
                   data: [mockGame],
                   error: null
@@ -244,6 +252,10 @@ describe('游戏状态同步集成测试', () => {
       const mockFrom = vi.fn().mockReturnValue({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
+            or: vi.fn().mockResolvedValue({
+              data: [],
+              error: null
+            }),
             in: vi.fn().mockResolvedValue({
               data: [],
               error: null
@@ -288,6 +300,10 @@ describe('游戏状态同步集成测试', () => {
           return {
             select: vi.fn().mockReturnValue({
               eq: vi.fn().mockReturnValue({
+                or: vi.fn().mockResolvedValue({
+                  data: [mockGame],
+                  error: null
+                }),
                 in: vi.fn().mockResolvedValue({
                   data: [mockGame],
                   error: null
@@ -731,6 +747,12 @@ describe('游戏状态同步集成测试', () => {
           return {
             select: vi.fn().mockReturnValue({
               eq: vi.fn().mockReturnValue({
+                or: vi.fn().mockReturnValue({
+                  limit: vi.fn().mockResolvedValue({
+                    data: [],
+                    error: null
+                  })
+                }),
                 in: vi.fn().mockReturnValue({
                   limit: vi.fn().mockResolvedValue({
                     data: [],
@@ -895,6 +917,18 @@ describe('游戏状态同步集成测试', () => {
           return {
             select: vi.fn().mockReturnValue({
               eq: vi.fn().mockReturnValue({
+                or: vi.fn().mockReturnValue({
+                  // 实现thenable接口，支持await
+                  then: (resolve: any) => Promise.resolve({
+                    data: [mockGame],
+                    error: null
+                  }).then(resolve),
+                  // 同时支持链式调用.limit()
+                  limit: vi.fn().mockResolvedValue({
+                    data: [],
+                    error: null
+                  })
+                }),
                 in: vi.fn().mockReturnValue({
                   // 实现thenable接口，支持await
                   then: (resolve: any) => Promise.resolve({
