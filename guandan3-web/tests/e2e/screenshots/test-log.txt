@@ -1,0 +1,12 @@
+
+
+=== 测试运行 2026-04-06T10:38:33.409Z ===
+错误数量: 7
+有排名: false
+页面内容预览: 掼蛋 3首页大厅好友聊天🎨雅致经典▼调试房间：61e7505c...状态：playing牌局：playing级牌：2座位：0暂停游戏📨邀请🤖座位 2AI15 张牌🤖座位 3AI17 张牌🤖思考中...座位 1AI17 张牌♣新一轮👤我14 张牌红★红A♦AK♠KK♣KQ♠QQ♥Q10♦109♠99♦98♠87♠77♦75♠55♥5💬语音通话💡 智能提示📨邀请暂停游戏A♦K♦9♣3♠5♦K♣7♥J♥8♠7♠3♦7♦6♣2♥3♦2♦9♠9♣3♥6♥10♣K♠9♦K♠9♠4♦Q♦8♦J♣6♥8♣7♥3♣6♥6♣Q♥K♦J♠K♠9♦10♥Q♠8♦8♥4♥Q♣7♠3♠J♥8♠J♠7♦5♥A♠7♥8♦A♣K♠9♦9♠10♦9♦6♠10♦Q♣J♥J♣J♥Q♠7♠8♦9♣Q♠2♣2♣9♥Q♣J♥2♥9♠4♠2♦6♦9♥Q♠6♥Q♦5♦A♦Q♦10♥8♣K♦K♦K♠J♣2♥7♠10♣7♠J♣6♦Q♣J♠J♦10♥6♣3♥self.__next_r="D0kmbLZ0c5jNTyMOIabxV"(self.__next_f=self.__next_f||[]).push([0])self
+
+
+=== 测试运行 2026-04-06T10:39:24.599Z ===
+错误数量: 4
+有排名: false
+页面内容预览: 掼蛋 3首页大厅好友聊天🎨雅致经典▼调试房间：8eefdc7b...状态：playing牌局：playing级牌：2座位：0暂停游戏📨邀请🤖座位 2AI16 张牌🤖思考中...座位 3AI21 张牌🤖座位 1AI15 张牌♣新一轮👤我13 张牌红★红A♣AA♣AK♦KJ♠J10♠109♣97♥74♣43♥33♦33♣32♦2💬语音通话💡 智能提示📨邀请暂停游戏self.__next_r="k47pwqYLJSJqTmwrvX11z"(self.__next_f=self.__next_f||[]).push([0])self.__next_f.push([1,"7:I[\"[project]/node_modules/.pnpm/next@16.2.1_@babel+core@7.2_8f1be9cd4cb05bc7f586cf5a0e11bc11/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js [app-client] (ecmascript)\",[\"/_ne

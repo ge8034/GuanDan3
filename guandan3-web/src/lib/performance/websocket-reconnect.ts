@@ -1,5 +1,3 @@
-import { logger } from '@/lib/utils/logger'
-
 export interface ReconnectConfig {
   maxRetries: number
   initialDelay: number
@@ -75,11 +73,11 @@ export class WebSocketReconnectManager {
 
   startReconnect(reason: string): void {
     if (this.state.isReconnecting) {
-      logger.warn('Reconnection already in progress')
+      console.warn('Reconnection already in progress')
       return
     }
 
-    logger.debug(`Starting reconnection process. Reason: ${reason}`)
+    console.log(`Starting reconnection process. Reason: ${reason}`)
 
     this.state.isReconnecting = true
     this.state.reason = reason
@@ -94,7 +92,7 @@ export class WebSocketReconnectManager {
       return
     }
 
-    logger.debug('Stopping reconnection process')
+    console.log('Stopping reconnection process')
 
     this.clearReconnectTimeout()
     this.state.isReconnecting = false
@@ -123,7 +121,7 @@ export class WebSocketReconnectManager {
     const avgReconnectTime = this.reconnectHistory.reduce((a, b) => a + b, 0) / this.reconnectHistory.length
     this.stats.averageReconnectTime = avgReconnectTime
 
-    logger.debug(`Reconnection successful. Time: ${reconnectTime}ms, Average: ${avgReconnectTime.toFixed(2)}ms`)
+    console.log(`Reconnection successful. Time: ${reconnectTime}ms, Average: ${avgReconnectTime.toFixed(2)}ms`)
 
     this.stopReconnect()
 
@@ -140,14 +138,14 @@ export class WebSocketReconnectManager {
     this.stats.failedConnections++
     this.stats.attemptCount++
 
-    logger.error(`Reconnection attempt ${this.state.currentAttempt} failed:`, error)
+    console.error(`Reconnection attempt ${this.state.currentAttempt} failed:`, error)
 
     if (this.onReconnectFailed) {
       this.onReconnectFailed(error)
     }
 
     if (this.state.currentAttempt >= this.config.maxRetries) {
-      logger.error('Max reconnection attempts reached')
+      console.error('Max reconnection attempts reached')
       this.stopReconnect()
 
       if (this.onMaxRetriesReached) {
@@ -221,7 +219,7 @@ export class WebSocketReconnectManager {
 
   updateConfig(config: Partial<ReconnectConfig>): void {
     this.config = { ...this.config, ...config }
-    logger.debug('Reconnect config updated:', this.config)
+    console.log('Reconnect config updated:', this.config)
   }
 
   reset(): void {
@@ -236,7 +234,7 @@ export class WebSocketReconnectManager {
       lastDisconnectTime: 0
     }
     this.reconnectHistory = []
-    logger.debug('Reconnect manager reset')
+    console.log('Reconnect manager reset')
   }
 
   private scheduleNextRetry(): void {
@@ -246,7 +244,7 @@ export class WebSocketReconnectManager {
     const delay = this.calculateRetryDelay(this.state.currentAttempt)
     this.state.nextRetryTime = Date.now() + delay
 
-    logger.debug(`Scheduling reconnection attempt ${this.state.currentAttempt} in ${delay}ms`)
+    console.log(`Scheduling reconnection attempt ${this.state.currentAttempt} in ${delay}ms`)
 
     if (this.onReconnectAttempt) {
       this.onReconnectAttempt(this.state.currentAttempt)
@@ -258,7 +256,7 @@ export class WebSocketReconnectManager {
   }
 
   private triggerReconnect(): void {
-    logger.debug(`Triggering reconnection attempt ${this.state.currentAttempt}`)
+    console.log(`Triggering reconnection attempt ${this.state.currentAttempt}`)
 
     this.reconnectTimeout = null
 

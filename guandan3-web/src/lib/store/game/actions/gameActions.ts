@@ -303,8 +303,32 @@ export async function getAIHand(this: GameState, seatNo: number): Promise<Card[]
     }
   }
 
-  devLog('[getAIHand] 所有fallback都失败，返回空数组')
+  devLog('[getAIHand] 所有fallback都失败，尝试state_public')
+
+  // 最后的fallback：从state_public读取手牌
+  try {
+    const { data: game } = await supabase
+      .from('games')
+      .select('state_public')
+      .eq('id', gameId)
+      .single();
+
+    if (game?.state_public && typeof game.state_public === 'object') {
+      const state = game.state_public as any;
+      if (state.hands && state.hands[seatNo]) {
+        const fallbackHand = state.hands[seatNo];
+        if (Array.isArray(fallbackHand) && fallbackHand.length > 0) {
+          devLog('[getAIHand] 从state_public成功获取手牌:', { cardsCount: fallbackHand.length })
+          return fallbackHand as Card[];
+        }
+      }
+    }
+  } catch (e) {
+    devError('[getAIHand] state_public fallback失败:', e);
+  }
+
   return []
+}
 
 }
 

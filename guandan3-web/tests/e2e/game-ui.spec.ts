@@ -14,7 +14,7 @@ test.describe('GuanDan Game UI', () => {
     })
     
     // 1. Enter Room
-    await page.goto('http://localhost:3000');
+    await page.goto('/');
     await page.getByRole('button', { name: /练习/i }).click();
     await page.waitForURL(/\/room\/.+/, { timeout: 60000 });
     

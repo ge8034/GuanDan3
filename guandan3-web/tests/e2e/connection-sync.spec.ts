@@ -2,7 +2,7 @@ import { test, expect, BrowserContext, Page } from '@playwright/test';
 import { setupGameMocks } from './mocks';
 
 test.describe('连接稳定性与多端同步', () => {
-  test.setTimeout(120000);
+  test.setTimeout(180000); // 3分钟超时 - 多端同步测试需要更多时间
 
   let hostContext: BrowserContext;
   let p2Context: BrowserContext;

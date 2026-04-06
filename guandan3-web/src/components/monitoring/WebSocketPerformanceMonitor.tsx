@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useWebSocketOptimizer } from '@/lib/hooks/useOptimizedRoomSubscription'
 
-import { logger } from '@/lib/utils/logger'
 interface CompressionStats {
   averageRatio: number
   averageTime: number
@@ -45,7 +44,7 @@ export default function WebSocketPerformanceMonitor() {
         setCompressionStats(getCompressionStats())
         setQueueStats(getQueueStats())
       } catch (error) {
-        logger.error('Failed to get WebSocket stats:', error)
+        console.error('Failed to get WebSocket stats:', error)
       }
     }
 

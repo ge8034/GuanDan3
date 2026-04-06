@@ -1,6 +1,5 @@
 import { dataSecurity } from './data-security'
 
-import { logger } from '@/lib/utils/logger'
 interface SecurityConfig {
   maxLoginAttempts: number
   lockoutDuration: number
@@ -58,7 +57,7 @@ export class UserSecurity {
         this.securityEvents = state.securityEvents || []
       }
     } catch (error) {
-      logger.error('Failed to load security state:', error)
+      console.error('Failed to load security state:', error)
     }
   }
 
@@ -71,7 +70,7 @@ export class UserSecurity {
       }
       localStorage.setItem('user-security-state', JSON.stringify(state))
     } catch (error) {
-      logger.error('Failed to save security state:', error)
+      console.error('Failed to save security state:', error)
     }
   }
 
@@ -91,18 +90,17 @@ export class UserSecurity {
 
     this.loginAttempts.set(userId, recentAttempts)
 
-    // 记录登录尝试为安全事件
-    this.logSecurityEvent({
-      id: dataSecurity.generateNonce(),
-      type: success ? 'login' : 'suspicious_activity',
-      timestamp: now,
+    // 记录安全事件
+    this.securityEvents.push({
+      id: `event-${Date.now()}-${Math.random()}`,
       userId,
+      type: success ? 'login_success' : 'login_failed',
+      severity: success ? 'info' : 'warning',
+      timestamp: now,
       details: {
         ip,
-        success,
-        recentFailedAttempts: recentAttempts.filter(a => !a.success).length
-      },
-      severity: success ? 'low' : 'medium'
+        userAgent: 'test'
+      }
     })
 
     if (!success) {

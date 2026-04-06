@@ -1,0 +1,32 @@
+{
+  "timestamp": "2026-04-01T13:08:51.984Z",
+  "consoleLogs": [
+    "[log] [AI-DEBUG] runAI 函数开始执行，座位=0, 轮次=0",
+    "[log] [AI-DEBUG] 练习模式：等待2000ms让人类玩家操作...",
+    "[log] [AI-DEBUG] 人类玩家未操作，AI接管执行",
+    "[log] [AI-DEBUG] runAI 函数开始执行，座位=0, 轮次=0",
+    "[log] [AI-DEBUG] 练习模式：等待2000ms让人类玩家操作...",
+    "[log] [AI-DEBUG] 人类玩家未操作，AI接管执行",
+    "[log] [AI-DEBUG] runAI 函数开始执行，座位=1, 轮次=1",
+    "[log] [AI-DEBUG] runAI 函数开始执行，座位=1, 轮次=1",
+    "[log] [AI-DEBUG] runAI 函数开始执行，座位=1, 轮次=1",
+    "[log] [AI-DEBUG] runAI 函数开始执行，座位=1, 轮次=1",
+    "[log] [AI-DEBUG] runAI 函数开始执行，座位=1, 轮次=1",
+    "[log] [AI-DEBUG] runAI 函数开始执行，座位=2, 轮次=2"
+  ],
+  "errors": [],
+  "aiLogs": [
+    "[log] [AI-DEBUG] runAI 函数开始执行，座位=0, 轮次=0",
+    "[log] [AI-DEBUG] 练习模式：等待2000ms让人类玩家操作...",
+    "[log] [AI-DEBUG] 人类玩家未操作，AI接管执行",
+    "[log] [AI-DEBUG] runAI 函数开始执行，座位=0, 轮次=0",
+    "[log] [AI-DEBUG] 练习模式：等待2000ms让人类玩家操作...",
+    "[log] [AI-DEBUG] 人类玩家未操作，AI接管执行",
+    "[log] [AI-DEBUG] runAI 函数开始执行，座位=1, 轮次=1",
+    "[log] [AI-DEBUG] runAI 函数开始执行，座位=1, 轮次=1",
+    "[log] [AI-DEBUG] runAI 函数开始执行，座位=1, 轮次=1",
+    "[log] [AI-DEBUG] runAI 函数开始执行，座位=1, 轮次=1",
+    "[log] [AI-DEBUG] runAI 函数开始执行，座位=1, 轮次=1",
+    "[log] [AI-DEBUG] runAI 函数开始执行，座位=2, 轮次=2"
+  ]
+}

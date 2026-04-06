@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase/optimized-client'
 
-import { logger } from '@/lib/utils/logger'
 interface DatabaseMetrics {
   totalQueries: number
   successfulQueries: number
@@ -54,7 +53,7 @@ export default function DatabasePerformanceMonitor() {
           setCacheStats(report.cacheStats)
         }
       } catch (error) {
-        logger.error('Failed to get database metrics:', error)
+        console.error('Failed to get database metrics:', error)
       }
     }
 

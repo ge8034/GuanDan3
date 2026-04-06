@@ -80,6 +80,24 @@ test.describe('掼蛋游戏基线测试', () => {
       // 验证玩家座位可见（确认4个玩家都在）
       const playerSeat0 = page.locator('[data-testid="player-seat-0"]');
       await expect(playerSeat0).toBeVisible({ timeout: 5000 });
+
+      // 调试：检查游戏状态
+      const gameStatus = await page.evaluate(() => {
+        const bodyText = document.body.textContent || '';
+        // 尝试从 window 获取调试信息
+        const debugInfo = (window as any).__DEBUG__ || {};
+        return {
+          fullText: bodyText.substring(0, 500),
+          gameStatusMatch: bodyText.match(/牌局：(\w+)/)?.[1] || 'not found',
+          hasAutoStartLog: bodyText.includes('AutoStart'),
+          hasStartGameLog: bodyText.includes('startGame'),
+          roomLoaded: debugInfo.roomLoaded ?? 'unknown',
+          isOwner: debugInfo.isOwner ?? 'unknown',
+          userId: debugInfo.userId ?? 'unknown',
+          ownerUid: debugInfo.ownerUid ?? 'unknown',
+        };
+      });
+      console.log('[Debug] 游戏状态:', gameStatus);
     });
 
     // ========== 阶段4：验证手牌发放 ==========

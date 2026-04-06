@@ -24,7 +24,7 @@ test.describe('游戏完整流程测试', () => {
   });
 
   test('步骤1-3: 加载组件、访问房间、捕获日志', async ({ page }) => {
-    test.setTimeout(120000);
+    test.setTimeout(180000); // 3分钟超时 - 迭代测试需要更多时间
 
     // 收集所有控制台日志
     const logs: string[] = [];

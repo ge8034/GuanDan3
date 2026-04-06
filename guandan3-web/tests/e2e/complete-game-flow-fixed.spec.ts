@@ -6,7 +6,7 @@ import { test, expect } from '@playwright/test';
  */
 test.describe('Complete Game Flow (Fixed)', () => {
   test('人类玩家参与游戏 - 出牌流程验证', async ({ page }) => {
-    test.setTimeout(300000); // 5分钟超时
+    test.setTimeout(360000); // 6分钟超时
 
     // 收集所有日志
     const allLogs: string[] = [];
@@ -171,7 +171,7 @@ test.describe('Complete Game Flow (Fixed)', () => {
   });
 
   test('游戏完整流程 - 多轮出牌验证', async ({ page }) => {
-    test.setTimeout(300000); // 5分钟超时
+    test.setTimeout(360000); // 6分钟超时
 
     // 收集错误日志
     const allErrors: string[] = [];

@@ -132,6 +132,61 @@ export async function setupRoomMocks(page: Page, userId: string = 'mock-user-id'
     })
   })
 
+  // RPC: get_room_with_members_optimized - 一次性获取房间和成员数据
+  await page.route('**/rest/v1/rpc/get_room_with_members_optimized', async route => {
+    console.log('Mocking Get Room With Members Optimized')
+    const requestBody = route.request().postDataJSON()
+    const roomId = requestBody?.p_room_id
+
+    if (!roomId) {
+      await route.fulfill({
+        status: 400,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: 'Missing room_id' })
+      })
+      return
+    }
+
+    const mockRooms = (global as any).mockRooms as any[] || []
+    const room = mockRooms.find(r => r.id === roomId)
+
+    if (!room) {
+      console.log('[Get Room With Members] Room not found:', roomId)
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(null)
+      })
+      return
+    }
+
+    // 获取房间成员
+    const isPracticeMode = room.mode === 'pve1v3'
+    const members = isPracticeMode
+      ? createPracticeRoomMembers(roomId, userId)
+      : createPvpRoomMembers(roomId, userId)
+
+    const response = {
+      id: room.id,
+      name: room.name,
+      mode: room.mode,
+      type: room.type,
+      status: room.status,
+      visibility: room.visibility,
+      owner_uid: room.owner_uid,
+      created_at: room.created_at,
+      room_members: members
+    }
+
+    console.log('[Get Room With Members] Returning room:', room.id, 'mode:', room.mode, 'members:', members.length)
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(response)
+    })
+  })
+
   // GET /room_members - 获取房间成员
   await page.route('**/rest/v1/room_members*', async route => {
     const url = route.request().url()

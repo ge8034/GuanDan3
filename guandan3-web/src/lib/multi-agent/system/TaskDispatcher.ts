@@ -142,7 +142,7 @@ devLogCat(LogCategory.AGENT, `[TaskDispatcher] 可用 agents: ${availableAgents.
   }
 
   // 修复问题#26: Helper to subscribe to specific task completion（事件驱动）
-  public waitForTaskResult(taskId: TaskId, timeoutMs = 10000): Promise<any> {
+  public waitForTaskResult(taskId: TaskId, timeoutMs = 30000): Promise<any> {
     // Check if task is already completed
     const existingResult = this.completedTasks.get(taskId);
     if (existingResult) {

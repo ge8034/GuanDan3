@@ -16,7 +16,7 @@ test.describe('GuanDan Game Flow', () => {
     })
 
     // 1. Visit Home Page
-    await page.goto('http://localhost:3000');
+    await page.goto('/');
     await expect(page).toHaveTitle(/掼蛋 3/i);
     
     // 2. Click "Practice Room" (1v3 AI)

@@ -1,0 +1,189 @@
+npm warn Unknown project config "enable-pre-post-scripts". This will stop working in the next major version of npm.
+Loading env from: D:\Learn-Claude\GuanDan3\guandan3-web\.env.local
+Playwright Config: hasSupabaseEnv (Forced) = true
+
+Running 2 tests using 1 worker
+
+Loading env from: D:\Learn-Claude\GuanDan3\guandan3-web\.env.local
+Playwright Config: hasSupabaseEnv (Forced) = [33mtrue[39m
+Mocking Auth Signup
+Mocking Create Practice Room RPC
+✓ 进入练习房
+Mocking Get Room With Members Optimized
+[Get Room With Members] Returning room: room-1775049684588-hfybp2jm0 mode: pve1v3 members: [33m4[39m
+Mocking Get Games https://rzzywltxlfgucngfiznx.supabase.co/rest/v1/games?select=id%2Croom_id%2Cstatus%2Cturn_no%2Ccurrent_seat%2Cstate_public%2Cstate_private&room_id=eq.room-1775049684588-hfybp2jm0&status=in.%28deal%2Cplaying%2Cpaused%2Cfinished%29
+[Get Games] No game started yet, returning empty
+Mocking Heartbeat Room Member
+Mocking Get Games https://rzzywltxlfgucngfiznx.supabase.co/rest/v1/games?select=id&room_id=eq.room-1775049684588-hfybp2jm0&status=in.%28playing%2Cdeal%2Cpaused%29&limit=1
+[Get Games] No game started yet, returning empty
+Mocking Start Game
+Mocking Get Games https://rzzywltxlfgucngfiznx.supabase.co/rest/v1/games?select=id%2Croom_id%2Cstatus%2Cturn_no%2Ccurrent_seat%2Cstate_public%2Cstate_private&room_id=eq.room-1775049684588-hfybp2jm0&status=in.%28deal%2Cplaying%2Cpaused%2Cfinished%29
+[Get Games] Returning game state: currentSeat=0, turnNo=0
+Mocking Auth User
+Mocking Get Room Members https://rzzywltxlfgucngfiznx.supabase.co/rest/v1/room_members?select=seat_no&room_id=eq.room-1775049684588-hfybp2jm0&uid=eq.mock-user-id
+Mocking Get Turns
+✓ 游戏已开始，手牌已发 (27张)
+Mocking Get AI Hand for seat 0
+Mocking Get AI Hand: seat 0, card count 27
+Mocking Submit Turn with payload: {"p_game_id":"game-1775049686957-d2b32pcs6","p_action_id":"41489c48-2554-4690-b50b-acb42c8fa494","p_expected_turn_no":0,"p_payload":{"type":"play","cards":[{"id":13,"suit":"S","rank":"2","val":2},{"id":26,"suit":"H","rank":"2","val":2},{"id":12,"suit":"S","rank":"3","val":3},{"id":25,"suit":"H","rank":"3","val":3},{"id":11,"suit":"S","rank":"4","val":4},{"id":24,"suit":"H","rank":"4","val":4}]}}
+Mock submit_turn: turnNo=0, currentSeat=0, type=play, played=6
+Updated seat 0 hand: 21 cards remaining
+Mock submit_turn: next turnNo=1, next currentSeat=1
+Next seat is AI (1), scheduling auto-play...
+Mocking Get AI Hand for seat 1
+Mocking Get AI Hand: seat 1, card count 27
+AI 1 自动出牌: 13,12,11, 剩余: 24张
+Mocking Heartbeat Room Member
+  ✘  1 [chromium] › tests\e2e\complete-practice-game.spec.ts:27:7 › 完整游戏流程测试 › 练习房完整流程：自动开始 -> 人类出牌 -> AI 对战 -> 游戏结束 (11.0s)
+Loading env from: D:\Learn-Claude\GuanDan3\guandan3-web\.env.local
+Playwright Config: hasSupabaseEnv (Forced) = [33mtrue[39m
+Mocking Auth Signup
+Mocking Create Practice Room RPC
+✓ 进入练习房
+Mocking Get Room With Members Optimized
+[Get Room With Members] Returning room: room-1775049701694-bwzt4tlep mode: pve1v3 members: [33m4[39m
+Mocking Get Games https://rzzywltxlfgucngfiznx.supabase.co/rest/v1/games?select=id%2Croom_id%2Cstatus%2Cturn_no%2Ccurrent_seat%2Cstate_public%2Cstate_private&room_id=eq.room-1775049701694-bwzt4tlep&status=in.%28deal%2Cplaying%2Cpaused%2Cfinished%29
+[Get Games] No game started yet, returning empty
+Mocking Heartbeat Room Member
+Mocking Get Games https://rzzywltxlfgucngfiznx.supabase.co/rest/v1/games?select=id&room_id=eq.room-1775049701694-bwzt4tlep&status=in.%28playing%2Cdeal%2Cpaused%29&limit=1
+[Get Games] No game started yet, returning empty
+Mocking Start Game
+Mocking Get Games https://rzzywltxlfgucngfiznx.supabase.co/rest/v1/games?select=id%2Croom_id%2Cstatus%2Cturn_no%2Ccurrent_seat%2Cstate_public%2Cstate_private&room_id=eq.room-1775049701694-bwzt4tlep&status=in.%28deal%2Cplaying%2Cpaused%2Cfinished%29
+[Get Games] Returning game state: currentSeat=0, turnNo=0
+Mocking Auth User
+Mocking Get Room Members https://rzzywltxlfgucngfiznx.supabase.co/rest/v1/room_members?select=seat_no&room_id=eq.room-1775049701694-bwzt4tlep&uid=eq.mock-user-id
+Mocking Get Turns
+✓ 游戏已开始，手牌已发 (27张)
+Mocking Get AI Hand for seat 0
+Mocking Get AI Hand: seat 0, card count 27
+Mocking Submit Turn with payload: {"p_game_id":"game-1775049704254-2nao5i950","p_action_id":"f21cb5a9-dc14-426b-a2cc-5284b942e88c","p_expected_turn_no":0,"p_payload":{"type":"play","cards":[{"id":13,"suit":"S","rank":"2","val":2},{"id":26,"suit":"H","rank":"2","val":2},{"id":12,"suit":"S","rank":"3","val":3},{"id":25,"suit":"H","rank":"3","val":3},{"id":11,"suit":"S","rank":"4","val":4},{"id":24,"suit":"H","rank":"4","val":4}]}}
+Mock submit_turn: turnNo=0, currentSeat=0, type=play, played=6
+Updated seat 0 hand: 21 cards remaining
+Mock submit_turn: next turnNo=1, next currentSeat=1
+Next seat is AI (1), scheduling auto-play...
+✓ 选中第一张牌
+Mocking Get AI Hand for seat 1
+Mocking Get AI Hand: seat 1, card count 27
+AI 1 自动出牌: 13,12, 剩余: 25张
+Mocking Heartbeat Room Member
+Mocking Heartbeat Room Member
+Mocking Heartbeat Room Member
+Mocking Heartbeat Room Member
+  ✘  2 [chromium] › tests\e2e\complete-practice-game.spec.ts:27:7 › 完整游戏流程测试 › 练习房完整流程：自动开始 -> 人类出牌 -> AI 对战 -> 游戏结束 (retry #1) (32.9s)
+Loading env from: D:\Learn-Claude\GuanDan3\guandan3-web\.env.local
+Playwright Config: hasSupabaseEnv (Forced) = [33mtrue[39m
+Mocking Auth Signup
+Mocking Create Practice Room RPC
+✓ 进入练习房
+Mocking Get Room With Members Optimized
+[Get Room With Members] Returning room: room-1775049740770-x0sq72joq mode: pve1v3 members: [33m4[39m
+Mocking Get Games https://rzzywltxlfgucngfiznx.supabase.co/rest/v1/games?select=id%2Croom_id%2Cstatus%2Cturn_no%2Ccurrent_seat%2Cstate_public%2Cstate_private&room_id=eq.room-1775049740770-x0sq72joq&status=in.%28deal%2Cplaying%2Cpaused%2Cfinished%29
+[Get Games] No game started yet, returning empty
+Mocking Heartbeat Room Member
+Mocking Get Games https://rzzywltxlfgucngfiznx.supabase.co/rest/v1/games?select=id&room_id=eq.room-1775049740770-x0sq72joq&status=in.%28playing%2Cdeal%2Cpaused%29&limit=1
+[Get Games] No game started yet, returning empty
+Mocking Start Game
+Mocking Get Games https://rzzywltxlfgucngfiznx.supabase.co/rest/v1/games?select=id%2Croom_id%2Cstatus%2Cturn_no%2Ccurrent_seat%2Cstate_public%2Cstate_private&room_id=eq.room-1775049740770-x0sq72joq&status=in.%28deal%2Cplaying%2Cpaused%2Cfinished%29
+[Get Games] Returning game state: currentSeat=0, turnNo=0
+[Browser Console] [AI-DEBUG] runAI 函数开始执行，座位=0, 轮次=0
+[Browser Console] [AI-DEBUG] 练习模式：等待2000ms让人类玩家操作...
+Mocking Auth User
+Mocking Get Room Members https://rzzywltxlfgucngfiznx.supabase.co/rest/v1/room_members?select=seat_no&room_id=eq.room-1775049740770-x0sq72joq&uid=eq.mock-user-id
+Mocking Get Turns
+✓ 游戏已开始，手牌已发 (27张)
+[Browser Console] [AI-DEBUG] 人类玩家未操作，AI接管执行
+Mocking Get AI Hand for seat 0
+Mocking Get AI Hand: seat 0, card count 27
+Mocking Submit Turn with payload: {"p_game_id":"game-1775049743865-srcz5ck5y","p_action_id":"8ebb6e35-b16e-433a-84fa-1b12a587522d","p_expected_turn_no":0,"p_payload":{"type":"play","cards":[{"id":13,"suit":"S","rank":"2","val":2},{"id":26,"suit":"H","rank":"2","val":2},{"id":12,"suit":"S","rank":"3","val":3},{"id":25,"suit":"H","rank":"3","val":3},{"id":11,"suit":"S","rank":"4","val":4},{"id":24,"suit":"H","rank":"4","val":4}]}}
+Mock submit_turn: turnNo=0, currentSeat=0, type=play, played=6
+Updated seat 0 hand: 21 cards remaining
+Mock submit_turn: next turnNo=1, next currentSeat=1
+Next seat is AI (1), scheduling auto-play...
+[Browser Console] [AI-DEBUG] runAI 函数开始执行，座位=1, 轮次=1
+Mocking Get AI Hand for seat 1
+Mocking Get AI Hand: seat 1, card count 27
+✓ 人类玩家已出牌，等待 AI 接管...
+Mocking Get Turns
+AI 1 自动出牌: 13,12, 剩余: 25张
+[Browser Console] [AI-DEBUG] runAI 函数开始执行，座位=1, 轮次=1
+Mocking Submit Turn with payload: {"p_game_id":"game-1775049743865-srcz5ck5y","p_action_id":"119a2556-2197-4bd3-be79-f36e4942b8df","p_expected_turn_no":1,"p_payload":{"type":"play","cards":[{"id":1,"suit":"S","rank":"A","val":14}]}}
+Mock submit_turn: turnNo=2, currentSeat=2, type=play, played=1
+Updated seat 2 AI hand: 27 cards remaining
+Mock submit_turn: next turnNo=3, next currentSeat=3
+Next seat is AI (3), scheduling auto-play...
+Mocking Heartbeat Room Member
+[Browser Console] [AI-DEBUG] runAI 函数开始执行，座位=3, 轮次=3
+Mocking Get AI Hand for seat 1
+Mocking Get AI Hand: seat 1, card count 25
+Mocking Get AI Hand for seat 3
+Mocking Get AI Hand: seat 3, card count 27
+AI 3 自动出牌: 11,10,9, 剩余: 24张
+✓ 检测到游戏进展：手牌从 27 张变为 20 张
+✓ AI 接管验证完成
+  ✓  3 [chromium] › tests\e2e\complete-practice-game.spec.ts:146:7 › 完整游戏流程测试 › 简化测试：验证 AI 能够接替人类玩家 (13.3s)
+
+
+  1) [chromium] › tests\e2e\complete-practice-game.spec.ts:27:7 › 完整游戏流程测试 › 练习房完整流程：自动开始 -> 人类出牌 -> AI 对战 -> 游戏结束 
+
+    Error: 第一张牌应该被选中
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeTruthy[2m()[22m
+
+    Received: [31mfalse[39m
+
+      67 |         el.style.transform !== 'none'
+      68 |     );
+    > 69 |     expect(isSelected, '第一张牌应该被选中').toBeTruthy();
+         |                                     ^
+      70 |
+      71 |     console.log('✓ 选中第一张牌');
+      72 |
+        at D:\Learn-Claude\GuanDan3\guandan3-web\tests\e2e\complete-practice-game.spec.ts:69:37
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\complete-practice-game-完整游-ba5a1-：自动开始---人类出牌---AI-对战---游戏结束-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\complete-practice-game-完整游-ba5a1-：自动开始---人类出牌---AI-对战---游戏结束-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\complete-practice-game-完整游-ba5a1-：自动开始---人类出牌---AI-对战---游戏结束-chromium\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    TimeoutError: locator.click: Timeout 20000ms exceeded.
+    Call log:
+    [2m  - waiting for getByRole('button', { name: /出牌|Play/i })[22m
+
+
+      74 |     const playButton = page.getByRole('button', { name: /出牌|Play/i });
+      75 |     await expect(playButton).toBeVisible({ timeout: 5000 });
+    > 76 |     await playButton.click();
+         |                      ^
+      77 |
+      78 |     console.log('✓ 人类玩家已出牌');
+      79 |
+        at D:\Learn-Claude\GuanDan3\guandan3-web\tests\e2e\complete-practice-game.spec.ts:76:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\complete-practice-game-完整游-ba5a1-：自动开始---人类出牌---AI-对战---游戏结束-chromium-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\complete-practice-game-完整游-ba5a1-：自动开始---人类出牌---AI-对战---游戏结束-chromium-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\complete-practice-game-完整游-ba5a1-：自动开始---人类出牌---AI-对战---游戏结束-chromium-retry1\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\complete-practice-game-完整游-ba5a1-：自动开始---人类出牌---AI-对战---游戏结束-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\complete-practice-game-完整游-ba5a1-：自动开始---人类出牌---AI-对战---游戏结束-chromium-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests\e2e\complete-practice-game.spec.ts:27:7 › 完整游戏流程测试 › 练习房完整流程：自动开始 -> 人类出牌 -> AI 对战 -> 游戏结束 
+  1 passed (1.3m)

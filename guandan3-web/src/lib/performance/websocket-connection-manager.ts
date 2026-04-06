@@ -1,7 +1,6 @@
 import { webSocketHeartbeat, HeartbeatStats } from './websocket-heartbeat'
 import { webSocketReconnectManager, ReconnectStats } from './websocket-reconnect'
 
-import { logger } from '@/lib/utils/logger'
 export interface ConnectionManagerConfig {
   enableHeartbeat: boolean
   enableAutoReconnect: boolean
@@ -45,7 +44,7 @@ export class WebSocketConnectionManager {
   connect(url: string): Promise<WebSocket> {
     return new Promise((resolve, reject) => {
       try {
-        logger.debug(`Connecting to WebSocket: ${url}`)
+        console.log(`Connecting to WebSocket: ${url}`)
         this.connectionUrl = url
         this.manualDisconnect = false
 
@@ -53,19 +52,19 @@ export class WebSocketConnectionManager {
         this.connection = ws
 
         ws.onopen = () => {
-          logger.debug('WebSocket connected successfully')
+          console.log('WebSocket connected successfully')
           this.onConnectionOpen()
           resolve(ws)
         }
 
         ws.onerror = (error) => {
-          logger.error('WebSocket error:', error)
+          console.error('WebSocket error:', error)
           this.onConnectionError(error)
           reject(error)
         }
 
         ws.onclose = (event) => {
-          logger.debug('WebSocket closed:', event)
+          console.log('WebSocket closed:', event)
           this.onConnectionClose(event)
         }
 
@@ -73,14 +72,14 @@ export class WebSocketConnectionManager {
           this.handleMessage(event)
         }
       } catch (error) {
-        logger.error('Failed to create WebSocket connection:', error)
+        console.error('Failed to create WebSocket connection:', error)
         reject(error)
       }
     })
   }
 
   disconnect(): void {
-    logger.debug('Manual disconnect requested')
+    console.log('Manual disconnect requested')
     this.manualDisconnect = true
 
     if (this.connection) {
@@ -93,7 +92,7 @@ export class WebSocketConnectionManager {
 
   send(data: string | ArrayBuffer): boolean {
     if (!this.connection || this.connection.readyState !== WebSocket.OPEN) {
-      logger.warn('Cannot send message: connection not ready')
+      console.warn('Cannot send message: connection not ready')
       return false
     }
 
@@ -101,7 +100,7 @@ export class WebSocketConnectionManager {
       this.connection.send(data)
       return true
     } catch (error) {
-      logger.error('Failed to send message:', error)
+      console.error('Failed to send message:', error)
       return false
     }
   }
@@ -185,7 +184,7 @@ export class WebSocketConnectionManager {
       webSocketReconnectManager.updateConfig({ maxRetries: config.reconnectMaxRetries })
     }
 
-    logger.debug('Connection manager config updated:', this.config)
+    console.log('Connection manager config updated:', this.config)
   }
 
   reset(): void {
@@ -194,7 +193,7 @@ export class WebSocketConnectionManager {
     webSocketHeartbeat.reset()
     webSocketReconnectManager.reset()
     this.manualDisconnect = false
-    logger.debug('Connection manager reset')
+    console.log('Connection manager reset')
   }
 
   private messageCallback?: (event: MessageEvent) => void
@@ -244,7 +243,7 @@ export class WebSocketConnectionManager {
         this.messageCallback(event)
       }
     } catch (error) {
-      logger.error('Failed to parse WebSocket message:', error)
+      console.error('Failed to parse WebSocket message:', error)
       if (this.messageCallback) {
         this.messageCallback(event)
       }
@@ -273,20 +272,20 @@ export class WebSocketConnectionManager {
 
   private setupReconnectCallbacks(): void {
     webSocketReconnectManager.onAttempt((attempt) => {
-      logger.debug(`Reconnection attempt ${attempt}`)
+      console.log(`Reconnection attempt ${attempt}`)
     })
 
     webSocketReconnectManager.onSuccess(() => {
-      logger.debug('Reconnection successful')
+      console.log('Reconnection successful')
       if (this.connectionUrl) {
         this.connect(this.connectionUrl).catch(error => {
-          logger.error('Failed to reconnect after successful attempt:', error)
+          console.error('Failed to reconnect after successful attempt:', error)
         })
       }
     })
 
     webSocketReconnectManager.onFailure((error) => {
-      logger.error('Reconnection failed:', error)
+      console.error('Reconnection failed:', error)
     })
   }
 }

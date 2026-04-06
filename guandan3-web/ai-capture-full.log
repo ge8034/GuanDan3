@@ -1,0 +1,36 @@
+npm warn Unknown project config "enable-pre-post-scripts". This will stop working in the next major version of npm.
+Loading env from: D:\Learn-Claude\GuanDan3\guandan3-web\.env.local
+Playwright Config: hasSupabaseEnv (Forced) = true
+
+Running 1 test using 1 worker
+
+Loading env from: D:\Learn-Claude\GuanDan3\guandan3-web\.env.local
+Playwright Config: hasSupabaseEnv (Forced) = [33mtrue[39m
+=== 开始AI调试测试 ===
+1. 导航到练习房...
+2. 当前URL: http://localhost:3000/practice
+✓ 已在练习房页面
+3. 开始游戏按钮不可见，可能已自动开始
+4. 手牌数量: 0
+⚠️  手牌为空，游戏可能未正确启动
+=== 观察AI行为30秒 ===
+[0] 当前手牌: 0张
+[1] 当前手牌: 0张
+[2] 当前手牌: 0张
+[3] 当前手牌: 0张
+[4] 当前手牌: 0张
+[5] 当前手牌: 0张
+[6] 当前手牌: 0张
+[7] 当前手牌: 0张
+[8] 当前手牌: 0张
+[9] 当前手牌: 0张
+[10] 当前手牌: 0张
+[11] 当前手牌: 0张
+[12] 当前手牌: 0张
+[13] 当前手牌: 0张
+[14] 当前手牌: 0张
+=== 最终手牌: 0张 ===
+=== AI调试测试完成 ===
+  ✓  1 [chromium] › tests\e2e\ai-debug-capture.spec.ts:36:5 › AI调试：捕获完整控制台日志 (46.7s)
+
+  1 passed (52.4s)

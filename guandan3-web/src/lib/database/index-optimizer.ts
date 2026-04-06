@@ -1,6 +1,5 @@
 import { supabase } from '@/lib/supabase/optimized-client'
 
-import { logger } from '@/lib/utils/logger'
 export interface IndexDefinition {
   table: string
   columns: string[]
@@ -36,7 +35,7 @@ export class DatabaseIndexOptimizer {
       })
 
       if (error) {
-        logger.error(`Failed to analyze indexes for table ${tableName}:`, error)
+        console.error(`Failed to analyze indexes for table ${tableName}:`, error)
         const recommendedIndexes = this.getRecommendedIndexes(tableName, [])
         return {
           table: tableName,
@@ -59,7 +58,7 @@ export class DatabaseIndexOptimizer {
       this.analysisResults.set(tableName, result)
       return result
     } catch (error) {
-      logger.error(`Error analyzing table ${tableName}:`, error)
+      console.error(`Error analyzing table ${tableName}:`, error)
       const recommendedIndexes = this.getRecommendedIndexes(tableName, [])
       return {
         table: tableName,
@@ -102,14 +101,14 @@ export class DatabaseIndexOptimizer {
       })
 
       if (error) {
-        logger.error(`Failed to create index ${indexName}:`, error)
+        console.error(`Failed to create index ${indexName}:`, error)
         return false
       }
 
-      logger.debug(`Successfully created index: ${indexName}`)
+      console.log(`Successfully created index: ${indexName}`)
       return true
     } catch (error) {
-      logger.error(`Error creating index:`, error)
+      console.error(`Error creating index:`, error)
       return false
     }
   }
@@ -147,14 +146,14 @@ export class DatabaseIndexOptimizer {
       })
 
       if (error) {
-        logger.error(`Failed to drop index ${indexName}:`, error)
+        console.error(`Failed to drop index ${indexName}:`, error)
         return false
       }
 
-      logger.debug(`Successfully dropped index: ${indexName}`)
+      console.log(`Successfully dropped index: ${indexName}`)
       return true
     } catch (error) {
-      logger.error(`Error dropping index:`, error)
+      console.error(`Error dropping index:`, error)
       return false
     }
   }
@@ -263,7 +262,7 @@ export class DatabaseIndexOptimizer {
       const { data, error } = await supabase.rpc('get_index_usage_stats')
 
       if (error) {
-        logger.error('Failed to get index usage stats:', error)
+        console.error('Failed to get index usage stats:', error)
         return stats
       }
 
@@ -271,7 +270,7 @@ export class DatabaseIndexOptimizer {
         stats.set(row.index_name, row.usage_count)
       })
     } catch (error) {
-      logger.error('Error getting index usage stats:', error)
+      console.error('Error getting index usage stats:', error)
     }
 
     return stats

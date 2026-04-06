@@ -1,6 +1,5 @@
 import CryptoJS from 'crypto-js'
 
-import { logger } from '@/lib/utils/logger'
 const SECRET_KEY = process.env.NEXT_PUBLIC_ENCRYPTION_KEY || 'guandan3-default-secret-key-2024'
 
 export class DataSecurity {
@@ -19,7 +18,7 @@ export class DataSecurity {
     try {
       return CryptoJS.AES.encrypt(data, SECRET_KEY).toString()
     } catch (error) {
-      logger.error('Encryption error:', error)
+      console.error('Encryption error:', error)
       throw new Error('Failed to encrypt data')
     }
   }
@@ -29,7 +28,7 @@ export class DataSecurity {
       const bytes = CryptoJS.AES.decrypt(encryptedData, SECRET_KEY)
       return bytes.toString(CryptoJS.enc.Utf8)
     } catch (error) {
-      logger.error('Decryption error:', error)
+      console.error('Decryption error:', error)
       throw new Error('Failed to decrypt data')
     }
   }
@@ -39,7 +38,7 @@ export class DataSecurity {
       const jsonString = JSON.stringify(obj)
       return this.encrypt(jsonString)
     } catch (error) {
-      logger.error('Object encryption error:', error)
+      console.error('Object encryption error:', error)
       throw new Error('Failed to encrypt object')
     }
   }
@@ -49,7 +48,7 @@ export class DataSecurity {
       const jsonString = this.decrypt(encryptedData)
       return JSON.parse(jsonString) as T
     } catch (error) {
-      logger.error('Object decryption error:', error)
+      console.error('Object decryption error:', error)
       return null
     }
   }
@@ -58,7 +57,7 @@ export class DataSecurity {
     try {
       return CryptoJS.SHA256(data).toString()
     } catch (error) {
-      logger.error('Hash error:', error)
+      console.error('Hash error:', error)
       throw new Error('Failed to hash data')
     }
   }
@@ -86,14 +85,6 @@ export class DataSecurity {
       .replace(/javascript:/gi, '')
       .replace(/on\w+=/gi, '')
       .replace(/data:/gi, '')
-      .replace(/alert\([^)]*\)/gi, '')
-      .replace(/confirm\([^)]*\)/gi, '')
-      .replace(/prompt\([^)]*\)/gi, '')
-      .replace(/eval\([^)]*\)/gi, '')
-      .replace(/document\./gi, '')
-      .replace(/window\./gi, '')
-      .replace(/\.innerHTML/gi, '')
-      .replace(/\.outerHTML/gi, '')
       .trim()
   }
 
@@ -199,7 +190,7 @@ export class DataSecurity {
     try {
       return btoa(unescape(encodeURIComponent(data)))
     } catch (error) {
-      logger.error('Base64 encoding error:', error)
+      console.error('Base64 encoding error:', error)
       throw new Error('Failed to encode base64')
     }
   }
@@ -208,7 +199,7 @@ export class DataSecurity {
     try {
       return decodeURIComponent(escape(atob(encodedData)))
     } catch (error) {
-      logger.error('Base64 decoding error:', error)
+      console.error('Base64 decoding error:', error)
       throw new Error('Failed to decode base64')
     }
   }

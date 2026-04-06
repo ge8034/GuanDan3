@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useCustomThemes } from '@/lib/hooks/useCustomThemes';
 import ThemeEditor from './theme/ThemeEditor';
 
-import { logger } from '@/lib/utils/logger'
 export default function ThemeSwitcher() {
   const { gameTheme, mode, setGameTheme, setMode } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
@@ -39,7 +38,7 @@ export default function ThemeSwitcher() {
         const theme = await importTheme(file);
         saveCustomTheme(theme);
       } catch (error) {
-        logger.error('Failed to import theme:', error);
+        console.error('Failed to import theme:', error);
       }
     }
   };

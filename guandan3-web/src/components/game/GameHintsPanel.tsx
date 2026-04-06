@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { useShallow } from 'zustand/shallow'
 import { CardHint, PlaySuggestion, StrategyAdvice, WinProbability } from '@/types/game-hints'
 import { gameHintsService } from '@/lib/services/game-hints'
 import { Button } from '@/components/ui/Button'
@@ -9,25 +8,9 @@ import Card from '@/components/ui/Card'
 import { useGameStore } from '@/lib/store/game'
 import { useRoomStore } from '@/lib/store/room'
 
-import { logger } from '@/lib/utils/logger'
-
 export function GameHintsPanel() {
-  // 使用 useShallow 减少不必要的重渲染
-  const { myHand, lastAction, turnNo, status } = useGameStore(
-    useShallow((s) => ({
-      myHand: s.myHand,
-      lastAction: s.lastAction,
-      turnNo: s.turnNo,
-      status: s.status,
-    }))
-  )
-
-  const { currentRoom, members } = useRoomStore(
-    useShallow((s) => ({
-      currentRoom: s.currentRoom,
-      members: s.members,
-    }))
-  )
+  const { myHand, lastAction, turnNo, status } = useGameStore()
+  const { currentRoom, members } = useRoomStore()
   const [showHints, setShowHints] = useState(false)
   const [activeTab, setActiveTab] = useState<'hints' | 'suggestions' | 'strategy' | 'probability'>('hints')
 
@@ -73,12 +56,12 @@ export function GameHintsPanel() {
 
   const handleHintClick = (hint: CardHint) => {
     if (hint.cards.length > 0) {
-      logger.debug('Selected hint cards:', hint.cards)
+      console.log('Selected hint cards:', hint.cards)
     }
   }
 
   const handleSuggestionClick = (suggestion: PlaySuggestion) => {
-    logger.debug('Selected suggestion:', suggestion)
+    console.log('Selected suggestion:', suggestion)
   }
 
   if (!showHints) {

@@ -28,10 +28,9 @@ export const PlayerAvatar = memo(function PlayerAvatar({
 }: PlayerAvatarProps) {
   return (
     <div
-      data-testid={`player-seat-${seatNo}`}
       className={`flex flex-col items-center p-1.5 sm:p-2 md:p-3 rounded-xl backdrop-blur-md border shadow-2xl transition-all duration-300 ${
-        isCurrentTurn
-          ? 'scale-105 sm:scale-110 border-primary bg-primary/10 z-20 shadow-[0_0_30px_rgba(var(--color-primary),0.3)]'
+        isCurrentTurn 
+          ? 'scale-105 sm:scale-110 border-primary bg-primary/10 z-20 shadow-[0_0_30px_rgba(var(--color-primary),0.3)]' 
           : 'bg-surface/80 border-border z-10'
       }`}
     >

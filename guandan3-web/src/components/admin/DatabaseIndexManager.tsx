@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/Button'
 import { databaseIndexOptimizer, IndexAnalysisResult } from '@/lib/database/index-optimizer'
 import { Database, RefreshCw, CheckCircle, XCircle, AlertTriangle } from 'lucide-react'
 
-import { logger } from '@/lib/utils/logger'
 export default function DatabaseIndexManager() {
   const [analyses, setAnalyses] = useState<IndexAnalysisResult[]>([])
   const [loading, setLoading] = useState(false)
@@ -27,7 +26,7 @@ export default function DatabaseIndexManager() {
       const results = await databaseIndexOptimizer.analyzeAllTables()
       setAnalyses(results)
     } catch (error) {
-      logger.error('Failed to load index analyses:', error)
+      console.error('Failed to load index analyses:', error)
     } finally {
       setLoading(false)
     }
@@ -41,7 +40,7 @@ export default function DatabaseIndexManager() {
       setResults(optimizationResults)
       await loadAnalyses()
     } catch (error) {
-      logger.error('Failed to optimize indexes:', error)
+      console.error('Failed to optimize indexes:', error)
       setResults({
         created: 0,
         dropped: 0,
