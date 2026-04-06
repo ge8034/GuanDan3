@@ -28,6 +28,11 @@ const config: Config = {
             light: '#1e5634',
             dark: '#0d2818',
             border: '#2d5a3d',
+            hoverLight: '#1e5634',
+            hoverDark: '#153020',
+            activeLight: '#153020',
+            activeDark: '#0d1f14',
+            hoverBorder: '#3a7a4f',
           },
           card: {
             bg: '#ffffff',

@@ -13,7 +13,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         // 主要按钮 - 深绿渐变
-        primary: 'bg-gradient-to-br from-poker-table to-poker-table-dark border border-poker-table-border text-gray-200 shadow-[0_4px_10px_rgba(0,0,0,0.5)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.6)] hover:-translate-y-px hover:text-white active:translate-y-px active:shadow-[0_2px_6px_rgba(0,0,0,0.4)]',
+        primary: 'bg-gradient-to-br from-poker-table to-poker-table-dark border border-poker-table-border text-gray-200 shadow-[0_4px_10px_rgba(0,0,0,0.5)] hover:from-poker-table-light hover:to-poker-table-hoverDark hover:border-poker-table-hoverBorder hover:text-white hover:shadow-[0_6px_16px_rgba(0,0,0,0.6)] hover:-translate-y-px active:from-poker-table-activeLight active:to-poker-table-activeDark active:border-poker-table-border active:text-gray-300 active:translate-y-px active:shadow-[0_2px_6px_rgba(0,0,0,0.4)]',
         // 次要按钮 - 中绿色
         secondary: 'bg-gradient-to-br from-poker-table-light to-poker-table border border-poker-table-border text-gray-200 shadow-[0_4px_10px_rgba(0,0,0,0.5)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.6)] hover:-translate-y-px hover:text-white active:translate-y-px',
         // 轮廓按钮 - 金色边框
@@ -33,7 +33,7 @@ const buttonVariants = cva(
         // 大尺寸 - 17px字体，padding适配
         lg: 'h-12 px-[24px] py-[14px] text-[17px] min-h-[48px]',
         // 特大尺寸 - 19px字体，主操作按钮
-        xl: 'h-14 px-[32px] py-[18px] text-[19px] font-semibold min-h-[56px] bg-gradient-to-br from-accent-gold to-[#b8962e] border border-accent-goldLight text-gray-900 shadow-[0_6px_14px_rgba(0,0,0,0.5)] hover:shadow-[0_8px_18px_rgba(0,0,0,0.6)] hover:-translate-y-px active:translate-y-px',
+        xl: 'h-14 px-[32px] py-[18px] text-[19px] font-semibold min-h-[56px] bg-gradient-to-br from-poker-table to-poker-table-dark border border-poker-table-border text-gray-200 hover:from-poker-table-light hover:to-poker-table-hoverDark hover:border-poker-table-hoverBorder hover:text-white hover:shadow-[0_8px_18px_rgba(0,0,0,0.6)] hover:-translate-y-px active:from-poker-table-activeLight active:to-poker-table-activeDark active:border-poker-table-border active:text-gray-300 active:translate-y-px',
         // 图标按钮
         icon: 'h-10 w-10',
       },
