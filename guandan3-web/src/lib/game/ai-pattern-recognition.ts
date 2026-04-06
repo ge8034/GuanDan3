@@ -17,6 +17,9 @@ const MIN_SEQUENCE_TRIPLE_LENGTH = 2;
 /** 炸弹最小张数 */
 const MIN_BOMB_SIZE = 4;
 
+/** 手牌分析缓存最大条目数 */
+const MAX_HAND_ANALYSIS_CACHE_SIZE = 100;
+
 // ============================================================================
 // 类型定义
 // ============================================================================
@@ -29,6 +32,78 @@ type CardGroup = readonly Card[];
 
 /** 组合生成器结果类型 */
 type Combinations<T> = readonly T[][];
+
+// ============================================================================
+// 手牌分析缓存
+// ============================================================================
+
+/**
+ * 手牌分析缓存条目
+ */
+interface HandAnalysisCacheEntry {
+  cards: readonly Card[];
+  levelRank: number;
+  analysis: HandAnalysis;
+  timestamp: number;
+}
+
+/** 手牌分析缓存存储 */
+const handAnalysisCache = new Map<string, HandAnalysisCacheEntry>();
+
+/**
+ * 生成手牌分析缓存键
+ *
+ * @param cards - 卡牌数组
+ * @param levelRank - 级牌点数
+ * @returns 缓存键
+ */
+function generateHandAnalysisCacheKey(cards: readonly Card[], levelRank: number): string {
+  // 按卡牌ID排序生成稳定的键
+  const sortedIds = cards
+    .map((c) => c.id)
+    .slice()
+    .sort((a, b) => a - b)
+    .join(',');
+  return `${sortedIds}_${levelRank}`;
+}
+
+/**
+ * 清理过期的缓存条目
+ * 当缓存超过最大大小时，删除最旧的条目
+ */
+function cleanupHandAnalysisCache(): void {
+  if (handAnalysisCache.size <= MAX_HAND_ANALYSIS_CACHE_SIZE) {
+    return;
+  }
+
+  // 将条目按时间戳排序
+  const entries = Array.from(handAnalysisCache.entries());
+  entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
+
+  // 删除最旧的 20% 条目
+  const toRemove = Math.floor(MAX_HAND_ANALYSIS_CACHE_SIZE * 0.2);
+  for (let i = 0; i < toRemove; i++) {
+    handAnalysisCache.delete(entries[i][0]);
+  }
+}
+
+/**
+ * 清空手牌分析缓存
+ * 用于测试或内存管理
+ */
+export function clearHandAnalysisCache(): void {
+  handAnalysisCache.clear();
+}
+
+/**
+ * 获取缓存统计信息
+ */
+export function getHandAnalysisCacheStats(): { size: number; maxSize: number } {
+  return {
+    size: handAnalysisCache.size,
+    maxSize: MAX_HAND_ANALYSIS_CACHE_SIZE,
+  };
+}
 
 // ============================================================================
 // 工具函数
@@ -157,17 +232,8 @@ function checkConsecutive(
  * @returns 所有单张组合
  */
 export function findSingles(cards: Card[], _levelRank?: number): Card[][] {
-  const used = new Set<number>();
-  const singles: Card[][] = [];
-
-  for (const card of cards) {
-    if (!used.has(card.id)) {
-      used.add(card.id);
-      singles.push([card]);
-    }
-  }
-
-  return singles;
+  // 性能优化：直接映射，单张牌不会有重复 ID，无需 Set 去重
+  return cards.map((card) => [card]);
 }
 
 /**
@@ -410,7 +476,17 @@ export function findSequenceTriples(cards: Card[], _levelRank?: number): Card[][
  * @returns 手牌分析结果
  */
 export function analyzeHand(cards: Card[], levelRank: number): HandAnalysis {
-  return {
+  // 生成缓存键
+  const cacheKey = generateHandAnalysisCacheKey(cards, levelRank);
+
+  // 检查缓存
+  const cached = handAnalysisCache.get(cacheKey);
+  if (cached) {
+    return cached.analysis;
+  }
+
+  // 未命中缓存，执行分析
+  const analysis: HandAnalysis = {
     singles: findSingles(cards),
     pairs: findPairs(cards),
     triples: findTriples(cards),
@@ -420,6 +496,19 @@ export function analyzeHand(cards: Card[], levelRank: number): HandAnalysis {
     sequenceTriples: findSequenceTriples(cards),
     fullHouses: findFullHouses(cards),
   };
+
+  // 存入缓存
+  handAnalysisCache.set(cacheKey, {
+    cards,
+    levelRank,
+    analysis,
+    timestamp: Date.now(),
+  });
+
+  // 清理过期缓存
+  cleanupHandAnalysisCache();
+
+  return analysis;
 }
 
 /**

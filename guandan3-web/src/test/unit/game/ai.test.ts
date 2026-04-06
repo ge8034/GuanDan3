@@ -3,6 +3,7 @@ import {
   clearPerformanceMetrics,
   decideMove,
   analyzeHand,
+  clearHandAnalysisCache,
 } from '@/lib/game/ai';
 import type { Card } from '@/lib/store/game';
 
@@ -17,6 +18,7 @@ const c = (card: Partial<Card>): Card => ({
 describe('ai.decideMove', () => {
   beforeEach(() => {
     clearPerformanceMetrics();
+    clearHandAnalysisCache();
   });
 
   it('空手牌返回pass', () => {

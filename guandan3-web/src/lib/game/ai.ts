@@ -127,4 +127,6 @@ export {
   findFullHouses,
   findSequencePairs,
   findSequenceTriples,
+  clearHandAnalysisCache,
+  getHandAnalysisCacheStats,
 } from './ai-pattern-recognition';

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { clearPerformanceMetrics, decideMove } from '@/lib/game/ai';
+import { clearPerformanceMetrics, decideMove, clearHandAnalysisCache } from '@/lib/game/ai';
 import type { Card } from '@/lib/store/game';
 
 let nextId = 1;
@@ -13,6 +13,7 @@ const c = (rank: string, val: number): Card => ({
 describe('ai.decideMove (Advanced)', () => {
   beforeEach(() => {
     clearPerformanceMetrics();
+    clearHandAnalysisCache();
     nextId = 1;
   });
 

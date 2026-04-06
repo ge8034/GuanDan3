@@ -14,6 +14,7 @@ import {
   shouldPlayDefensive,
   shouldPlayDefensiveAdjusted,
   sortCards,
+  clearHandAnalysisCache,
 } from '@/lib/game/ai';
 import type { Card } from '@/lib/store/game';
 
@@ -28,6 +29,7 @@ const c = (card: Partial<Card>): Card => ({
 describe('AI Strategy - Guard & Difficulty', () => {
   beforeEach(() => {
     clearPerformanceMetrics();
+    clearHandAnalysisCache();
   });
 
   it('recentPerformance 为空时不调整难度', () => {
