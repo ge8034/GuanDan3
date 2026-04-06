@@ -7,31 +7,33 @@ import type { ButtonProps as ButtonPropsType } from './types'
 
 // 使用class-variance-authority定义按钮变体
 const buttonVariants = cva(
-  // 基础样式
-  'inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+  // 基础样式 - poker主题
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg font-medium ring-offset-background transition-all duration-[250ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed',
   {
     variants: {
       variant: {
-        // 主要按钮 - 使用设计标记中的主色调
-        primary: 'bg-primary-500 text-primary-foreground hover:bg-primary-600 active:bg-primary-700',
-        // 次要按钮 - 使用设计标记中的辅助色
-        secondary: 'bg-secondary-500 text-secondary-foreground hover:bg-secondary-600 active:bg-secondary-700',
-        // 轮廓按钮
-        outline: 'border-2 border-primary-500 bg-transparent text-primary-500 hover:bg-primary-50 active:bg-primary-100',
+        // 主要按钮 - 深绿渐变
+        primary: 'bg-gradient-to-br from-poker-table to-poker-table-dark border border-poker-table-border text-gray-200 shadow-[0_4px_10px_rgba(0,0,0,0.5)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.6)] hover:-translate-y-px hover:text-white active:translate-y-px active:shadow-[0_2px_6px_rgba(0,0,0,0.4)]',
+        // 次要按钮 - 中绿色
+        secondary: 'bg-gradient-to-br from-poker-table-light to-poker-table border border-poker-table-border text-gray-200 shadow-[0_4px_10px_rgba(0,0,0,0.5)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.6)] hover:-translate-y-px hover:text-white active:translate-y-px',
+        // 轮廓按钮 - 金色边框
+        outline: 'bg-transparent border-2 border-accent-gold text-accent-gold shadow-[0_2px_6px_rgba(0,0,0,0.3)] hover:bg-accent-gold/10 hover:shadow-[0_4px_10px_rgba(212,175,55,0.3)] active:translate-y-px',
         // 幽灵按钮
-        ghost: 'bg-transparent text-primary-500 hover:bg-primary-50 active:bg-primary-100',
+        ghost: 'bg-transparent text-gray-200 hover:bg-white/10 active:bg-white/20',
         // 危险按钮
-        danger: 'bg-error-500 text-error-foreground hover:bg-error-600 active:bg-error-700',
+        danger: 'bg-gradient-to-br from-[#991b1b] to-[#7f1d1d] border border-[#dc2626] text-white shadow-[0_4px_10px_rgba(0,0,0,0.5)] hover:shadow-[0_6px_16px_rgba(220,38,38,0.4)] hover:-translate-y-px active:translate-y-px',
         // 链接样式
-        link: 'text-primary-500 underline-offset-4 hover:underline',
+        link: 'text-accent-gold underline-offset-4 hover:underline',
       },
       size: {
-        // 小尺寸 - 符合触控目标最小44px要求
-        sm: 'h-9 px-3 py-2 text-xs min-w-[44px]',
-        // 中尺寸 - 默认尺寸
-        md: 'h-10 px-4 py-2 text-sm min-w-[44px]',
-        // 大尺寸
-        lg: 'h-11 px-6 py-3 text-base min-w-[44px]',
+        // 小尺寸 - 13px字体，padding适配
+        sm: 'h-8 px-[12px] py-[6px] text-[13px] min-h-[32px]',
+        // 中尺寸 - 15px字体，padding适配（默认）
+        md: 'h-10 px-[18px] py-[10px] text-[15px] min-h-[40px]',
+        // 大尺寸 - 17px字体，padding适配
+        lg: 'h-12 px-[24px] py-[14px] text-[17px] min-h-[48px]',
+        // 特大尺寸 - 19px字体，主操作按钮
+        xl: 'h-14 px-[32px] py-[18px] text-[19px] font-semibold min-h-[56px] bg-gradient-to-br from-accent-gold to-[#b8962e] border border-accent-goldLight text-gray-900 shadow-[0_6px_14px_rgba(0,0,0,0.5)] hover:shadow-[0_8px_18px_rgba(0,0,0,0.6)] hover:-translate-y-px active:translate-y-px',
         // 图标按钮
         icon: 'h-10 w-10',
       },
