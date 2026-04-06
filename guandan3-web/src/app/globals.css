@@ -75,7 +75,7 @@
   /* --- 卡牌样式 --- */
   --card-bg: #ffffff;
   --card-bg-gradient-start: #ffffff;
-  --card-bg-gradient-end: #f5f5f5;
+  --card-bg-gradient-end: #e5e7eb;
   --card-text-black: #1f2937;
   --card-text-red: #dc2626;
   --card-border-radius: 8px;
