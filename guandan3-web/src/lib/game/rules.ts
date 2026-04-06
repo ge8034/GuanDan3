@@ -91,9 +91,10 @@ function isConsecutive(values: number[]): boolean {
  */
 function isValidStraight(uniqueRawVals: number[], rawVals: number[], cardCount: number): boolean {
   if (cardCount < HAND_LENGTHS.MIN_STRAIGHT) return false
+  if (cardCount > HAND_LENGTHS.MAX_STRAIGHT) return false
   if (uniqueRawVals.length !== cardCount) return false
   if (!isConsecutive(uniqueRawVals)) return false
-  
+
   // 顺子不能包含2和王
   return rawVals.every((v) => v !== 15 && v !== 17)
 }
