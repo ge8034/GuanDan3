@@ -74,3 +74,6 @@ export type { TagProps } from './Tag'
 
 export { Switch } from './Switch'
 export type { SwitchProps } from './Switch'
+
+export { Rate } from './Rate'
+export type { RateProps } from './Rate'
