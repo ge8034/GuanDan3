@@ -68,3 +68,6 @@ export type { SkeletonProps, SkeletonAvatarProps, SkeletonImageProps } from './S
 
 export { Badge } from './Badge'
 export type { BadgeProps } from './Badge'
+
+export { Tag } from './Tag'
+export type { TagProps } from './Tag'
