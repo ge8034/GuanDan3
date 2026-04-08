@@ -1,6 +1,6 @@
 export type ThemeMode = 'light' | 'dark' | 'auto';
 
-export type GameTheme = 'classic' | 'modern' | 'retro' | 'nature' | 'ocean' | 'sunset' | `custom_${string}`;
+export type GameTheme = 'classic' | 'modern' | 'retro' | 'nature' | 'ocean' | 'sunset' | 'poker' | `custom_${string}`;
 
 export interface ThemeColors {
   primary: string;
@@ -249,6 +249,41 @@ export const themeConfigs: Record<GameTheme, ThemeConfig> = {
       sm: '0.375rem',
       md: '0.625rem',
       lg: '0.875rem'
+    }
+  },
+  poker: {
+    id: 'poker',
+    name: '经典扑克',
+    description: '专业牌桌风格，深绿色背景',
+    colors: {
+      primary: '#1a472a',
+      secondary: '#2d5a3d',
+      accent: '#d4af37',
+      background: '#0d2818',
+      surface: '#1a472a',
+      text: '#e5e7eb',
+      textSecondary: '#9ca3af',
+      success: '#4ade80',
+      warning: '#fbbf24',
+      error: '#f87171',
+      border: '#2d5a3d',
+      card: '#ffffff',
+      cardHover: '#f5f5f5'
+    },
+    gradients: {
+      primary: 'linear-gradient(145deg, #1a472a 0%, #0d2818 100%)',
+      secondary: 'linear-gradient(145deg, #2d5a3d 0%, #1a472a 100%)',
+      background: 'linear-gradient(145deg, #1a472a 0%, #0d2818 100%)'
+    },
+    shadows: {
+      sm: '0 1px 3px rgba(0, 0, 0, 0.3)',
+      md: '0 4px 12px rgba(0, 0, 0, 0.5)',
+      lg: '0 8px 24px rgba(0, 0, 0, 0.7)'
+    },
+    borderRadius: {
+      sm: '0.375rem',
+      md: '0.5rem',
+      lg: '0.75rem'
     }
   }
 };

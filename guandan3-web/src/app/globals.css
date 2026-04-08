@@ -3,6 +3,72 @@
 @tailwind utilities;
 
 /* ======================================== */
+/* Impeccable Design Tokens - CSS Variables    */
+/* ======================================== */
+:root {
+  /* 间距系统 - 4pt 基数 */
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-6: 1.5rem;   /* 24px */
+  --space-8: 2rem;     /* 32px */
+  --space-12: 3rem;    /* 48px */
+  --space-16: 4rem;    /* 64px */
+  --space-24: 6rem;    /* 96px */
+
+  /* 字体大小 - 模块化比例 (1.25) */
+  --text-xs: 0.75rem;   /* 12px */
+  --text-sm: 0.875rem;  /* 14px */
+  --text-base: 1rem;    /* 16px */
+  --text-lg: 1.25rem;   /* 20px */
+  --text-xl: 1.5rem;    /* 24px */
+  --text-2xl: 2rem;     /* 32px */
+  --text-3xl: 2.5rem;   /* 40px */
+  --text-4xl: 3rem;     /* 48px */
+
+  /* 行高 */
+  --leading-normal: 1.6;
+  --leading-relaxed: 1.7;
+  --leading-tight: 1.25;
+
+  /* 过渡时间 */
+  --duration-fast: 100ms;
+  --duration-base: 200ms;
+  --duration-slow: 300ms;
+
+  /* 缓动函数 */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* 行长限制 */
+  --measure-wide: 65ch;
+  --measure-narrow: 45ch;
+
+  /* 圆角 */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
+
+  /* 阴影 */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.25);
+
+  /* Z-index 层级 */
+  --z-dropdown: 10;
+  --z-sticky: 20;
+  --z-modal-backdrop: 30;
+  --z-modal: 40;
+  --z-toast: 50;
+  --z-tooltip: 60;
+}
+
+/* ======================================== */
 /* 备份：富春山居图主题 CSS 变量           */
 /* ======================================== */
 /* :root { */
@@ -63,48 +129,69 @@
 
 :root {
   /* ======================================== */
-  /* Poker Theme - 经典深绿牌桌主题          */
+  /* Poker Theme - 经典深绿牌桌主题 (增强版)   */
   /* ======================================== */
 
-  /* --- 牌桌背景 --- */
+  /* --- 牌桌背景 (增强渐变) --- */
   --poker-table-bg-start: #1a472a;
+  --poker-table-bg-mid: #15301f;
   --poker-table-bg-end: #0d2818;
   --poker-table-border: #2d5a3d;
   --poker-table-light: #1e5634;
+  --poker-table-accent: #3a7a4f;
+
+  /* --- 木质边框 --- */
+  --wood-dark: #4a3728;
+  --wood-mid: #6b4423;
+  --wood-light: #8b5a2b;
+  --wood-grain: #3d2817;
 
   /* --- 卡牌样式 --- */
   --card-bg: #ffffff;
   --card-bg-gradient-start: #ffffff;
-  --card-bg-gradient-end: #e5e7eb;
+  --card-bg-gradient-mid: #fafafa;
+  --card-bg-gradient-end: #e8e8e8;
   --card-text-black: #1f2937;
   --card-text-red: #dc2626;
   --card-border-radius: 8px;
+  --card-border-inner: #d1d5db;
 
   /* --- 卡牌背面 --- */
   --card-back-blue-start: #1e40af;
-  --card-back-blue-end: #1e3a8a;
+  --card-back-blue-mid: #1e3a8a;
+  --card-back-blue-end: #172554;
   --card-back-red-start: #991b1b;
-  --card-back-red-end: #7f1d1d;
+  --card-back-red-mid: #7f1d1d;
+  --card-back-red-end: #450a0a;
 
-  /* --- 装饰色 --- */
+  /* --- 装饰色 (增强金色) --- */
   --accent-gold: #d4af37;
   --accent-gold-light: #e5c158;
+  --accent-gold-shimmer: #f5d778;
+  --accent-gold-dark: #b8962e;
   --state-success: #4ade80;
   --state-error: #f87171;
   --state-warning: #fbbf24;
   --state-info: #60a5fa;
 
-  /* --- 阴影 --- */
+  /* --- 阴影 (增强层次感) --- */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.7);
-  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.5);
-  --shadow-card-hover: 0 12px 28px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.8);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 0 2px rgba(212, 175, 55, 0.3);
+  --shadow-card-selected: 0 8px 20px rgba(0, 0, 0, 0.5), 0 0 0 3px #d4af37, 0 0 30px rgba(212, 175, 55, 0.6);
+  --shadow-button: 0 2px 8px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  --shadow-button-hover: 0 4px 12px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-gold-glow: 0 0 20px rgba(212, 175, 55, 0.5), 0 0 40px rgba(212, 175, 55, 0.3);
 
   /* --- 动画时长 --- */
   --transition-fast: 150ms;
   --transition-normal: 250ms;
   --transition-slow: 400ms;
+  --transition-smooth: 300ms;
 
   /* --- 字体 --- */
   --font-card: 'Georgia', 'Times New Roman', 'serif';
@@ -168,11 +255,224 @@
   --color-table-700: #15803d;
   --color-table-800: #166534;
   --color-table-900: #14532d;
+
+  /* --- 增强视觉效果 --- */
+  /* 牌桌毛呢纹理 */
+  --felt-texture: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+
+  /* 木质纹理 */
+  --wood-texture: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='wood'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.02 0.04' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23wood)'/%3E%3C/svg%3E");
+}
+
+/* ======================================== */
+/* Poker Theme 增强样式                      */
+/* ======================================== */
+
+/* 牌桌背景 - 深层渐变 + 毛呢质感 */
+.poker-table-bg {
+  background:
+    linear-gradient(145deg,
+      rgba(26, 71, 42, 0.95) 0%,
+      rgba(21, 48, 31, 0.98) 40%,
+      rgba(13, 40, 24, 1) 100%
+    ),
+    var(--felt-texture);
+  background-blend-mode: overlay;
+  position: relative;
+}
+
+/* 牌桌内圈装饰 */
+.poker-table-bg::before {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border: 2px solid rgba(212, 175, 55, 0.15);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* 牌桌外圈金色装饰 */
+.poker-table-border {
+  position: relative;
+  border: 3px solid var(--wood-dark);
+  box-shadow:
+    inset 0 0 0 2px var(--wood-light),
+    inset 0 0 0 4px var(--wood-dark),
+    0 0 30px rgba(0, 0, 0, 0.8);
+}
+
+/* 卡牌增强样式 */
+.poker-card {
+  background: linear-gradient(145deg,
+    var(--card-bg-gradient-start) 0%,
+    var(--card-bg-gradient-mid) 50%,
+    var(--card-bg-gradient-end) 100%
+  );
+  border: 1px solid var(--card-border-inner);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.15),
+    0 2px 6px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  position: relative;
+  transition: all var(--transition-smooth) ease;
+}
+
+.poker-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg,
+    rgba(255, 255, 255, 0.3) 0%,
+    transparent 50%,
+    rgba(0, 0, 0, 0.05) 100%
+  );
+  pointer-events: none;
+}
+
+.poker-card:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+}
+
+.poker-card:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-inner);
+}
+
+/* 金色装饰元素 */
+.gold-accent {
+  color: var(--accent-gold);
+  text-shadow:
+    0 0 10px rgba(212, 175, 55, 0.5),
+    0 0 20px rgba(212, 175, 55, 0.3);
+}
+
+.gold-border {
+  border-color: var(--accent-gold);
+  box-shadow:
+    0 0 10px rgba(212, 175, 55, 0.3),
+    inset 0 0 10px rgba(212, 175, 55, 0.1);
+}
+
+/* 按钮增强样式 */
+.poker-button {
+  background: linear-gradient(145deg,
+    var(--poker-table-light) 0%,
+    var(--poker-table-bg-start) 50%,
+    var(--poker-table-bg-end) 100%
+  );
+  border: 2px solid var(--poker-table-border);
+  color: #e5e7eb;
+  box-shadow: var(--shadow-button);
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-smooth) ease;
+}
+
+.poker-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.poker-button:hover::before {
+  left: 100%;
+}
+
+.poker-button:hover {
+  background: linear-gradient(145deg,
+    var(--poker-table-accent) 0%,
+    var(--poker-table-light) 50%,
+    var(--poker-table-bg-start) 100%
+  );
+  border-color: var(--accent-gold);
+  box-shadow: var(--shadow-button-hover);
+  color: #ffffff;
+}
+
+/* 金色发光效果 */
+@keyframes gold-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 10px rgba(212, 175, 55, 0.4),
+      0 0 20px rgba(212, 175, 55, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 20px rgba(212, 175, 55, 0.6),
+      0 0 40px rgba(212, 175, 55, 0.4);
+  }
+}
+
+.gold-glow {
+  animation: gold-glow 2s ease-in-out infinite;
+}
+
+/* 呼吸灯效果 */
+@keyframes breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.breathe {
+  animation: breathe 3s ease-in-out infinite;
+}
+
+/* 脉冲效果 */
+@keyframes pulse-gold {
+  0%, 100% {
+    border-color: var(--accent-gold);
+    box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7);
+  }
+  50% {
+    border-color: var(--accent-gold-light);
+    box-shadow: 0 0 0 8px rgba(212, 175, 55, 0);
+  }
+}
+
+.pulse-gold {
+  animation: pulse-gold 2s ease-in-out infinite;
+}
+
+/* 微光闪烁效果 */
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--accent-gold) 0%,
+    var(--accent-gold-light) 25%,
+    var(--accent-gold-shimmer) 50%,
+    var(--accent-gold-light) 75%,
+    var(--accent-gold) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s linear infinite;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-start-rgb));
+  background: transparent; /* 让背景组件控制背景 */
   font-family: var(--font-noto-serif-sc), 'Noto Serif SC', 'Source Han Serif SC', '思源宋体', 'SimSun', serif;
   line-height: 1.6;
 }
@@ -307,4 +607,219 @@ body {
 .gpu-accelerated {
   transform: translateZ(0);
   backface-visibility: hidden;
+}
+
+/* ======================================== */
+/* Impeccable Design Utilities                        */
+/* ======================================== */
+
+/* 排版工具类 */
+.prose {
+  line-height: var(--leading-normal);
+}
+
+.text-on-dark {
+  line-height: var(--leading-relaxed);
+}
+
+/* 模块化字体比例 */
+.text-xs { font-size: var(--text-xs); }
+.text-sm { font-size: var(--text-sm); }
+.text-base { font-size: var(--text-base); }
+.text-lg { font-size: var(--text-lg); }
+.text-xl { font-size: var(--text-xl); }
+.text-2xl { font-size: var(--text-2xl); }
+.text-3xl { font-size: var(--text-3xl); }
+.text-4xl { font-size: var(--text-4xl); }
+
+/* 行长限制 */
+.measure-wide {
+  max-width: var(--measure-wide);
+}
+
+.measure-narrow {
+  max-width: var(--measure-narrow);
+}
+
+/* 间距工具类 */
+.p-space-1 { padding: var(--space-1); }
+.p-space-2 { padding: var(--space-2); }
+.p-space-3 { padding: var(--space-3); }
+.p-space-4 { padding: var(--space-4); }
+.p-space-6 { padding: var(--space-6); }
+.p-space-8 { padding: var(--space-8); }
+
+.px-space-1 { padding-left: var(--space-1); padding-right: var(--space-1); }
+.px-space-2 { padding-left: var(--space-2); padding-right: var(--space-2); }
+.px-space-3 { padding-left: var(--space-3); padding-right: var(--space-3); }
+.px-space-4 { padding-left: var(--space-4); padding-right: var(--space-4); }
+
+.py-space-1 { padding-top: var(--space-1); padding-bottom: var(--space-1); }
+.py-space-2 { padding-top: var(--space-2); padding-bottom: var(--space-2); }
+.py-space-3 { padding-top: var(--space-3); padding-bottom: var(--space-3); }
+.py-space-4 { padding-top: var(--space-4); padding-bottom: var(--space-4); }
+
+.gap-space-1 > * + * { margin-top: var(--space-1); }
+.gap-space-2 > * + * { margin-top: var(--space-2); }
+.gap-space-3 > * + * { margin-top: var(--space-3); }
+.gap-space-4 > * + * { margin-top: var(--space-4); }
+
+/* 过渡时间工具类 */
+.transition-fast {
+  transition-duration: var(--duration-fast);
+}
+
+.transition-base {
+  transition-duration: var(--duration-base);
+}
+
+.transition-slow {
+  transition-duration: var(--duration-slow);
+}
+
+/* 缓动函数工具类 */
+.ease-out {
+  transition-timing-function: var(--ease-out);
+}
+
+.ease-in {
+  transition-timing-function: var(--ease-in);
+}
+
+.ease-in-out {
+  transition-timing-function: var(--ease-in-out);
+}
+
+/* 组合过渡类 */
+.transition-colors-fast {
+  transition-property: color, background-color, border-color;
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--ease-out);
+}
+
+.transition-colors-base {
+  transition-property: color, background-color, border-color;
+  transition-duration: var(--duration-base);
+  transition-timing-function: var(--ease-out);
+}
+
+.transition-all-fast {
+  transition-property: all;
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--ease-out);
+}
+
+.transition-all-base {
+  transition-property: all;
+  transition-duration: var(--duration-base);
+  transition-timing-function: var(--ease-out);
+}
+
+/* 改进的 reduced-motion 支持 */
+@media (prefers-reduced-motion: reduce) {
+  /* 保留功能性动画但使用更短的时间和更简单的效果 */
+  .animate-slide-down,
+  .animate-slide-up {
+    animation-duration: 0.2s ease-out;
+  }
+
+  .animate-fade-in {
+    animation-duration: 0.15s ease-out;
+  }
+
+  /* 过渡效果使用更短时间 */
+  * {
+    transition-duration: 0.15s !important;
+  }
+}
+
+/* 无障碍焦点样式改进 */
+.focus-ring {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.focus-ring-accent {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* 触摸目标最小尺寸 (44px) */
+.touch-target {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+}
+
+/* ======================================== */
+/* Impeccable Design - 行高系统                 */
+/* ======================================== */
+.prose {
+  line-height: var(--leading-normal);
+}
+
+.prose-lg {
+  line-height: var(--leading-relaxed);
+}
+
+/* 正文标准行高 (16px × 1.6 = 25.6px ≈ 24px 垂直节奏) */
+.leading-impeccable {
+  line-height: var(--leading-normal);
+}
+
+/* 深色背景行高 (增加可读性) */
+.leading-impeccable-relaxed {
+  line-height: var(--leading-relaxed);
+}
+
+/* ======================================== */
+/* Impeccable Design - 行长限制                 */
+/* ======================================== */
+
+/* 正文行长约 65 字符 */
+.max-w-measure-wide {
+  max-width: var(--measure-wide);
+}
+
+/* 侧边栏行长约 45 字符 */
+.max-w-measure-narrow {
+  max-width: var(--measure-narrow);
+}
+
+/* ======================================== */
+/* Impeccable Design - Reduced Motion 支持    */
+/* ======================================== */
+
+/* 为偏好减少动画的用户禁用所有动画 */
+@media (prefers-reduced-motion: reduce) {
+  /* 禁用所有动画 */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* 保留功能性淡入淡出，但使用极短时间 */
+  .fade-in,
+  .fade-out,
+  .animate-in,
+  .animate-out {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* 禁用 ScaleIn 和 FadeIn 的变换效果 */
+  [data-motion] {
+    transform: none !important;
+  }
+}
+
+/* 为不偏好减少动画的用户保留流畅动画 */
+@media (prefers-reduced-motion: no-preference) {
+  /* 确保使用 ease-out 缓动 */
+  .transition-safe {
+    transition-timing-function: var(--ease-out);
+  }
 }

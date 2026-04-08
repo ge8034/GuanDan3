@@ -2,31 +2,49 @@
 
 import { createContext, useContext, useState, useEffect, useMemo, type ReactNode } from 'react'
 import { ThemeMode, GameTheme, themeConfigs, ThemeConfig } from './theme-types'
-
 import { logger } from '@/lib/utils/logger'
 interface ThemeContextType {
   mode: ThemeMode
   gameTheme: GameTheme
+  theme: GameTheme // 别名，方便使用
   setMode: (mode: ThemeMode) => void
   setGameTheme: (theme: GameTheme) => void
   currentTheme: ThemeConfig
   isDark: boolean
+  mounted: boolean
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
+  // 挂载状态，用于避免 Hydration 不匹配
+  const [mounted, setMounted] = useState(false)
+
   // 使用懒初始化从 localStorage 读取初始值
-  const [mode, setMode] = useState<ThemeMode>(() => {
-    if (typeof window === 'undefined') return 'light'
+  const [mode, setMode] = useState<ThemeMode>('light')
+  const [gameTheme, setGameTheme] = useState<GameTheme>('classic')
+
+  // 客户端挂载后读取 localStorage 中的真实主题
+  useEffect(() => {
     const savedMode = localStorage.getItem('theme-mode') as ThemeMode
-    return savedMode || 'light'
-  })
-  const [gameTheme, setGameTheme] = useState<GameTheme>(() => {
-    if (typeof window === 'undefined') return 'classic'
+    if (savedMode) {
+      setMode(savedMode)
+    }
+
     const savedGameTheme = localStorage.getItem('game-theme') as GameTheme
-    return savedGameTheme || 'classic'
-  })
+    if (savedGameTheme) {
+      setGameTheme(savedGameTheme)
+    } else {
+      // 从环境变量读取默认主题
+      const envTheme = process.env.NEXT_PUBLIC_THEME as GameTheme
+      if (envTheme === 'poker') {
+        setGameTheme('poker')
+        localStorage.setItem('game-theme', 'poker')
+      }
+    }
+
+    setMounted(true)
+  }, [])
   const [customThemes, setCustomThemes] = useState<Record<string, ThemeConfig>>({})
 
   useEffect(() => {
@@ -65,21 +83,27 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [gameTheme])
 
   const currentTheme = useMemo(() => {
+    // 未挂载时使用默认主题，避免 Hydration 不匹配
+    if (!mounted) {
+      return themeConfigs.classic
+    }
     if (gameTheme.startsWith('custom_')) {
       return customThemes[gameTheme] || themeConfigs.classic
     }
     return themeConfigs[gameTheme] || themeConfigs.classic
-  }, [gameTheme, customThemes])
+  }, [gameTheme, customThemes, mounted])
 
   return (
     <ThemeContext.Provider
       value={{
         mode,
         gameTheme,
+        theme: gameTheme, // 添加theme别名
         setMode,
         setGameTheme,
         currentTheme,
-        isDark
+        isDark,
+        mounted
       }}
     >
       {children}

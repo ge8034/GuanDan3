@@ -7,6 +7,7 @@ import PerformanceSetup from '@/components/performance/PerformanceSetup'
 import AISystemSetup from '@/components/ai/AISystemSetup'
 import MonitoringComponents from '@/components/monitoring/MonitoringComponents'
 import { PWAProvider, OfflineIndicator, UpdateBanner } from '@/components/pwa'
+import ThemeInitializer from '@/components/ThemeInitializer'
 
 export const metadata: Metadata = {
   title: '掼蛋 3',
@@ -40,6 +41,7 @@ export default function RootLayout({
       >
         <PWAProvider>
           <ThemeProvider>
+            <ThemeInitializer />
             <PerformanceSetup />
             <AISystemSetup />
             <Navigation />
