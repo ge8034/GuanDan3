@@ -19,6 +19,7 @@ import { GameHintsPanel } from '@/components/game/GameHintsPanel'
 import GamePauseResume from '@/components/game/GamePauseResume'
 import type { Card } from '@/lib/store/game'
 import type { RoomMember } from '@/lib/store/room'
+import { FIXED_POSITION } from '@/lib/constants/z-index'
 
 interface RoomOverlaysContainerProps {
   roomId: string
@@ -100,28 +101,37 @@ export const RoomOverlaysContainer = memo(
       <>
         {/* PERFORMANCE MONITOR */}
         {isDebugVisible && (
-          <div className="fixed bottom-20 left-20 z-[9999] bg-black/80 text-white text-xs p-3 rounded-lg backdrop-blur-sm border border-white/20 shadow-lg">
-            <div className="font-bold mb-2">性能监控</div>
-            <div className="space-y-1">
+          <div
+            style={{
+              position: 'fixed',
+              bottom: `${FIXED_POSITION.BOTTOM_SPACING.MIDDLE}px`,
+              left: `${FIXED_POSITION.LEFT_SPACING.SECOND}px`,
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              color: 'white',
+              fontSize: '0.75rem',
+              padding: '0.75rem',
+              borderRadius: '8px',
+              backdropFilter: 'blur(4px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+              zIndex: 900,
+            }}
+          >
+            <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>性能监控</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
               <div>
                 FPS:{' '}
                 <span
-                  className={
-                    fps >= 30
-                      ? 'text-green-400'
-                      : fps >= 20
-                        ? 'text-yellow-400'
-                        : 'text-red-400'
-                  }
+                  style={{
+                    color: fps >= 30 ? '#4ade80' : fps >= 20 ? '#facc15' : '#f87171',
+                  }}
                 >
                   {fps}
                 </span>
               </div>
               <div>
                 网络:{' '}
-                <span
-                  className={networkOnline ? 'text-green-400' : 'text-red-400'}
-                >
+                <span style={{ color: networkOnline ? '#4ade80' : '#f87171' }}>
                   {networkOnline ? '在线' : '离线'}
                 </span>
               </div>
@@ -136,14 +146,28 @@ export const RoomOverlaysContainer = memo(
           userName={myMember ? `座位 ${myMember.seat_no}` : '游客'}
         />
 
-        <div className="fixed top-20 right-4 z-50">
+        <div
+          style={{
+            position: 'fixed',
+            top: '80px',
+            right: '1rem',
+            zIndex: 800,
+          }}
+        >
           <VoiceCallPanel roomId={roomId} />
         </div>
 
         <GameHintsPanel />
 
         {isOwner && (
-          <div className="fixed bottom-4 left-20 z-40">
+          <div
+            style={{
+              position: 'fixed',
+              bottom: `${FIXED_POSITION.BOTTOM_SPACING.LOWEST}px`,
+              left: `${FIXED_POSITION.LEFT_SPACING.SECOND}px`,
+              zIndex: 700,
+            }}
+          >
             <RoomInvitationPanel roomId={roomId} isOwner={isOwner} />
           </div>
         )}

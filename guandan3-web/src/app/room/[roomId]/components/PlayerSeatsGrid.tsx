@@ -32,7 +32,17 @@ export const PlayerSeatsGrid = memo(function PlayerSeatsGrid({
   return (
     <>
       {/* Row 1: Top (Opposite) - 对家 */}
-      <div className="col-start-2 row-start-1 flex justify-center pt-2 sm:pt-4 pb-1 sm:pb-2 z-10 md:pt-6 md:pb-3 lg:pt-8 lg:pb-4 2xl:pt-10 2xl:pb-5">
+      <div
+        style={{
+          gridColumn: '2',
+          gridRow: '1',
+          display: 'flex',
+          justifyContent: 'center',
+          paddingTop: '0.5rem',
+          paddingBottom: '0.25rem',
+          zIndex: 10,
+        }}
+      >
         {oppositeAvatar ? (
           <PlayerAvatar
             seatNo={oppositeAvatar.seat}
@@ -49,7 +59,17 @@ export const PlayerSeatsGrid = memo(function PlayerSeatsGrid({
       </div>
 
       {/* Row 2 Left: Left (Previous) - 上家 */}
-      <div className="col-start-1 row-start-2 flex items-center justify-start pl-2 sm:pl-4 z-10 md:pl-6 lg:pl-8 2xl:pl-10">
+      <div
+        style={{
+          gridColumn: '1',
+          gridRow: '2',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+          paddingLeft: '0.5rem',
+          zIndex: 10,
+        }}
+      >
         {leftAvatar ? (
           <PlayerAvatar
             seatNo={leftAvatar.seat}
@@ -66,7 +86,17 @@ export const PlayerSeatsGrid = memo(function PlayerSeatsGrid({
       </div>
 
       {/* Row 2 Right: Right (Next) - 下家 */}
-      <div className="col-start-3 row-start-2 flex items-center justify-end pr-2 sm:pr-4 z-10 md:pr-6 lg:pr-8 2xl:pr-10">
+      <div
+        style={{
+          gridColumn: '3',
+          gridRow: '2',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          paddingRight: '0.5rem',
+          zIndex: 10,
+        }}
+      >
         {rightAvatar ? (
           <PlayerAvatar
             seatNo={rightAvatar.seat}

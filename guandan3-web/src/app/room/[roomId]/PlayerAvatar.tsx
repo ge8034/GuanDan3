@@ -1,7 +1,7 @@
 'use client'
 
 import { memo } from 'react'
-import Badge from '@/components/ui/Badge'
+import { Bot, User } from 'lucide-react'
 
 export type PlayerAvatarProps = {
   seatNo: number
@@ -13,6 +13,51 @@ export type PlayerAvatarProps = {
   isReady: boolean
   isOnline: boolean
   roomStatus?: string | null
+}
+
+// 徽章组件
+function Badge({
+  children,
+  variant = 'primary',
+  size = 'md',
+  style
+}: {
+  children: React.ReactNode
+  variant?: 'primary' | 'secondary' | 'success' | 'error'
+  size?: 'sm' | 'md'
+  style?: React.CSSProperties
+}) {
+  const colors = {
+    primary: { bg: '#1a472a', color: 'white' },
+    secondary: { bg: '#f3f4f6', color: '#374151' },
+    success: { bg: '#22c55e', color: 'white' },
+    error: { bg: '#ef4444', color: 'white' },
+  }
+
+  const sizes = {
+    sm: { fontSize: '0.625rem', padding: '0.125rem 0.375rem' },
+    md: { fontSize: '0.75rem', padding: '0.25rem 0.5rem' },
+  }
+
+  const currentSize = sizes[size]
+  const currentColor = colors[variant]
+
+  return (
+    <span
+      style={{
+        backgroundColor: currentColor.bg,
+        color: currentColor.color,
+        fontSize: currentSize.fontSize,
+        padding: currentSize.padding,
+        borderRadius: '4px',
+        fontWeight: 500,
+        whiteSpace: 'nowrap',
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  )
 }
 
 export const PlayerAvatar = memo(function PlayerAvatar({
@@ -28,68 +73,184 @@ export const PlayerAvatar = memo(function PlayerAvatar({
 }: PlayerAvatarProps) {
   return (
     <div
-      className={`flex flex-col items-center p-1.5 sm:p-2 md:p-3 rounded-xl backdrop-blur-md border shadow-2xl transition-all duration-300 ${
-        isCurrentTurn 
-          ? 'scale-105 sm:scale-110 border-primary bg-primary/10 z-20 shadow-[0_0_30px_rgba(var(--color-primary),0.3)]' 
-          : 'bg-surface/80 border-border z-10'
-      }`}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        padding: '0.375rem 0.5rem',
+        borderRadius: '12px',
+        backdropFilter: 'blur(12px)',
+        boxShadow: isCurrentTurn ? '0 0 30px rgba(26, 71, 42, 0.3)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+        transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+        transform: isCurrentTurn ? 'scale(1.05)' : 'scale(1)',
+        border: isCurrentTurn ? '2px solid #1a472a' : '2px solid #e5e7eb',
+        backgroundColor: isCurrentTurn ? 'rgba(26, 71, 42, 0.1)' : 'rgba(255, 255, 255, 0.8)',
+        zIndex: isCurrentTurn ? 20 : 10,
+      }}
     >
-      <div className="relative">
+      <div style={{ position: 'relative' }}>
         <div
-          className={`w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center border-3 sm:border-4 transition-all duration-300 ${
-            isCurrentTurn
-              ? 'border-primary bg-primary/20 shadow-[0_0_20px_rgba(var(--color-primary),0.5)]'
-              : 'border-border bg-surface'
-          }`}
+          style={{
+            width: '48px',
+            height: '48px',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: isCurrentTurn ? '3px solid #1a472a' : '3px solid #e5e7eb',
+            transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+            backgroundColor: isCurrentTurn ? 'rgba(26, 71, 42, 0.2)' : 'rgba(255, 255, 255, 0.8)',
+            boxShadow: isCurrentTurn ? '0 0 20px rgba(26, 71, 42, 0.5)' : 'none',
+          }}
         >
-          <span className="text-xl sm:text-2xl md:text-3xl filter drop-shadow-lg transform hover:scale-110 transition-transform cursor-default">
-            {memberType === 'ai' ? '🤖' : '👤'}
+          <span style={{ filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))' }}>
+            {memberType === 'ai' ? (
+              <Bot style={{ width: '32px', height: '32px', strokeWidth: 2 }} />
+            ) : (
+              <User style={{ width: '32px', height: '32px', strokeWidth: 2 }} />
+            )}
           </span>
         </div>
 
         {isReady && !rankTitle && roomStatus === 'open' && (
-          <div className="absolute -bottom-1 -right-1 bg-success text-white w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full border-2 border-white shadow-md z-30 animate-in zoom-in text-[10px] sm:text-xs md:text-sm">
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '-4px',
+              right: '-4px',
+              backgroundColor: '#22c55e',
+              color: 'white',
+              width: '20px',
+              height: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '50%',
+              border: '2px solid white',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+              zIndex: 30,
+              fontSize: '0.625rem',
+              fontWeight: 600,
+            }}
+          >
             ✓
           </div>
         )}
 
         {memberType !== 'ai' && !isOnline && (
-          <Badge variant="error" size="sm" className="absolute -bottom-1 -left-1 z-30 text-[8px] sm:text-[10px] md:text-xs">
+          <Badge
+            variant="error"
+            size="sm"
+            style={{
+              position: 'absolute',
+              bottom: '-4px',
+              left: '-4px',
+              zIndex: 30,
+              fontSize: '0.5rem',
+            }}
+          >
             离线
           </Badge>
         )}
 
         {rankTitle && (
-          <Badge variant="primary" size="sm" className="absolute -top-1.5 sm:-top-2 -right-1.5 sm:-right-2 z-30 animate-bounce text-[8px] sm:text-[10px] md:text-xs">
+          <Badge
+            variant="primary"
+            size="sm"
+            style={{
+              position: 'absolute',
+              top: '-6px',
+              right: '-6px',
+              zIndex: 30,
+              fontSize: '0.5rem',
+            }}
+          >
             {rankTitle.split(' ')[0]}
           </Badge>
         )}
 
         {isCurrentTurn && !rankTitle && (
-          <div className="absolute -top-6 sm:-top-8 md:-top-9 left-1/2 -translate-x-1/2 bg-surface text-text-primary text-[8px] sm:text-[10px] md:text-xs px-1.5 sm:px-2 md:px-3 py-0.5 sm:py-1 rounded-full shadow-lg whitespace-nowrap animate-pulse z-30 font-bold border border-primary">
+          <div
+            style={{
+              position: 'absolute',
+              top: '-24px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              color: '#111827',
+              fontSize: '0.625rem',
+              padding: '0.25rem 0.5rem',
+              borderRadius: '9999px',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+              whiteSpace: 'nowrap',
+              zIndex: 30,
+              fontWeight: 600,
+              border: '2px solid #1a472a',
+            }}
+          >
             思考中...
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 border-3 sm:border-4 border-transparent border-t-primary"></div>
+            <div
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: '50%',
+                transform: 'translateX(-50%) translateY(50%)',
+                border: '3px solid transparent',
+                borderTopColor: '#1a472a',
+              }}
+            />
           </div>
         )}
       </div>
 
-      <div className="mt-0.5 sm:mt-1 md:mt-2 text-center">
-        <div className="font-bold text-[10px] sm:text-xs md:text-sm text-text-primary flex items-center justify-center gap-0.5 sm:gap-1 whitespace-nowrap">
+      <div style={{ marginTop: '0.25rem', textAlign: 'center' }}>
+        <div
+          style={{
+            fontWeight: 600,
+            fontSize: '0.75rem',
+            color: '#111827',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.25rem',
+            whiteSpace: 'nowrap',
+          }}
+        >
           {isMe ? '我' : `座位 ${seatNo}`}
           {memberType === 'ai' && (
-            <Badge variant="secondary" size="sm" className="text-[8px] sm:text-[10px] md:text-xs">AI</Badge>
+            <Badge variant="secondary" size="sm" style={{ fontSize: '0.5rem' }}>
+              AI
+            </Badge>
           )}
         </div>
 
         {!rankTitle ? (
-          <div className={`text-[8px] sm:text-[10px] md:text-xs font-mono mt-0.5 ${cardCount <= 5 ? 'text-error font-bold animate-pulse' : 'text-text-secondary'}`}>
+          <div
+            style={{
+              fontSize: '0.625rem',
+              fontFamily: 'monospace',
+              marginTop: '0.125rem',
+              color: cardCount <= 5 ? '#ef4444' : '#6b7280',
+              fontWeight: cardCount <= 5 ? 600 : 400,
+              animation: cardCount <= 5 ? 'pulse 1.5s ease-in-out infinite' : 'none',
+            }}
+          >
             {cardCount} 张牌
           </div>
         ) : (
-          <div className="text-accent font-bold text-[8px] sm:text-[10px] md:text-xs mt-0.5 drop-shadow-md">{rankTitle.split(' ')[1]}</div>
+          <div
+            style={{
+              color: '#d4af37',
+              fontWeight: 600,
+              fontSize: '0.625rem',
+              marginTop: '0.125rem',
+              filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))',
+            }}
+          >
+            {rankTitle.split(' ')[1]}
+          </div>
         )}
       </div>
     </div>
   )
 })
-

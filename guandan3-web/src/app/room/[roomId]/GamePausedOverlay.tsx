@@ -1,6 +1,6 @@
 'use client'
 
-import RippleEffect from '@/components/effects/RippleEffect'
+import { Pause } from 'lucide-react'
 
 export type GamePausedOverlayProps = {
   visible: boolean
@@ -25,43 +25,125 @@ export const GamePausedOverlay = ({
   }
 
   return (
-    <div className="fixed inset-0 z-[50] bg-black/70 flex items-center justify-center backdrop-blur-sm">
-      <div className="bg-white text-black p-8 rounded-xl shadow-2xl max-w-md w-full text-center animate-in zoom-in duration-300">
-        <div className="mb-6">
-          <div className="w-20 h-20 mx-auto bg-amber-100 rounded-full flex items-center justify-center mb-4">
-            <svg className="w-10 h-10 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backdropFilter: 'blur(4px)',
+        zIndex: 999,
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: 'white',
+          color: 'black',
+          padding: '2rem',
+          borderRadius: '12px',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          maxWidth: '28rem',
+          width: '100%',
+          textAlign: 'center',
+          margin: '1rem',
+        }}
+      >
+        <div style={{ marginBottom: '1.5rem' }}>
+          <div
+            style={{
+              width: '80px',
+              height: '80px',
+              margin: '0 auto 1rem',
+              backgroundColor: '#fef3c7',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Pause style={{ width: '40px', height: '40px', color: '#f59e0b' }} strokeWidth={2} />
           </div>
-          <h2 className="text-3xl font-bold mb-2 text-gray-900">游戏已暂停</h2>
-          <p className="text-gray-600">
+          <h2
+            style={{
+              fontSize: '1.875rem',
+              fontWeight: 700,
+              marginBottom: '0.5rem',
+              color: '#111827',
+            }}
+          >
+            游戏已暂停
+          </h2>
+          <p style={{ color: '#6b7280' }}>
             {pauseReason ? `暂停原因：${pauseReason}` : '游戏暂时暂停'}
           </p>
         </div>
 
-        <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-gray-600">暂停时间：</span>
-            <span className="font-semibold text-gray-900">{formatPausedTime(pausedAt)}</span>
+        <div
+          style={{
+            backgroundColor: '#f9fafb',
+            borderRadius: '8px',
+            padding: '1rem',
+            marginBottom: '1.5rem',
+            textAlign: 'left',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '0.5rem',
+            }}
+          >
+            <span style={{ color: '#6b7280' }}>暂停时间：</span>
+            <span style={{ fontWeight: 600, color: '#111827' }}>{formatPausedTime(pausedAt)}</span>
           </div>
           {pausedBy && (
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">暂停玩家：</span>
-              <span className="font-semibold text-gray-900">玩家 {pausedBy.slice(0, 8)}...</span>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <span style={{ color: '#6b7280' }}>暂停玩家：</span>
+              <span style={{ fontWeight: 600, color: '#111827' }}>
+                玩家 {pausedBy.slice(0, 8)}...
+              </span>
             </div>
           )}
         </div>
 
-        <div className="space-y-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           <button
             onClick={onResume}
             data-testid="game-paused-resume"
-            className="w-full bg-emerald-500 text-white font-bold py-3 px-6 rounded-xl hover:bg-emerald-600 transition transform hover:scale-105 shadow-lg"
+            style={{
+              width: '100%',
+              backgroundColor: '#10b981',
+              color: 'white',
+              fontWeight: 600,
+              padding: '0.75rem 1.5rem',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              fontSize: '1rem',
+              border: 'none',
+              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+              transition: 'opacity 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = '0.9'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = '1'
+            }}
           >
             恢复游戏
           </button>
-          <p className="text-sm text-gray-500">
-            点击&ldquo;恢复游戏&rdquo;按钮继续对局
+          <p style={{ fontSize: '0.875rem', color: '#9ca3af' }}>
+            点击"恢复游戏"按钮继续对局
           </p>
         </div>
       </div>

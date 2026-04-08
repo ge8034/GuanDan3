@@ -15,6 +15,7 @@ import { useSound } from '@/lib/hooks/useSound'
 import { useToast } from '@/lib/hooks/useToast'
 import { mapSupabaseErrorToMessage } from '@/lib/utils/supabaseErrors'
 import { logger } from '@/lib/utils/logger'
+import { Z_INDEX, FIXED_POSITION } from '@/lib/constants/z-index'
 
 // 现有 Hooks（保留）
 import { useRoomGameDerived } from '@/lib/hooks/useRoomGameDerived'
@@ -58,6 +59,9 @@ import RippleEffect from '@/components/effects/RippleEffect'
 export default function RoomPage() {
   const { roomId } = useParams() as { roomId: string }
   const router = useRouter()
+
+  // 从环境变量读取主题配置
+  const theme = (process.env.NEXT_PUBLIC_THEME as 'classic' | 'poker') || 'classic'
 
   // ============ 状态管理（使用新的 hooks）============
 
@@ -222,15 +226,21 @@ export default function RoomPage() {
 
   // ============ 渲染 ============
   return (
-    <SimpleEnvironmentBackground>
-      <div className="flex flex-col h-screen text-black overflow-hidden font-sans relative">
+    <SimpleEnvironmentBackground theme={theme}>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', color: 'black', overflow: 'hidden', fontFamily: 'sans-serif', position: 'relative' }}>
         {toastView}
 
         {/* 实时连接状态 */}
         {!realtimeHealthy && (
           <div
             data-testid="room-realtime-banner"
-            className="bg-yellow-100 text-yellow-900 border-b border-yellow-300 px-4 py-2 rounded-b-lg"
+            style={{
+              backgroundColor: '#fef3c7',
+              color: '#78350f',
+              borderBottom: '1px solid #fcd34d',
+              padding: '0.5rem 1rem',
+              borderRadius: '0 0 8px 8px',
+            }}
           >
             实时连接状态：{realtimeError ? '错误' : '连接中/断开'}
           </div>
@@ -255,11 +265,32 @@ export default function RoomPage() {
         {/* 特效 */}
         <SpecialEffects lastAction={gameState.lastAction} />
 
-        {/* 调试按钮 */}
+        {/* 调试按钮 - 使用预定义的位置和层级 */}
         <RippleEffect className="relative inline-block">
           <button
             onClick={() => localState.setIsDebugVisible((prev) => !prev)}
-            className="fixed bottom-20 left-4 z-[9999] bg-black/50 hover:bg-black/70 text-white text-xs px-3 py-1.5 rounded-lg backdrop-blur-sm transition-all duration-200 border border-white/20 shadow-lg"
+            style={{
+              position: 'fixed',
+              bottom: `${FIXED_POSITION.BOTTOM_SPACING.HIGHEST}px`,
+              left: `${FIXED_POSITION.LEFT_SPACING.FIRST}px`,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              color: 'white',
+              fontSize: '0.75rem',
+              padding: '0.375rem 0.75rem',
+              borderRadius: '8px',
+              backdropFilter: 'blur(4px)',
+              transition: 'all 0.2s',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+              cursor: 'pointer',
+              zIndex: Z_INDEX.DEBUG_TOGGLE,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'
+            }}
           >
             {localState.isDebugVisible ? '隐藏调试' : '调试'}
           </button>
@@ -327,7 +358,18 @@ export default function RoomPage() {
         />
 
         {/* 主游戏区域 */}
-        <main className="flex-1 grid grid-cols-3 grid-rows-[auto_1fr_auto] w-full h-full relative z-0">
+        <main
+          style={{
+            flex: 1,
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gridTemplateRows: 'auto 1fr auto',
+            width: '100%',
+            height: '100%',
+            position: 'relative',
+            zIndex: 0,
+          }}
+        >
           {/* 其他玩家座位 */}
           <PlayerSeatsGrid
             roomStatus={gameState.currentRoom?.status}
@@ -335,7 +377,17 @@ export default function RoomPage() {
           />
 
           {/* 牌桌区域（中间） */}
-          <div className="col-start-2 row-start-2 flex justify-center items-center z-0 px-1 sm:px-2 md:px-4 lg:px-6 2xl:px-8">
+          <div
+            style={{
+              gridColumn: '2',
+              gridRow: '2',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              zIndex: 0,
+              padding: '0.25rem 0.5rem 1rem 1rem',
+            }}
+          >
             <TableArea
               roomStatus={gameState.currentRoom?.status}
               membersCount={gameState.members.length}

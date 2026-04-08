@@ -43,9 +43,38 @@ export const MyHandSection = memo(function MyHandSection({
   onPass,
 }: MyHandSectionProps) {
   return (
-    <div className="col-start-1 col-span-3 row-start-3 w-full h-48 sm:h-56 md:h-64 lg:h-72 xl:h-80 2xl:h-96 flex flex-col justify-end p-2 sm:p-4 md:p-5 lg:p-6 2xl:p-8 bg-gradient-to-t from-primary/10 to-transparent z-20 relative">
+    <div
+      style={{
+        gridColumn: '1 / -1',
+        gridRow: '3',
+        width: '100%',
+        height: '192px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'flex-end',
+        padding: '0.5rem 1rem',
+        background: 'linear-gradient(to top, rgba(26, 71, 42, 0.1), transparent)',
+        position: 'relative',
+      }}
+    >
       {/* My Avatar (Bottom Left Overlay) */}
-      <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 z-30 transform scale-60 sm:scale-75 md:scale-90 lg:scale-100 2xl:scale-110 origin-bottom-left opacity-80 hover:opacity-100 transition-opacity">
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '8px',
+          left: '8px',
+          transform: 'scale(0.9)',
+          transformOrigin: 'bottom left',
+          opacity: 0.8,
+          transition: 'opacity 0.2s',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.opacity = '1'
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.opacity = '0.8'
+        }}
+      >
         <PlayerAvatar
           seatNo={mySeat}
           isCurrentTurn={isMyTurn}

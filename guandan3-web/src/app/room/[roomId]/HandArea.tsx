@@ -1,10 +1,8 @@
 'use client'
 
-import { memo, useCallback, useMemo } from 'react'
+import { memo, useCallback, useMemo, useState, useEffect } from 'react'
 import { Card } from '@/lib/store/game'
 import { CardView } from './CardView'
-import { Button } from '@/components/ui/Button'
-import { AnimatePresence, motion } from 'framer-motion'
 
 export type HandAreaProps = {
   isMyTurn: boolean
@@ -18,6 +16,71 @@ export type HandAreaProps = {
   gameStatus: string
   getRankTitle: (seatNo: number) => string | null
   canPass: boolean
+}
+
+// 内联样式按钮组件
+function InlineButton({
+  children,
+  variant = 'primary',
+  disabled = false,
+  onClick,
+  style
+}: {
+  children: React.ReactNode
+  variant?: 'primary' | 'outline'
+  disabled?: boolean
+  onClick: () => void
+  style?: React.CSSProperties
+}) {
+  const [isHovered, setIsHovered] = useState(false)
+  const [isPressed, setIsPressed] = useState(false)
+
+  const baseStyle: React.CSSProperties = {
+    padding: '0.5rem 1rem',
+    borderRadius: '8px',
+    fontSize: '0.9375rem',
+    fontWeight: 500,
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    border: '2px solid',
+    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+    minHeight: '44px',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    opacity: disabled ? 0.5 : 1,
+    transform: isPressed ? 'scale(0.95)' : 'scale(1)',
+    ...style,
+  }
+
+  const variantStyles = {
+    primary: {
+      backgroundColor: isHovered && !disabled ? '#2d5a3d' : '#1a472a',
+      borderColor: '#1a472a',
+      color: 'white',
+    },
+    outline: {
+      backgroundColor: isHovered && !disabled ? 'rgba(26, 71, 42, 0.1)' : 'transparent',
+      borderColor: '#1a472a',
+      color: '#1a472a',
+    },
+  }
+
+  return (
+    <button
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
+      style={{ ...baseStyle, ...variantStyles[variant] }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => {
+        setIsHovered(false)
+        setIsPressed(false)
+      }}
+      onMouseDown={() => setIsPressed(true)}
+      onMouseUp={() => setIsPressed(false)}
+    >
+      {children}
+    </button>
+  )
 }
 
 export const HandArea = memo(function HandArea({
@@ -59,81 +122,111 @@ export const HandArea = memo(function HandArea({
 
   return (
     <>
-      <div className="flex justify-center gap-2 sm:gap-4 mb-2 sm:mb-4 z-20 h-10 sm:h-10">
-        <AnimatePresence>
-          {isMyTurn && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="flex gap-2 sm:gap-4"
+      {/* 控制按钮区域 */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '1rem',
+          marginBottom: '1rem',
+          zIndex: 20,
+          height: '40px',
+        }}
+      >
+        {isMyTurn && (
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <InlineButton
+              onClick={onPlay}
+              disabled={selectedCardIds.length === 0}
+              variant="primary"
             >
-              <Button
-                onClick={onPlay}
-                disabled={selectedCardIds.length === 0}
-                data-testid="room-play"
-                variant="primary"
-                size="md"
-                className="text-sm sm:text-base px-3 sm:px-4 py-2 sm:py-2 min-h-[44px] touch-manipulation active:scale-95"
-              >
-                出牌
-              </Button>
-              <Button
-                onClick={onPass}
-                disabled={!canPass}
-                data-testid="room-pass"
-                variant="outline"
-                size="md"
-                className="text-sm sm:text-base px-3 sm:px-4 py-2 sm:py-2 min-h-[44px] touch-manipulation active:scale-95"
-              >
-                过牌
-              </Button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              出牌
+            </InlineButton>
+            <InlineButton
+              onClick={onPass}
+              disabled={!canPass}
+              variant="outline"
+            >
+              过牌
+            </InlineButton>
+          </div>
+        )}
       </div>
 
-      <motion.div 
-        data-testid="room-hand" 
-        className="flex justify-center -space-x-8 sm:-space-x-12 hover:-space-x-6 sm:hover:-space-x-8 transition-all duration-300 pb-2 sm:pb-4 overflow-x-auto px-4 sm:px-12 min-h-[120px] sm:min-h-[160px]"
-        layout
+      {/* 手牌区域 */}
+      <div
+        data-testid="room-hand"
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          paddingBottom: '1rem',
+          paddingLeft: '3rem',
+          paddingRight: '3rem',
+          minHeight: '120px',
+          overflowX: 'auto',
+          gap: '0.5rem',
+        }}
       >
-        <AnimatePresence mode='popLayout'>
-          {isFinished ? (
-            <motion.div 
-              key="ranking"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="flex flex-col items-center justify-center h-32"
+        {isFinished ? (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '128px',
+              width: '100%',
+            }}
+          >
+            <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>{rankEmoji}</div>
+            <div
+              style={{
+                fontSize: '1.25rem',
+                fontWeight: 600,
+                color: '#d4af37',
+                filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))',
+              }}
             >
-              <div className="text-4xl sm:text-5xl md:text-6xl mb-2">
-                {rankEmoji}
-              </div>
-              <div className="text-xl sm:text-2xl font-semibold text-accent drop-shadow-md">{rankTitle}</div>
-              <div className="text-text-secondary text-xs sm:text-sm mt-1">等待其他玩家...</div>
-            </motion.div>
-          ) : (
-            <>
-              {showWaiting ? (
-                <div className="text-text-secondary animate-pulse mt-8 sm:mt-12 font-mono text-sm sm:text-base">正在确认终局状态...</div>
-              ) : (
-                myHand.map((card, i) => (
-                  <CardView
-                    key={card.id}
-                    card={card}
-                    variant="hand"
-                    selected={selectedCardIds.includes(card.id)}
-                    disabled={!isMyTurn}
-                    onClick={() => handleCardClick(card.id)}
-                    style={{ zIndex: i }}
-                    index={i}
-                  />
-                ))
-              )}
-            </>
-          )}
-        </AnimatePresence>
-      </motion.div>
+              {rankTitle}
+            </div>
+            <div style={{ color: '#6b7280', fontSize: '0.875rem', marginTop: '0.25rem' }}>
+              等待其他玩家...
+            </div>
+          </div>
+        ) : showWaiting ? (
+          <div
+            style={{
+              color: '#6b7280',
+              marginTop: '2rem',
+              fontFamily: 'monospace',
+              fontSize: '0.9375rem',
+              animation: 'pulse 1.5s ease-in-out infinite',
+            }}
+          >
+            正在确认终局状态...
+          </div>
+        ) : (
+          myHand.map((card, i) => (
+            <CardView
+              key={card.id}
+              card={card}
+              variant="hand"
+              selected={selectedCardIds.includes(card.id)}
+              disabled={!isMyTurn}
+              onClick={() => handleCardClick(card.id)}
+              style={{ zIndex: i }}
+              index={i}
+            />
+          ))
+        )}
+      </div>
+
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+      `}</style>
     </>
   )
 })

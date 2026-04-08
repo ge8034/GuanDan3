@@ -1,10 +1,8 @@
 'use client'
 
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useState } from 'react'
 import { Card } from '@/lib/store/game'
 import { CardView } from './CardView'
-import { Button } from '@/components/ui/Button'
-import { AnimatePresence, motion } from 'framer-motion'
 
 export type TableAreaProps = {
   roomStatus?: string | null
@@ -13,6 +11,65 @@ export type TableAreaProps = {
   onToggleReady: (nextReady: boolean) => void
   lastAction: { seatNo: number; type: 'play' | 'pass'; cards?: Card[] } | null
   mySeat: number
+}
+
+// 内联样式按钮组件
+function InlineButton({
+  children,
+  variant = 'primary',
+  disabled = false,
+  onClick,
+  style
+}: {
+  children: React.ReactNode
+  variant?: 'primary' | 'outline'
+  disabled?: boolean
+  onClick: () => void
+  style?: React.CSSProperties
+}) {
+  const [isHovered, setIsHovered] = useState(false)
+
+  const baseStyle: React.CSSProperties = {
+    padding: '0.5rem 1rem',
+    borderRadius: '8px',
+    fontSize: '0.9375rem',
+    fontWeight: 500,
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    border: '2px solid',
+    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    opacity: disabled ? 0.5 : 1,
+    transform: !disabled ? 'scale(1.05)' : 'scale(1)',
+    ...style,
+  }
+
+  const variantStyles = {
+    primary: {
+      backgroundColor: isHovered && !disabled ? '#10b981' : '#059669',
+      borderColor: '#059669',
+      color: 'white',
+      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+    },
+    outline: {
+      backgroundColor: isHovered && !disabled ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
+      borderColor: 'rgba(255, 255, 255, 0.5)',
+      color: 'white',
+    },
+  }
+
+  return (
+    <button
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
+      style={{ ...baseStyle, ...variantStyles[variant] }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {children}
+    </button>
+  )
 }
 
 function TableAreaComponent({
@@ -24,81 +81,201 @@ function TableAreaComponent({
   mySeat,
 }: TableAreaProps) {
   const isPass = lastAction?.type === 'pass'
-  
+
   const handleToggleReady = useCallback(() => {
     if (myMemberReady !== null) {
       onToggleReady(!myMemberReady)
     }
   }, [myMemberReady, onToggleReady])
-  
+
   return (
-    <div className="w-full max-w-xs sm:max-w-sm h-36 sm:h-48 rounded-xl flex flex-col items-center justify-center relative transition-all duration-300 backdrop-blur-[2px] shadow-inner bg-white/5 border border-white/10 overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none opacity-10 flex items-center justify-center">
-         <div className="w-24 h-24 sm:w-32 sm:h-32 border-2 border-white rounded-full"></div>
+    <div
+      style={{
+        width: '100%',
+        maxWidth: '384px',
+        height: '192px',
+        borderRadius: '12px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+        transition: 'all 0.3s ease-out',
+        backdropFilter: 'blur(4px)',
+        boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.1)',
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        border: '2px solid rgba(255, 255, 255, 0.1)',
+        overflow: 'hidden',
+      }}
+    >
+      {/* 背景装饰 */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          pointerEvents: 'none',
+          opacity: 0.1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <div
+          style={{
+            width: '128px',
+            height: '128px',
+            border: '2px solid white',
+            borderRadius: '50%',
+          }}
+        />
       </div>
-      
+
       {roomStatus === 'open' ? (
-        <div className="text-center z-10 px-2">
-          <div className="text-white/80 mb-2 sm:mb-4 font-mono text-xs sm:text-sm font-medium drop-shadow-sm">等待玩家加入...（{membersCount}/4）</div>
+        <div
+          style={{
+            textAlign: 'center',
+            zIndex: 10,
+            padding: '0.5rem',
+          }}
+        >
+          <div
+            style={{
+              color: 'rgba(255, 255, 255, 0.8)',
+              marginBottom: '1rem',
+              fontFamily: 'monospace',
+              fontSize: '0.875rem',
+              fontWeight: 500,
+              filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))',
+            }}
+          >
+            等待玩家加入...（{membersCount}/4）
+          </div>
           {myMemberReady !== null && (
-            <Button
+            <InlineButton
               onClick={handleToggleReady}
               data-testid="room-ready-toggle"
               variant={myMemberReady ? 'outline' : 'primary'}
-              size="md"
-              className={myMemberReady ? 'border-white/50 text-white hover:bg-white/10 text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2' : 'scale-105 sm:scale-110 shadow-lg bg-emerald-600 hover:bg-emerald-500 text-white border-none text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2'}
+              style={{
+                borderColor: myMemberReady ? 'rgba(255, 255, 255, 0.5)' : '#059669',
+                backgroundColor: myMemberReady ? 'transparent' : '#059669',
+                color: 'white',
+              }}
             >
               {myMemberReady ? '取消准备' : '准备'}
-            </Button>
+            </InlineButton>
           )}
         </div>
       ) : (
-        <AnimatePresence mode='wait'>
+        <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 10 }}>
           {lastAction ? (
-            <motion.div
-              key={`action-${lastAction.seatNo}-${lastAction.type}-${lastAction.cards?.[0]?.id}`}
-              initial={{ opacity: 0, scale: 0.8, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.15 } }}
-              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-              className="w-full h-full flex flex-col items-center justify-center relative z-10"
+            <div
+              style={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative',
+                zIndex: 10,
+              }}
             >
-              <div className="absolute top-1 sm:top-2 left-2 sm:left-3 text-[10px] sm:text-xs font-mono text-white/90 bg-black/40 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md z-20 border border-white/10 backdrop-blur-sm shadow-sm">
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '8px',
+                  left: '12px',
+                  fontSize: '0.625rem',
+                  fontFamily: 'monospace',
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                  padding: '0.25rem 0.5rem',
+                  borderRadius: '6px',
+                  zIndex: 20,
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  backdropFilter: 'blur(4px)',
+                  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+                }}
+              >
                 上一手：{lastAction.seatNo === mySeat ? '我' : `座位 ${lastAction.seatNo}`}
               </div>
-              
+
               {isPass ? (
-                <div className="text-white/80 text-2xl sm:text-3xl font-bold tracking-widest animate-pulse font-serif drop-shadow-lg">
+                <div
+                  style={{
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    fontSize: '1.875rem',
+                    fontWeight: 700,
+                    letterSpacing: '0.25em',
+                    fontFamily: 'serif',
+                    filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2))',
+                    animation: 'pulse 1.5s ease-in-out infinite',
+                  }}
+                >
                   过牌
                 </div>
               ) : (
-                <div className="flex -space-x-6 sm:-space-x-8 px-4 sm:px-8 py-1 sm:py-2 overflow-visible max-w-full justify-center items-center h-full pt-4 sm:pt-6">
+                <div
+                  style={{
+                    display: 'flex',
+                    paddingLeft: '2rem',
+                    paddingRight: '2rem',
+                    paddingTop: '0.25rem',
+                    paddingBottom: '0.5rem',
+                    overflow: 'visible',
+                    maxWidth: '100%',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    height: '100%',
+                    gap: '0.5rem',
+                  }}
+                >
                   {lastAction.cards?.map((card, i) => (
-                    <motion.div
+                    <div
                       key={card.id}
-                      initial={{ opacity: 0, y: 20, rotate: (i - (lastAction.cards!.length - 1) / 2) * 5 }}
-                      animate={{ opacity: 1, y: 0, rotate: (i - (lastAction.cards!.length - 1) / 2) * 5 }}
-                      transition={{ delay: i * 0.05 }}
+                      style={{
+                        transform: `rotate(${(i - (lastAction.cards!.length - 1) / 2) * 5}deg)`,
+                      }}
                     >
                       <CardView card={card} variant="table" index={i} />
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
               )}
-            </motion.div>
+            </div>
           ) : (
-            <motion.div
-              key="empty"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.3 }}
-              exit={{ opacity: 0 }}
-              className="flex flex-col items-center pointer-events-none"
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                pointerEvents: 'none',
+              }}
             >
-              <div className="text-white text-4xl sm:text-6xl mb-1 sm:mb-2 animate-pulse opacity-50">♣</div>
-              <div className="text-white text-xs sm:text-sm font-mono opacity-70">新一轮</div>
-            </motion.div>
+              <div
+                style={{
+                  color: 'white',
+                  fontSize: '3.5rem',
+                  marginBottom: '0.5rem',
+                  opacity: 0.5,
+                  animation: 'pulse 1.5s ease-in-out infinite',
+                }}
+              >
+                ♣
+              </div>
+              <div
+                style={{
+                  color: 'white',
+                  fontSize: '0.875rem',
+                  fontFamily: 'monospace',
+                  opacity: 0.7,
+                }}
+              >
+                新一轮
+              </div>
+            </div>
           )}
-        </AnimatePresence>
+        </div>
       )}
     </div>
   )

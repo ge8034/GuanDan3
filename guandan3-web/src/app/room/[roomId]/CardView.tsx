@@ -1,7 +1,5 @@
-import { memo, useMemo, type CSSProperties } from 'react'
-import { motion } from 'framer-motion'
+import { memo, useMemo } from 'react'
 import type { Card } from '@/lib/store/game'
-import RippleEffect from '@/components/effects/RippleEffect'
 
 type CardViewVariant = 'hand' | 'table'
 
@@ -11,31 +9,36 @@ export type CardViewProps = {
   selected?: boolean
   disabled?: boolean
   onClick?: () => void
-  style?: CSSProperties
+  style?: React.CSSProperties
   index?: number
 }
 
+// 扑克牌花色颜色
+const SUIT_COLORS: Record<string, string> = {
+  H: '#dc2626',
+  D: '#dc2626',
+  C: '#1a1a1a',
+  S: '#1a1a1a',
+  J: '#1a1a1a',
+}
+
+// 扑克牌花色符号
+const SUIT_SYMBOLS: Record<string, string> = {
+  H: '♥',
+  D: '♦',
+  C: '♣',
+  S: '♠',
+  J: '★',
+}
+
 const getSuitIcon = (suit: Card['suit']) => {
-  switch (suit) {
-    case 'H':
-      return '♥'
-    case 'D':
-      return '♦'
-    case 'C':
-      return '♣'
-    case 'S':
-      return '♠'
-    case 'J':
-      return '★'
-    default:
-      return suit
-  }
+  return SUIT_SYMBOLS[suit] || suit
 }
 
 const getCardColor = (card: Card) => {
-  if (card.suit === 'H' || card.suit === 'D') return 'text-red-600'
-  if (card.suit === 'J' && card.rank === 'hr') return 'text-red-600'
-  return 'text-black'
+  if (card.suit === 'H' || card.suit === 'D') return '#dc2626'
+  if (card.suit === 'J' && card.rank === 'hr') return '#dc2626'
+  return '#1a1a1a'
 }
 
 const getRankDisplay = (card: Card) => {
@@ -43,21 +46,54 @@ const getRankDisplay = (card: Card) => {
   return card.rank
 }
 
-const getCardClassName = (variant: CardViewVariant, selected: boolean) => {
-  if (variant === 'hand') {
-    return `w-16 sm:w-20 md:w-24 h-24 sm:h-30 md:h-36 bg-white border border-gray-300 rounded-lg shadow-xl flex flex-col items-center justify-between p-1.5 sm:p-2 cursor-pointer relative shrink-0 select-none transition-all touch-manipulation active:scale-95 ${
-      selected ? 'ring-3 sm:ring-4 ring-yellow-400 z-10 shadow-[0_0_15px_rgba(250,204,21,0.6)]' : 'hover:shadow-2xl active:shadow-lg'
-    }`
+// 扑克牌样式
+function getCardStyles(
+  variant: CardViewVariant,
+  selected: boolean,
+  color: string,
+  rank: string,
+  icon: string
+): {
+  container: React.CSSProperties
+  topBottom: React.CSSProperties
+  center: React.CSSProperties
+} {
+  const isHand = variant === 'hand'
+
+  const baseWidth = isHand ? 80 : 64
+  const baseHeight = isHand ? 112 : 96
+
+  return {
+    container: {
+      width: `${baseWidth}px`,
+      height: `${baseHeight}px`,
+      borderRadius: '8px',
+      border: selected ? '3px solid #facc15' : '2px solid #d1d5db',
+      backgroundColor: 'white',
+      boxShadow: selected
+        ? '0 8px 16px rgba(250, 204, 21, 0.4)'
+        : '0 2px 8px rgba(0, 0, 0, 0.15)',
+      position: 'relative' as const,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontFamily: 'serif',
+      cursor: disabled ? 'default' : 'pointer',
+      transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+      transform: selected ? 'translateY(-12px)' : 'translateY(0)',
+      userSelect: 'none',
+    },
+    topBottom: {
+      fontSize: isHand ? '14px' : '12px',
+      fontWeight: 600,
+      color,
+    },
+    center: {
+      fontSize: isHand ? '40px' : '32px',
+      color,
+      fontWeight: 400,
+    },
   }
-  return 'w-14 sm:w-16 md:w-20 h-20 sm:h-24 md:h-28 bg-white border border-gray-300 rounded-lg shadow-xl flex flex-col items-center justify-between p-1 sm:p-1.5 select-none'
-}
-
-const getTopBottomClassName = (variant: CardViewVariant) => {
-  return variant === 'hand' ? 'text-sm sm:text-base md:text-lg font-bold' : 'text-xs sm:text-sm md:text-sm font-bold leading-none'
-}
-
-const getCenterClassName = (variant: CardViewVariant) => {
-  return variant === 'hand' ? 'text-3xl sm:text-4xl md:text-5xl' : 'text-2xl sm:text-2xl md:text-3xl'
 }
 
 const CardViewComponent = ({ card, variant, selected, disabled, onClick, style, index = 0 }: CardViewProps) => {
@@ -65,44 +101,66 @@ const CardViewComponent = ({ card, variant, selected, disabled, onClick, style, 
   const rank = useMemo(() => getRankDisplay(card), [card])
   const icon = useMemo(() => getSuitIcon(card.suit), [card.suit])
 
-  const base = useMemo(() => getCardClassName(variant, selected || false), [variant, selected])
-  const topBottom = useMemo(() => getTopBottomClassName(variant), [variant])
-  const center = useMemo(() => getCenterClassName(variant), [variant])
+  const { container: cardStyles, topBottom, center } = useMemo(
+    () => getCardStyles(variant, selected || false, color, rank, icon),
+    [variant, selected, color, rank, icon]
+  )
 
   return (
-    <motion.div
-      layout
+    <div
       data-card-id={card.id}
-      initial={variant === 'hand' ? { opacity: 0, y: 100, rotate: -5 } : { opacity: 0, scale: 0.5, y: 20 }}
-      animate={{
-        opacity: 1,
-        y: selected ? -30 : 0,
-        scale: 1,
-        rotate: 0,
-        transition: {
-          type: 'spring',
-          stiffness: 400,
-          damping: 25,
-          mass: 0.8,
-          delay: index * 0.05
-        }
-      }}
-      exit={{ opacity: 0, y: -50, scale: 0.8, transition: { duration: 0.2 } }}
-      whileHover={!disabled && variant === 'hand' ? { y: selected ? -40 : -15, scale: 1.05, zIndex: 20 } : {}}
-      whileTap={!disabled && variant === 'hand' ? { scale: 0.95 } : {}}
       onClick={disabled ? undefined : onClick}
       aria-disabled={disabled || undefined}
-      className={base}
-      style={style}
+      style={{ ...cardStyles, ...style, zIndex: index }}
+      onMouseEnter={(e) => {
+        if (!disabled && variant === 'hand' && !selected) {
+          e.currentTarget.style.transform = 'translateY(-6px)'
+          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)'
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled && variant === 'hand' && !selected) {
+          e.currentTarget.style.transform = 'translateY(0)'
+          e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)'
+        }
+      }}
     >
-      <RippleEffect className="absolute inset-0 rounded-lg overflow-hidden">
-        <div className="w-full h-full">
-          <div className={`${topBottom} w-full text-left ${color}`}>{rank}</div>
-          <div className={`${center} ${color}`}>{icon}</div>
-          <div className={`${topBottom} w-full text-right ${color}`}>{rank}</div>
-        </div>
-      </RippleEffect>
-    </motion.div>
+      {/* 左上角 */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '6px',
+          left: '6px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          lineHeight: 1,
+        }}
+      >
+        <span style={topBottom}>{rank}</span>
+        <span style={{ fontSize: '12px', color }}>{icon}</span>
+      </div>
+
+      {/* 中心花色 */}
+      <span style={center}>{icon}</span>
+
+      {/* 右下角（倒置） */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '6px',
+          right: '6px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          lineHeight: 1,
+          transform: 'rotate(180deg)',
+        }}
+      >
+        <span style={topBottom}>{rank}</span>
+        <span style={{ fontSize: '12px', color }}>{icon}</span>
+      </div>
+    </div>
   )
 }
 

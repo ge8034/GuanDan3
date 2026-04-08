@@ -1,8 +1,6 @@
 'use client'
 
-import { Button } from '@/components/ui/Button'
-import { Select } from '@/components/ui/Select'
-import { RoomInvitationPanel } from '@/components/room/RoomInvitationPanel'
+import { Copy, UserPlus, Share2 } from 'lucide-react'
 
 export type RoomHeaderProps = {
   roomId: string
@@ -28,6 +26,126 @@ export type RoomHeaderProps = {
   canPauseResume?: boolean
 }
 
+// 内联样式按钮组件
+function InlineButton({
+  children,
+  variant = 'primary',
+  disabled = false,
+  size = 'md',
+  onClick,
+  style
+}: {
+  children: React.ReactNode
+  variant?: 'primary' | 'secondary' | 'danger' | 'outline'
+  disabled?: boolean
+  size?: 'sm' | 'md'
+  onClick: () => void
+  style?: React.CSSProperties
+}) {
+  const [isHovered, setIsHovered] = useState(false)
+
+  const baseStyle: React.CSSProperties = {
+    padding: size === 'sm' ? '0.5rem 0.75rem' : '0.5rem 1rem',
+    borderRadius: '8px',
+    fontSize: size === 'sm' ? '0.875rem' : '0.9375rem',
+    fontWeight: 500,
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    border: '2px solid',
+    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    minHeight: '36px',
+    opacity: disabled ? 0.5 : 1,
+    ...style,
+  }
+
+  const variantStyles = {
+    primary: {
+      backgroundColor: isHovered && !disabled ? '#2d5a3d' : '#1a472a',
+      borderColor: '#1a472a',
+      color: 'white',
+    },
+    secondary: {
+      backgroundColor: isHovered && !disabled ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.8)',
+      borderColor: 'rgba(255, 255, 255, 0.3)',
+      color: '#111827',
+    },
+    danger: {
+      backgroundColor: isHovered && !disabled ? 'rgba(239, 68, 68, 0.2)' : 'transparent',
+      borderColor: '#ef4444',
+      color: '#ef4444',
+    },
+    outline: {
+      backgroundColor: isHovered && !disabled ? 'rgba(255, 255, 255, 0.3)' : 'transparent',
+      borderColor: 'rgba(255, 255, 255, 0.5)',
+      color: 'white',
+    },
+  }
+
+  return (
+    <button
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
+      style={{ ...baseStyle, ...variantStyles[variant] }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {children}
+    </button>
+  )
+}
+
+// 内联样式选择组件
+function InlineSelect({
+  value,
+  onChange,
+  disabled = false,
+  options,
+  style
+}: {
+  value: string
+  onChange: (value: string) => void
+  disabled?: boolean
+  options: { value: string; label: string }[]
+  style?: React.CSSProperties
+}) {
+  const [isHovered, setIsHovered] = useState(false)
+
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      disabled={disabled}
+      style={{
+        padding: '0.5rem 0.75rem',
+        borderRadius: '8px',
+        fontSize: '0.875rem',
+        fontWeight: 500,
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        border: '2px solid',
+        backgroundColor: isHovered && !disabled ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.8)',
+        borderColor: 'rgba(255, 255, 255, 0.3)',
+        color: '#111827',
+        opacity: disabled ? 0.5 : 1,
+        transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+        minHeight: '36px',
+        ...style,
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  )
+}
+
+import { useState } from 'react'
+
 export const RoomHeader = ({
   roomId,
   roomStatus,
@@ -41,7 +159,6 @@ export const RoomHeader = ({
   startDisabled,
   startLabel,
   onStart,
-  currentSeat,
   onAddAI,
   difficulty = 'medium',
   onDifficultyChange,
@@ -51,7 +168,16 @@ export const RoomHeader = ({
   onResume,
   canPauseResume = false,
 }: RoomHeaderProps) => {
-  const levelLabel = levelRank === 11 ? 'J' : levelRank === 12 ? 'Q' : levelRank === 13 ? 'K' : levelRank === 14 ? 'A' : String(levelRank)
+  const levelLabel =
+    levelRank === 11
+      ? 'J'
+      : levelRank === 12
+        ? 'Q'
+        : levelRank === 13
+          ? 'K'
+          : levelRank === 14
+            ? 'A'
+            : String(levelRank)
 
   const difficultyOptions = [
     { value: 'easy', label: '简单' },
@@ -59,54 +185,185 @@ export const RoomHeader = ({
     { value: 'hard', label: '困难' },
   ]
 
+  // 复制房间链接功能
+  const handleCopyLink = () => {
+    const link = `${window.location.origin}/room/${roomId}`
+    navigator.clipboard.writeText(link).catch(() => {})
+  }
+
   return (
-    <header className="absolute top-0 left-0 right-0 p-4 flex flex-col md:flex-row justify-between items-start md:items-center pointer-events-none z-40 gap-3 md:gap-0">
+    <header
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        padding: '1rem',
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        gap: '0.75rem',
+        zIndex: 50,
+        pointerEvents: 'none',
+      }}
+    >
       {/* Room Info HUD */}
-      <div className="pointer-events-auto bg-black/30 backdrop-blur-md rounded-2xl px-4 py-2 border border-white/10 shadow-lg transition-all hover:bg-black/40 text-left">
-        <h1 className="text-lg md:text-xl font-bold text-white drop-shadow-md">房间：{roomId?.slice(0, 8)}...</h1>
-        <div className="flex items-center gap-2 mt-1 flex-wrap">
-          <span className="px-2 py-0.5 rounded-full bg-white/10 border border-white/20 text-xs text-white/90 font-medium shadow-sm backdrop-blur-sm">状态：{roomStatus}</span>
-          <span className="px-2 py-0.5 rounded-full bg-white/10 border border-white/20 text-xs text-white/90 font-medium shadow-sm backdrop-blur-sm">牌局：{gameStatus}</span>
-          <span className="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-xs text-amber-300 font-bold shadow-sm backdrop-blur-sm">级牌：{levelLabel}</span>
-          <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-xs text-emerald-300 font-bold shadow-sm backdrop-blur-sm">座位：{seatText}</span>
+      <div
+        style={{
+          pointerEvents: 'auto',
+          backgroundColor: 'rgba(0, 0, 0, 0.3)',
+          backdropFilter: 'blur(12px)',
+          borderRadius: '16px',
+          padding: '0.5rem 1rem',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+          transition: 'all 0.2s',
+          textAlign: 'left',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.4)'
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.3)'
+        }}
+      >
+        <h1
+          style={{
+            fontSize: '1.125rem',
+            fontWeight: 700,
+            color: 'white',
+            filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2))',
+          }}
+        >
+          房间：{roomId?.slice(0, 8)}...
+        </h1>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            flexWrap: 'wrap',
+            marginTop: '0.25rem',
+          }}
+        >
+          <span
+            style={{
+              padding: '0.125rem 0.5rem',
+              borderRadius: '9999px',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              fontSize: '0.75rem',
+              color: 'rgba(255, 255, 255, 0.9)',
+              fontWeight: 500,
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+              backdropFilter: 'blur(4px)',
+            }}
+          >
+            状态：{roomStatus}
+          </span>
+          <span
+            style={{
+              padding: '0.125rem 0.5rem',
+              borderRadius: '9999px',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              fontSize: '0.75rem',
+              color: 'rgba(255, 255, 255, 0.9)',
+              fontWeight: 500,
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+              backdropFilter: 'blur(4px)',
+            }}
+          >
+            牌局：{gameStatus}
+          </span>
+          <span
+            style={{
+              padding: '0.125rem 0.5rem',
+              borderRadius: '9999px',
+              backgroundColor: 'rgba(245, 158, 11, 0.2)',
+              border: '1px solid rgba(245, 158, 11, 0.4)',
+              fontSize: '0.75rem',
+              color: '#fcd34d',
+              fontWeight: 600,
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+              backdropFilter: 'blur(4px)',
+            }}
+          >
+            级牌：{levelLabel}
+          </span>
+          <span
+            style={{
+              padding: '0.125rem 0.5rem',
+              borderRadius: '9999px',
+              backgroundColor: 'rgba(16, 185, 129, 0.2)',
+              border: '1px solid rgba(16, 185, 129, 0.4)',
+              fontSize: '0.75rem',
+              color: '#6ee7b7',
+              fontWeight: 600,
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+              backdropFilter: 'blur(4px)',
+            }}
+          >
+            座位：{seatText}
+          </span>
         </div>
       </div>
-      
+
       {/* Controls HUD */}
-      <div className="pointer-events-auto flex flex-wrap gap-2 justify-center bg-black/30 backdrop-blur-md rounded-2xl px-3 py-2 border border-white/10 shadow-lg transition-all hover:bg-black/40" data-testid="room-header-controls" data-is-owner={isOwner} data-show-start={showStart} data-has-add-ai={!!onAddAI}>
+      <div
+        style={{
+          pointerEvents: 'auto',
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '0.5rem',
+          justifyContent: 'center',
+          backgroundColor: 'rgba(0, 0, 0, 0.3)',
+          backdropFilter: 'blur(12px)',
+          borderRadius: '16px',
+          padding: '0.5rem 0.75rem',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+          transition: 'all 0.2s',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.4)'
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.3)'
+        }}
+        data-testid="room-header-controls"
+        data-is-owner={isOwner}
+        data-show-start={showStart}
+        data-has-add-ai={!!onAddAI}
+      >
         {showLeave && (
-          <Button
-            onClick={onLeave}
-            data-testid="room-leave"
-            variant="danger"
-            size="sm"
-          >
+          <InlineButton onClick={onLeave} data-testid="room-leave" variant="danger" size="sm">
             离开房间
-          </Button>
+          </InlineButton>
         )}
         {canPauseResume && !showStart && (
-          <Button
+          <InlineButton
             onClick={isPaused ? onResume : onPause}
-            data-testid={isPaused ? "room-resume" : "room-pause"}
-            variant={isPaused ? "primary" : "secondary"}
+            data-testid={isPaused ? 'room-resume' : 'room-pause'}
+            variant={isPaused ? 'primary' : 'secondary'}
             size="sm"
           >
-            {isPaused ? "恢复游戏" : "暂停游戏"}
-          </Button>
+            {isPaused ? '恢复游戏' : '暂停游戏'}
+          </InlineButton>
         )}
-        <RoomInvitationPanel roomId={roomId} isOwner={isOwner} />
+        <InlineButton onClick={handleCopyLink} variant="secondary" size="sm">
+          <Share2 style={{ width: '16px', height: '16px' }} />
+          分享
+        </InlineButton>
         {showStart && isOwner && onAddAI && (
-          <Button
-            onClick={onAddAI}
-            data-testid="room-add-ai"
-            variant="secondary"
-            size="sm"
-          >
+          <InlineButton onClick={onAddAI} data-testid="room-add-ai" variant="secondary" size="sm">
+            <UserPlus style={{ width: '16px', height: '16px' }} />
             添加机器人
-          </Button>
+          </InlineButton>
         )}
         {showStart && isOwner && onDifficultyChange && (
-          <Select
+          <InlineSelect
             value={difficulty}
             onChange={(value) => onDifficultyChange(value as 'easy' | 'medium' | 'hard')}
             options={difficultyOptions}
@@ -115,7 +372,7 @@ export const RoomHeader = ({
           />
         )}
         {showStart && isOwner && (
-          <Button
+          <InlineButton
             onClick={onStart}
             data-testid="room-start"
             disabled={startDisabled}
@@ -123,10 +380,9 @@ export const RoomHeader = ({
             size="sm"
           >
             {startLabel}
-          </Button>
+          </InlineButton>
         )}
       </div>
     </header>
   )
 }
-

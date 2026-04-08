@@ -1,7 +1,5 @@
 'use client'
 
-import RippleEffect from '@/components/effects/RippleEffect'
-
 export type GameOverOverlayProps = {
   visible: boolean
   rankings: number[]
@@ -13,39 +11,136 @@ export type GameOverOverlayProps = {
 export const GameOverOverlay = ({ visible, rankings, mySeat, isOwner, onRestart }: GameOverOverlayProps) => {
   if (!visible) return null
 
+  const getRankEmoji = (index: number) => {
+    if (index === 0) return '👑'
+    if (index === 1) return '🥈'
+    if (index === 2) return '🥉'
+    return '🥔'
+  }
+
+  const getRankTitle = (index: number) => {
+    if (index === 0) return '头游'
+    if (index === 1) return '二游'
+    if (index === 2) return '三游'
+    return '末游'
+  }
+
   return (
-    <div data-testid="game-over-overlay" className="fixed inset-0 z-[10000] bg-black/80 flex items-center justify-center backdrop-blur-md">
-      <div className="bg-gradient-to-br from-yellow-900 to-black border-2 border-yellow-500 rounded-xl p-8 max-w-md w-full shadow-2xl text-center animate-in fade-in zoom-in duration-300">
-        <h2 className="text-4xl font-bold text-yellow-400 mb-6 drop-shadow-md">游戏结束</h2>
-        <div className="space-y-4">
+    <div
+      data-testid="game-over-overlay"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backdropFilter: 'blur(12px)',
+        zIndex: 1000,
+      }}
+    >
+      <div
+        style={{
+          background: 'linear-gradient(to bottom right, #78350f, #000000)',
+          border: '2px solid #eab308',
+          borderRadius: '12px',
+          padding: '2rem',
+          maxWidth: '28rem',
+          width: '100%',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          textAlign: 'center',
+          margin: '1rem',
+        }}
+      >
+        <h2
+          style={{
+            fontSize: '2.25rem',
+            fontWeight: 700,
+            color: '#facc15',
+            marginBottom: '1.5rem',
+            filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2))',
+          }}
+        >
+          游戏结束
+        </h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {rankings.map((seat, index) => (
-            <div key={seat} data-testid={`ranking-${index}`} data-seat={seat} className="flex justify-between items-center bg-white/10 p-3 rounded-lg border border-white/5">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">{index === 0 ? '👑' : index === 1 ? '🥈' : index === 2 ? '🥉' : '🥔'}</span>
-                <span className="font-bold text-lg text-white">{seat === mySeat ? '我' : `座位 ${seat}`}</span>
+            <div
+              key={seat}
+              data-testid={`ranking-${index}`}
+              data-seat={seat}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                padding: '0.75rem',
+                borderRadius: '8px',
+                border: '1px solid rgba(255, 255, 255, 0.05)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <span style={{ fontSize: '1.5rem' }}>{getRankEmoji(index)}</span>
+                <span
+                  style={{
+                    fontWeight: 600,
+                    fontSize: '1.125rem',
+                    color: 'white',
+                  }}
+                >
+                  {seat === mySeat ? '我' : `座位 ${seat}`}
+                </span>
               </div>
-              <span className="text-yellow-200 font-mono font-bold">
-                {index === 0 ? '头游' : index === 1 ? '二游' : index === 2 ? '三游' : '末游'}
+              <span
+                style={{
+                  color: '#fef08a',
+                  fontFamily: 'monospace',
+                  fontWeight: 600,
+                }}
+              >
+                {getRankTitle(index)}
               </span>
             </div>
           ))}
         </div>
-        <div className="mt-8 flex justify-center gap-4">
+        <div
+          style={{
+            marginTop: '2rem',
+            display: 'flex',
+            justifyContent: 'center',
+          }}
+        >
           {isOwner ? (
-            <RippleEffect className="relative inline-block">
-              <button
-                onClick={onRestart}
-                className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-3 px-8 rounded-full shadow-lg transition transform hover:scale-105"
-              >
-                再来一局
-              </button>
-            </RippleEffect>
+            <button
+              onClick={onRestart}
+              style={{
+                backgroundColor: '#eab308',
+                color: 'black',
+                fontWeight: 600,
+                padding: '0.75rem 2rem',
+                borderRadius: '9999px',
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                cursor: 'pointer',
+                fontSize: '1rem',
+                border: 'none',
+                transition: 'opacity 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = '0.9'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = '1'
+              }}
+            >
+              再来一局
+            </button>
           ) : (
-            <div className="text-white/60">等待房主开始新游戏...</div>
+            <div style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+              等待房主开始新游戏...
+            </div>
           )}
         </div>
       </div>
     </div>
   )
 }
-
