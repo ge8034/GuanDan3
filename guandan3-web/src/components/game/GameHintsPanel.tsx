@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import { useGameStore } from '@/lib/store/game'
 import { useRoomStore } from '@/lib/store/room'
+import { CheckCircle, AlertTriangle, Info, X } from 'lucide-react'
 
 export function GameHintsPanel() {
   const { myHand, lastAction, turnNo, status } = useGameStore()
@@ -56,12 +57,14 @@ export function GameHintsPanel() {
 
   const handleHintClick = (hint: CardHint) => {
     if (hint.cards.length > 0) {
-      console.log('Selected hint cards:', hint.cards)
+      // 提示卡牌已选择，可在此触发选牌回调
+      // console.log('Selected hint cards:', hint.cards)
     }
   }
 
-  const handleSuggestionClick = (suggestion: PlaySuggestion) => {
-    console.log('Selected suggestion:', suggestion)
+  const handleSuggestionClick = (_suggestion: PlaySuggestion) => {
+    // 出牌建议已选择，可在此触发出牌回调
+    // console.log('Selected suggestion:', suggestion)
   }
 
   if (!showHints) {
@@ -88,7 +91,7 @@ export function GameHintsPanel() {
               size="sm"
               onClick={() => setShowHints(false)}
             >
-              ✕
+              <X className="w-5 h-5" strokeWidth={2} />
             </Button>
           </div>
           <div className="flex gap-2 overflow-x-auto">
@@ -142,8 +145,8 @@ export function GameHintsPanel() {
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">
-                        {hint.hintType === 'suggested' ? '✅ 推荐' : hint.hintType === 'warning' ? '⚠️ 警告' : 'ℹ️ 提示'}
+                      <span className="text-sm font-medium flex items-center gap-1">
+                        {hint.hintType === 'suggested' ? <><CheckCircle className="w-4 h-4 text-green-600" /> 推荐</> : hint.hintType === 'warning' ? <><AlertTriangle className="w-4 h-4 text-amber-600" /> 警告</> : <><Info className="w-4 h-4 text-blue-600" /> 提示</>}
                       </span>
                       <span className="text-xs text-gray-500">
                         置信度: {(hint.confidence * 100).toFixed(0)}%

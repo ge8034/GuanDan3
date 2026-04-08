@@ -136,7 +136,7 @@ export function ServiceWorkerStatus({
         {state.updateAvailable && (
           <button
             onClick={handleRefresh}
-            className="flex items-center gap-1 text-blue-500 hover:text-blue-600"
+            className="flex items-center gap-1 text-info hover:text-primary"
           >
             <RefreshCw className="w-4 h-4" />
             <span>刷新更新</span>
@@ -155,13 +155,13 @@ export function ServiceWorkerStatus({
 function getStatusIcon(status: SWStatus) {
   switch (status) {
     case 'activated':
-      return <CheckCircle className="w-4 h-4 text-green-500" />
+      return <CheckCircle className="w-4 h-4 text-success" />
     case 'checking':
-      return <RefreshCw className="w-4 h-4 text-blue-500 animate-spin" />
+      return <RefreshCw className="w-4 h-4 text-info animate-spin" />
     case 'unsupported':
-      return <AlertCircle className="w-4 h-4 text-amber-500" />
+      return <AlertCircle className="w-4 h-4 text-warning" />
     case 'error':
-      return <XCircle className="w-4 h-4 text-red-500" />
+      return <XCircle className="w-4 h-4 text-error" />
   }
 }
 
@@ -226,7 +226,7 @@ export function UpdateBanner({
     <div
       className={`
         fixed top-16 left-0 right-0 z-50
-        bg-blue-500 text-white
+        bg-info text-white
         px-4 py-3
         flex items-center justify-center gap-3
         shadow-lg
@@ -242,7 +242,7 @@ export function UpdateBanner({
       {!isRefreshing && (
         <button
           onClick={handleRefresh}
-          className="px-3 py-1 bg-white text-blue-500 rounded-lg font-medium hover:bg-blue-50 transition-colors"
+          className="px-3 py-1 bg-white text-info rounded-lg font-medium hover:bg-info/10 transition-colors"
         >
           刷新
         </button>

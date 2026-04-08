@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { usePrefersReducedMotion } from '@/lib/performance/optimization'
+import { Star } from 'lucide-react'
 
 interface ComboEffectProps {
   visible: boolean
@@ -157,7 +158,7 @@ export default function ComboEffect({ visible, comboCount, onComplete, duration 
                 animate={{ rotate: [0, 360] }}
                 transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
               >
-                ⭐
+                <Star className="w-6 h-6" fill="currentColor" />
               </motion.span>
             </motion.div>
 
@@ -171,7 +172,7 @@ export default function ComboEffect({ visible, comboCount, onComplete, duration 
                 animate={{ rotate: [360, 0] }}
                 transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
               >
-                ⭐
+                <Star className="w-6 h-6" fill="currentColor" />
               </motion.span>
             </motion.div>
           </motion.div>

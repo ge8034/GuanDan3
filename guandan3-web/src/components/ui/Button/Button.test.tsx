@@ -16,31 +16,84 @@ describe('Button组件', () => {
     test('渲染主要变体', () => {
       const { container } = render(<Button variant="primary">主要按钮</Button>)
       const button = container.querySelector('button')
-      expect(button).toHaveClass('from-poker-table', 'to-poker-table-dark')
+      expect(button).toHaveClass(
+        'from-poker-table-light',
+        'via-poker-table',
+        'to-poker-table-dark',
+        'border-poker-table-border',
+        'text-gray-100',
+        'shadow-button'
+      )
     })
 
     test('渲染次要变体', () => {
       const { container } = render(<Button variant="secondary">次要按钮</Button>)
       const button = container.querySelector('button')
-      expect(button).toHaveClass('from-poker-table-light', 'to-poker-table')
+      expect(button).toHaveClass(
+        'from-poker-table-light',
+        'to-poker-table',
+        'border-poker-table-border',
+        'text-gray-200',
+        'shadow-button'
+      )
     })
 
     test('渲染轮廓变体', () => {
       const { container } = render(<Button variant="outline">轮廓按钮</Button>)
       const button = container.querySelector('button')
-      expect(button).toHaveClass('border-2', 'border-accent-gold')
+      expect(button).toHaveClass(
+        'border-2',
+        'border-accent-gold',
+        'text-accent-gold',
+        'bg-transparent',
+        'shadow-lg'
+      )
+    })
+
+    test('渲染危险变体', () => {
+      const { container } = render(<Button variant="danger">危险按钮</Button>)
+      const button = container.querySelector('button')
+      expect(button).toHaveClass(
+        'from-red-600',
+        'to-red-800',
+        'border-red-500',
+        'text-white',
+        'shadow-button'
+      )
+    })
+
+    test('渲染幽灵变体', () => {
+      const { container } = render(<Button variant="ghost">幽灵按钮</Button>)
+      const button = container.querySelector('button')
+      expect(button).toHaveClass(
+        'bg-transparent',
+        'text-gray-200'
+      )
     })
 
     test('渲染小尺寸', () => {
       const { container } = render(<Button size="sm">小按钮</Button>)
       const button = container.querySelector('button')
-      expect(button).toHaveClass('h-8', 'px-[12px]', 'py-[6px]')
+      expect(button).toHaveClass('h-11', 'px-[12px]', 'py-[6px]', 'text-[13px]', 'min-h-[44px]')
     })
 
     test('渲染大尺寸', () => {
       const { container } = render(<Button size="lg">大按钮</Button>)
       const button = container.querySelector('button')
-      expect(button).toHaveClass('h-12', 'px-[24px]', 'py-[14px]')
+      expect(button).toHaveClass('h-12', 'px-[24px]', 'py-[14px]', 'text-[17px]', 'min-h-[48px]')
+    })
+
+    test('渲染特大尺寸', () => {
+      const { container } = render(<Button size="xl">特大按钮</Button>)
+      const button = container.querySelector('button')
+      expect(button).toHaveClass(
+        'h-14',
+        'px-[32px]',
+        'py-[18px]',
+        'text-[19px]',
+        'min-h-[56px]',
+        'font-semibold'
+      )
     })
 
     test('渲染全宽按钮', () => {
@@ -169,10 +222,11 @@ describe('Button组件', () => {
         'rounded-lg',
         'font-medium',
         'transition-all',
-        'duration-[250ms]',
+        'duration-200',
+        'ease-out',
         'focus-visible:outline-none',
         'focus-visible:ring-2',
-        'focus-visible:ring-ring',
+        'focus-visible:ring-accent-gold',
         'focus-visible:ring-offset-2',
         'disabled:pointer-events-none',
         'disabled:opacity-50',
@@ -186,7 +240,7 @@ describe('Button组件', () => {
       expect(button).toHaveClass(
         'focus-visible:outline-none',
         'focus-visible:ring-2',
-        'focus-visible:ring-ring',
+        'focus-visible:ring-accent-gold',
         'focus-visible:ring-offset-2'
       )
     })
@@ -194,7 +248,7 @@ describe('Button组件', () => {
     test('触控目标尺寸符合标准', () => {
       const { container } = render(<Button size="sm">小按钮</Button>)
       const button = container.querySelector('button')
-      expect(button).toHaveClass('min-h-[32px]')
+      expect(button).toHaveClass('min-h-[44px]')
     })
   })
 

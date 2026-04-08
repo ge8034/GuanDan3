@@ -38,12 +38,12 @@ interface TabsListProps {
 
 export function TabsList({ children, className, activeTab, setActiveTab }: TabsListProps) {
   return (
-    <div className={cn('flex border-b border-border', className)}>
+    <div className={cn('flex border-b border-poker-table-border', className)} role="tablist">
       {React.Children.map(children, (child) => {
         if (React.isValidElement(child)) {
-          return React.cloneElement(child as React.ReactElement<any>, { 
-            activeTab, 
-            setActiveTab 
+          return React.cloneElement(child as React.ReactElement<any>, {
+            activeTab,
+            setActiveTab
           })
         }
         return child
@@ -61,17 +61,23 @@ interface TabsTriggerProps {
 }
 
 export function TabsTrigger({ value, children, className, activeTab, setActiveTab }: TabsTriggerProps) {
+  const isSelected = activeTab === value
+
   return (
     <button
       onClick={() => setActiveTab?.(value)}
       className={cn(
         'px-4 py-2 text-sm font-medium transition-colors',
         'border-b-2 -mb-px',
-        activeTab === value
-          ? 'border-primary text-primary'
-          : 'border-transparent text-muted-foreground hover:text-foreground',
+        isSelected
+          ? 'border-accent-gold text-accent-gold'
+          : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-poker-table-border',
+        'focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/50 focus-visible:ring-offset-2',
         className
       )}
+      role="tab"
+      aria-selected={isSelected}
+      aria-controls={`panel-${value}`}
     >
       {children}
     </button>
@@ -89,7 +95,12 @@ export function TabsContent({ value, children, className, activeTab }: TabsConte
   if (activeTab !== value) return null
 
   return (
-    <div className={cn('space-y-4', className)}>
+    <div
+      className={cn('space-y-4', className)}
+      role="tabpanel"
+      id={`panel-${value}`}
+      aria-labelledby={`tab-${value}`}
+    >
       {children}
     </div>
   )

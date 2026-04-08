@@ -66,15 +66,15 @@ export default function DatabasePerformanceMonitor() {
   if (!isVisible || !metrics || !cacheStats) return null
 
   const getDurationColor = (duration: number) => {
-    if (duration < 100) return 'text-green-500'
-    if (duration < 500) return 'text-yellow-500'
-    return 'text-red-500'
+    if (duration < 100) return 'text-success'
+    if (duration < 500) return 'text-warning'
+    return 'text-error'
   }
 
   const getCacheRateColor = (rate: number) => {
-    if (rate >= 0.7) return 'text-green-500'
-    if (rate >= 0.5) return 'text-yellow-500'
-    return 'text-red-500'
+    if (rate >= 0.7) return 'text-success'
+    if (rate >= 0.5) return 'text-warning'
+    return 'text-error'
   }
 
   const getSuccessRate = () => {
@@ -84,9 +84,9 @@ export default function DatabasePerformanceMonitor() {
 
   const getSuccessRateColor = () => {
     const rate = getSuccessRate()
-    if (rate >= 99) return 'bg-green-500'
-    if (rate >= 95) return 'bg-yellow-500'
-    return 'bg-red-500'
+    if (rate >= 99) return 'bg-success'
+    if (rate >= 95) return 'bg-warning'
+    return 'bg-error'
   }
 
   return (
@@ -142,11 +142,11 @@ export default function DatabasePerformanceMonitor() {
         <div className="mt-3 pt-3 border-t border-gray-700 space-y-1">
           <div className="flex justify-between">
             <span>成功查询:</span>
-            <span className="text-green-500">{metrics.successfulQueries}</span>
+            <span className="text-success">{metrics.successfulQueries}</span>
           </div>
           <div className="flex justify-between">
             <span>失败查询:</span>
-            <span className="text-red-500">{metrics.failedQueries}</span>
+            <span className="text-error">{metrics.failedQueries}</span>
           </div>
           <div className="flex justify-between">
             <span>缓存大小:</span>
@@ -175,7 +175,7 @@ export default function DatabasePerformanceMonitor() {
               client.clearDatabaseCache()
             }
           }}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-1 px-2 rounded transition-colors"
+          className="w-full bg-info hover:bg-info/80 text-white py-1 px-2 rounded transition-colors"
         >
           清除缓存
         </button>
@@ -193,7 +193,7 @@ export default function DatabasePerformanceMonitor() {
               URL.revokeObjectURL(url)
             }
           }}
-          className="w-full bg-green-600 hover:bg-green-700 text-white py-1 px-2 rounded transition-colors"
+          className="w-full bg-success hover:bg-success/80 text-white py-1 px-2 rounded transition-colors"
         >
           导出指标
         </button>

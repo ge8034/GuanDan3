@@ -213,7 +213,7 @@ export default function MonitoringDashboard() {
                         {new Date(error.timestamp).toLocaleString('zh-CN')}
                       </span>
                     </div>
-                    <p className="text-sm text-red-600 mb-2">{error.error_message}</p>
+                    <p className="text-sm text-error mb-2">{error.error_message}</p>
                     <p className="text-xs text-muted-foreground">页面: {error.page}</p>
                   </div>
                 ))}

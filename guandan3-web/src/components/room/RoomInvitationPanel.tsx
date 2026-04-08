@@ -3,15 +3,16 @@
 import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  createRoomInvitation, 
-  getRoomInvitations, 
-  generateInviteLink, 
+import {
+  createRoomInvitation,
+  getRoomInvitations,
+  generateInviteLink,
   generateQRCodeUrl,
-  type RoomInvitationCreateResult 
+  type RoomInvitationCreateResult
 } from '@/lib/api/roomInvitation'
 import { copyToClipboard } from '@/lib/utils/clipboard'
 import RippleEffect from '@/components/effects/RippleEffect'
+import { X } from 'lucide-react'
 
 import { logger } from '@/lib/utils/logger'
 interface RoomInvitationPanelProps {
@@ -109,7 +110,7 @@ export const RoomInvitationPanel = ({ roomId, isOwner }: RoomInvitationPanelProp
                   onClick={() => setIsOpen(false)}
                   className="text-white/50 hover:text-white transition-colors"
                 >
-                  ✕
+                  <X className="w-5 h-5" strokeWidth={2.5} />
                 </button>
               </div>
 

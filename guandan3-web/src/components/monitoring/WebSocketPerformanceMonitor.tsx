@@ -57,15 +57,15 @@ export default function WebSocketPerformanceMonitor() {
   if (!isVisible || !compressionStats) return null
 
   const getCompressionRatioColor = (ratio: number) => {
-    if (ratio < 0.5) return 'text-green-500'
-    if (ratio < 0.8) return 'text-yellow-500'
-    return 'text-red-500'
+    if (ratio < 0.5) return 'text-success'
+    if (ratio < 0.8) return 'text-warning'
+    return 'text-error'
   }
 
   const getCompressionTimeColor = (time: number) => {
-    if (time < 5) return 'text-green-500'
-    if (time < 10) return 'text-yellow-500'
-    return 'text-red-500'
+    if (time < 5) return 'text-success'
+    if (time < 10) return 'text-warning'
+    return 'text-error'
   }
 
   const formatBytes = (bytes: number) => {
@@ -111,7 +111,7 @@ export default function WebSocketPerformanceMonitor() {
         </div>
         <div className="flex justify-between">
           <span>节省流量:</span>
-          <span className="text-green-500">
+          <span className="text-success">
             {formatBytes(compressionStats.totalSavings)}
           </span>
         </div>
@@ -121,7 +121,7 @@ export default function WebSocketPerformanceMonitor() {
         <div className="mt-3 pt-3 border-t border-gray-700 space-y-2">
           {queueStats.length > 0 ? (
             <div>
-              <div className="text-blue-500 font-bold mb-1">消息队列</div>
+              <div className="text-info font-bold mb-1">消息队列</div>
               {queueStats.map((queue, i) => (
                 <div key={i} className="text-xs text-gray-300">
                   <div className="flex justify-between">
@@ -136,7 +136,7 @@ export default function WebSocketPerformanceMonitor() {
               ))}
             </div>
           ) : (
-            <div className="text-green-500 text-center">
+            <div className="text-success text-center">
               无待处理消息
             </div>
           )}

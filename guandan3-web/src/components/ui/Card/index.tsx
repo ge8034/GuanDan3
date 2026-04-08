@@ -15,22 +15,26 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   onClick?: () => void
 }
 
-export default function Card({ 
-  children, 
-  className = '', 
+export default function Card({
+  children,
+  className = '',
   hover = false,
   onClick,
-  ...props 
+  ...props
 }: CardProps) {
   return (
     <div
       className={cn(
-        "border border-border bg-card rounded-xl overflow-hidden",
-        hover && "cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-300",
-        onClick && "cursor-pointer",
+        // 增强的poker主题卡片样式
+        "poker-card border-2 border-poker-table-border bg-gradient-to-br from-white via-gray-50 to-gray-100 rounded-xl overflow-hidden transition-all duration-200 outline-none",
+        hover && "cursor-pointer hover:shadow-lg hover:border-accent-gold/50",
+        onClick && "cursor-pointer hover:shadow-lg hover:border-accent-gold/50",
+        "focus-visible:ring-2 focus-visible:ring-accent-gold focus-visible:ring-offset-2",
         className
       )}
       onClick={onClick}
+      tabIndex={hover || onClick ? 0 : undefined}
+      role={hover || onClick ? 'button' : undefined}
       {...props}
     >
       {children}
@@ -40,7 +44,7 @@ export default function Card({
 
 export function CardHeader({ children, className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("p-6 border-b border-border/50", className)} {...props}>
+    <div className={cn("p-4 md:p-6 border-b border-poker-table-border/50", className)} {...props}>
       {children}
     </div>
   )
@@ -48,7 +52,7 @@ export function CardHeader({ children, className, ...props }: React.HTMLAttribut
 
 export function CardBody({ children, className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("p-6", className)} {...props}>
+    <div className={cn("p-4 md:p-6", className)} {...props}>
       {children}
     </div>
   )
@@ -56,7 +60,7 @@ export function CardBody({ children, className, ...props }: React.HTMLAttributes
 
 export function CardFooter({ children, className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("p-6 border-t border-border/50 bg-surface/30", className)} {...props}>
+    <div className={cn("p-4 md:p-6 border-t border-poker-table-border/50 bg-poker-table/10", className)} {...props}>
       {children}
     </div>
   )
@@ -64,7 +68,7 @@ export function CardFooter({ children, className, ...props }: React.HTMLAttribut
 
 export function CardContent({ children, className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("p-6", className)} {...props}>
+    <div className={cn("p-4 md:p-6", className)} {...props}>
       {children}
     </div>
   )

@@ -36,9 +36,9 @@ export default function SpotlightCard({
   return (
     <div
       className={cn(
-        "group relative border border-border bg-card overflow-hidden rounded-xl",
-        "transition-all duration-500 ease-out", // 平滑过渡
-        hover && "cursor-pointer hover:shadow-lg hover:-translate-y-1", // 增强悬停反馈
+        "group relative border border-poker-table-border bg-gradient-to-br from-white to-gray-50 overflow-hidden rounded-xl focus:ring-2 focus:ring-accent-gold focus:ring-offset-2 outline-none",
+        "transition-all duration-300 ease-out", // 统一过渡时长
+        hover && "cursor-pointer hover:shadow-[0_12px_28px_rgba(0,0,0,0.6)] hover:border-accent-gold", // 移除translate-y
         className
       )}
       onMouseMove={handleMouseMove}

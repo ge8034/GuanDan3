@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef, useCallback } from 'react'
 import { colors, borderRadius, typography } from '@/lib/design-tokens'
 import RippleEffect from '@/components/effects/RippleEffect'
 import { CloseIcon } from '@/components/icons/LandscapeIcons'
+import { generateAriaId, FocusManager } from '@/lib/utils/accessibility'
 
 interface ModalProps {
   isOpen: boolean
@@ -12,6 +13,8 @@ interface ModalProps {
   showCloseButton?: boolean
 }
 
+const focusManager = new FocusManager()
+
 export default function Modal({
   isOpen,
   onClose,
@@ -20,23 +23,35 @@ export default function Modal({
   size = 'md',
   showCloseButton = true,
 }: ModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null)
+  const titleId = useRef(generateAriaId('modal-title'))
+  const previouslyFocusedElement = useRef<HTMLElement | null>(null)
+
+  // 管理body滚动
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
+      // 保存当前焦点元素
+      previouslyFocusedElement.current = document.activeElement as HTMLElement
     } else {
       document.body.style.overflow = 'unset'
+      // 恢复焦点
+      if (previouslyFocusedElement.current) {
+        previouslyFocusedElement.current.focus()
+      }
     }
-    
+
     return () => {
       document.body.style.overflow = 'unset'
     }
   }, [isOpen])
 
-  const handleEscapeKey = React.useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
+  // ESC键关闭
+  const handleEscapeKey = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape' && isOpen) {
       onClose()
     }
-  }, [onClose])
+  }, [isOpen, onClose])
 
   useEffect(() => {
     document.addEventListener('keydown', handleEscapeKey)
@@ -44,6 +59,21 @@ export default function Modal({
       document.removeEventListener('keydown', handleEscapeKey)
     }
   }, [handleEscapeKey])
+
+  // 焦点陷阱
+  useEffect(() => {
+    if (isOpen && modalRef.current) {
+      // 设置焦点到模态框
+      const focusableElement = modalRef.current.querySelector(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      ) as HTMLElement
+      focusableElement?.focus()
+
+      // 创建焦点陷阱
+      const cleanup = focusManager.createFocusTrap(modalRef.current)
+      return cleanup
+    }
+  }, [isOpen])
 
   if (!isOpen) return null
 
@@ -62,20 +92,22 @@ export default function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
       onClick={handleBackdropClick}
       role="dialog"
       aria-modal="true"
-      aria-labelledby={title ? 'modal-title' : undefined}
+      aria-labelledby={title ? titleId.current : undefined}
     >
       <div
-        className={`bg-[#F5F5DC] rounded-xl shadow-2xl w-full ${sizeStyles[size]} transform transition-all duration-300 ease-ripple max-h-[90vh] overflow-hidden flex flex-col font-[family-name:var(--font-serif)]`}
+        ref={modalRef}
+        className={`bg-gradient-to-br from-poker-table to-poker-table-dark border-2 border-accent-gold shadow-[0_8px_24px_rgba(0,0,0,0.8),0_0_0_1px_rgba(212,175,55,0.3)] text-text-primary rounded-xl w-full ${sizeStyles[size]} transform transition-all duration-200 ease-ripple max-h-[90vh] overflow-hidden flex flex-col font-[family-name:var(--font-serif)]`}
         role="document"
+        tabIndex={-1}
       >
         {(title || showCloseButton) && (
-          <div className="flex items-center justify-between p-6 border-b border-[#D3D3D3]">
+          <div className="flex items-center justify-between p-4 md:p-6 border-b-2 border-poker-table-border/50 bg-poker-table/30">
             {title && (
-              <h2 id="modal-title" className="text-xl font-semibold text-[#1A4A0A]">
+              <h2 id={titleId.current} className="text-xl font-semibold text-accent-gold">
                 {title}
               </h2>
             )}
@@ -83,16 +115,16 @@ export default function Modal({
               <RippleEffect className="relative inline-block">
                 <button
                   onClick={onClose}
-                  className="p-2 text-[#2D5A1D] hover:text-[#1A4A0A] hover:bg-[#A8C8A8]/30 rounded-lg transition-colors duration-300"
-                  aria-label="关闭"
+                  className="p-2 text-text-secondary hover:text-accent-gold hover:bg-accent-gold/10 rounded-lg transition-colors duration-200 border-2 border-transparent hover:border-accent-gold/30"
+                  aria-label="关闭对话框"
                 >
-                  <CloseIcon size="sm" />
+                  <CloseIcon size="sm" className="text-accent-gold" />
                 </button>
               </RippleEffect>
             )}
           </div>
         )}
-        <div className="flex-1 overflow-y-auto p-6 text-[#2D2D2D]">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 text-gray-200">
           {children}
         </div>
       </div>

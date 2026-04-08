@@ -8,28 +8,44 @@ export type SelectProps = {
   options: { value: string; label: string }[]
   disabled?: boolean
   className?: string
+  label?: string
+  id?: string
 }
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  ({ value, onChange, options, disabled = false, className = '' }, ref) => {
+  ({ value, onChange, options, disabled = false, className = '', label, id }, ref) => {
+    const selectId = id || 'select'
+
     return (
-      <select
-        ref={ref}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        disabled={disabled}
-        className={`bg-white/10 backdrop-blur-md border border-white/20 rounded-lg px-3 py-1.5 text-white text-sm font-medium shadow-sm hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
-      >
-        {options.map((option) => (
-          <option
-            key={option.value}
-            value={option.value}
-            className="bg-gray-900 text-white"
+      <div className="w-full">
+        {label && (
+          <label
+            htmlFor={selectId}
+            className="block text-sm font-medium text-gray-300 mb-1"
           >
-            {option.label}
-          </option>
-        ))}
-      </select>
+            {label}
+          </label>
+        )}
+        <select
+          id={selectId}
+          ref={ref}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          disabled={disabled}
+          aria-disabled={disabled}
+          className={`w-full bg-white/90 backdrop-blur-md border border-poker-table-border rounded-lg px-3 py-2 text-gray-900 text-sm font-medium shadow-sm hover:bg-white focus:outline-none focus:border-poker-table-light focus:ring-2 focus:ring-poker-table/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+        >
+          {options.map((option) => (
+            <option
+              key={option.value}
+              value={option.value}
+              className="bg-white text-gray-900"
+            >
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
     )
   }
 )

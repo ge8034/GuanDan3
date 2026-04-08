@@ -20,8 +20,8 @@ export default function GameTable({ children, className = '' }: GameTableProps) 
     <div
       className={`
         relative w-full max-w-4xl mx-auto
-        bg-gradient-to-br from-[#6BA539]/90 to-[#4A7A2A]/90
-        border-4 border-[#4A7A2A]
+        bg-gradient-to-br from-primary-500/90 to-primary-700/90
+        border-4 border-primary-700
         rounded-xl
         shadow-2xl
         overflow-hidden
@@ -38,7 +38,7 @@ export default function GameTable({ children, className = '' }: GameTableProps) 
           backgroundSize: '32px 32px',
         }}></div>
       </div>
-      
+
       <div className="relative z-10 p-8">
         {children}
       </div>
@@ -56,9 +56,9 @@ export function TableCenter({ children, className = '' }: TableCenterProps) {
     <div
       className={`
         relative
-        bg-[#A8C8A8]/30
+        bg-secondary-500/30
         rounded-xl
-        border-2 border-[#6BA539]/40
+        border-2 border-primary-500/40
         p-8
         min-h-[200px]
         flex items-center justify-center
@@ -86,7 +86,7 @@ export function PlayerPosition({
 }: PlayerPositionProps) {
   const combinedClassName = useMemo(() => {
     const activeStyles = isActive
-      ? 'ring-4 ring-[#6BA539] ring-opacity-75 scale-110'
+      ? 'ring-4 ring-primary-500 ring-opacity-75 scale-110'
       : ''
 
     return `

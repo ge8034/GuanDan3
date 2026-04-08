@@ -29,28 +29,28 @@ export default function Toast({
 
   const kindStyles = {
     success: {
-      bg: 'bg-[#A8C8A8]/95',
-      border: 'border-[#6BA539]',
+      bg: 'bg-emerald-600/95',
+      border: 'border-emerald-500',
       icon: 'text-white',
-      iconBg: 'bg-[#4A7A2A]',
+      iconBg: 'bg-emerald-700',
     },
     error: {
-      bg: 'bg-[#FFB3B3]/95',
-      border: 'border-[#CC0000]',
+      bg: 'bg-red-600/95',
+      border: 'border-red-500',
       icon: 'text-white',
-      iconBg: 'bg-[#CC0000]',
+      iconBg: 'bg-red-700',
     },
     warning: {
-      bg: 'bg-[#F5F5DC]/95',
-      border: 'border-[#8B7355]',
+      bg: 'bg-amber-600/95',
+      border: 'border-amber-500',
       icon: 'text-white',
-      iconBg: 'bg-[#8B7355]',
+      iconBg: 'bg-amber-700',
     },
     info: {
-      bg: 'bg-[#E8F4F0]/95',
-      border: 'border-[#6BA539]',
+      bg: 'bg-blue-600/95',
+      border: 'border-blue-500',
       icon: 'text-white',
-      iconBg: 'bg-[#4A7A2A]',
+      iconBg: 'bg-blue-700',
     },
   }
 
@@ -66,23 +66,24 @@ export default function Toast({
 
   return (
     <div
-      className={`flex items-center gap-3 px-4 py-3 rounded-lg border shadow-lg ${styles.bg} ${styles.border} animate-slide-in font-[family-name:var(--font-serif)]`}
+      className={`flex items-center gap-3 px-4 py-3 rounded-lg border shadow-[0_4px_12px_rgba(0,0,0,0.5)] ${styles.bg} ${styles.border} animate-slide-in font-[family-name:var(--font-serif)]`}
       role="alert"
+      aria-live={kind === 'error' ? 'assertive' : 'polite'}
     >
       <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${styles.iconBg}`}>
-        <span className={styles.icon}>
+        <span className={styles.icon} aria-hidden="true">
           {icon}
         </span>
       </div>
-      <p className="flex-1 text-sm font-medium text-[#2D2D2D]">
+      <p className="flex-1 text-sm font-medium text-text-primary">
         {message}
       </p>
       {onClose && (
         <RippleEffect className="relative inline-block">
           <button
             onClick={onClose}
-            className="flex-shrink-0 text-[#2D5A1D] hover:text-[#1A4A0A] transition-colors"
-            aria-label="关闭"
+            className="flex-shrink-0 text-primary-700 hover:text-primary-900 transition-colors"
+            aria-label="关闭通知"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

@@ -31,7 +31,7 @@ export function VoiceCallControls({
   return (
     <div className="flex items-center gap-2">
       {error && (
-        <div className="text-xs text-red-500 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded">
+        <div className="text-xs text-error bg-error/10 px-2 py-1 rounded">
           {error}
         </div>
       )}

@@ -39,18 +39,18 @@ export default function Avatar({
 
   const getAvatarColor = (name: string) => {
     const avatarColors = [
-      'bg-[#4A7A2A]',
-      'bg-[#5D8A3A]',
-      'bg-[#6BA539]',
-      'bg-[#2D5A1D]',
-      'bg-[#3D6A2D]',
-      'bg-[#1A4A0A]',
+      'bg-poker-table',
+      'bg-poker-table-light',
+      'bg-poker-table-dark',
+      'bg-emerald-700',
+      'bg-emerald-800',
+      'bg-emerald-900',
     ]
     const index = name.charCodeAt(0) % avatarColors.length
     return avatarColors[index]
   }
 
-  const baseStyles = `flex items-center justify-center font-medium text-white overflow-hidden transition-transform duration-300 hover:scale-105 font-[family-name:var(--font-serif)]`
+  const baseStyles = `flex items-center justify-center font-medium text-white overflow-hidden transition-opacity duration-200 hover:opacity-90 font-[family-name:var(--font-serif)] border-2 border-poker-table-border shadow-[0_4px_12px_rgba(0,0,0,0.5)]`
   const combinedClassName = `${baseStyles} ${sizeStyles[size]} ${onClick ? 'cursor-pointer' : ''} ${className}`
 
   const avatarContent = (
@@ -71,8 +71,8 @@ export default function Avatar({
           {getInitials(name)}
         </div>
       ) : (
-        <div className={`${combinedClassName} bg-[#D3D3D3]`}>
-          <UserIcon size="lg" className="text-[#6BA539] w-1/2 h-1/2" />
+        <div className={`${combinedClassName} bg-border`}>
+          <UserIcon size="lg" className="text-primary-500 w-1/2 h-1/2" />
         </div>
       )}
     </>
@@ -81,7 +81,7 @@ export default function Avatar({
   if (onClick) {
     return (
       <RippleEffect className="relative inline-block">
-        <div className={combinedClassName} onClick={onClick}>
+        <div className={combinedClassName} onClick={onClick} role="button" tabIndex={0} aria-label={name || '用户头像'}>
           {avatarContent}
         </div>
       </RippleEffect>

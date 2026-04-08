@@ -27,16 +27,16 @@ export default function Input({
 }: InputProps) {
   const generatedId = useId()
   const inputId = id || `input-${generatedId}`
-  
-  const baseStyles = 'px-4 py-2 border rounded-lg transition-all duration-300 ease-ripple focus:outline-none focus:ring-2 focus:ring-offset-1 font-[family-name:var(--font-serif)]'
-  
+
+  const baseStyles = 'px-4 py-2 border-2 rounded-lg transition-all duration-200 ease-ripple focus:outline-none focus:ring-2 focus:ring-offset-1 font-[family-name:var(--font-serif)] bg-gradient-to-br from-poker-table to-poker-table-dark border-poker-table-border text-text-primary placeholder:text-text-secondary'
+
   const stateStyles = error
-    ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
-    : 'border-[#D3D3D3] focus:ring-[#6BA539] focus:border-[#6BA539]'
-  
+    ? 'border-error focus:ring-error focus:border-error'
+    : 'focus:border-accent-gold focus:ring-accent-gold/30 focus:shadow-[0_0_0_3px_rgba(212,175,55,0.2)]'
+
   const widthStyles = fullWidth ? 'w-full' : ''
-  
-  const disabledStyles = props.disabled ? 'bg-[#F5F5DC]/50 cursor-not-allowed opacity-50' : ''
+
+  const disabledStyles = props.disabled ? 'bg-poker-table/30 cursor-not-allowed opacity-50 border-poker-table-border' : ''
 
   const combinedClassName = `${baseStyles} ${stateStyles} ${widthStyles} ${disabledStyles} ${className}`
 
@@ -45,9 +45,9 @@ export default function Input({
   return (
     <div className={fullWidth ? 'w-full' : ''}>
       {label && (
-        <label 
-          htmlFor={inputId} 
-          className="block text-sm font-medium text-gray-700 mb-1 font-[family-name:var(--font-serif)]"
+        <label
+          htmlFor={inputId}
+          className="block text-sm font-medium text-text-secondary mb-1 font-[family-name:var(--font-serif)]"
         >
           {label}
         </label>
@@ -57,6 +57,8 @@ export default function Input({
           <input
             id={inputId}
             className={`${combinedClassName} ${inputPadding}`}
+            aria-invalid={!!error}
+            aria-describedby={error || helperText ? `${inputId}-description` : undefined}
             {...props}
           />
         </RippleEffect>
@@ -64,20 +66,22 @@ export default function Input({
           <button
             type="button"
             onClick={onIconClick}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#6BA539] transition-colors focus:outline-none focus:ring-2 focus:ring-[#6BA539] rounded"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary-500 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded"
             disabled={props.disabled}
+            aria-label={onIconClick ? '触发图标操作' : undefined}
+            tabIndex={onIconClick ? 0 : -1}
           >
             {React.createElement(icon, { size: 'sm', className: 'w-5 h-5' })}
           </button>
         )}
       </div>
       {error && (
-        <p className="mt-1 text-sm text-red-700 font-[family-name:var(--font-serif)]">
+        <p id={`${inputId}-description`} className="mt-1 text-sm text-error font-[family-name:var(--font-serif)]" role="alert">
           {error}
         </p>
       )}
       {helperText && !error && (
-        <p className="mt-1 text-sm text-gray-700 font-[family-name:var(--font-serif)]">
+        <p id={`${inputId}-description`} className="mt-1 text-sm text-text-secondary font-[family-name:var(--font-serif)]">
           {helperText}
         </p>
       )}

@@ -227,6 +227,8 @@ export const TrophyIcon: React.FC<IconProps> = ({ size = 'md', className = '' })
     strokeWidth="1.5"
     strokeLinecap="round"
     strokeLinejoin="round"
+    role="img"
+    aria-hidden="true"
   >
     <path d="M6 9H4.5A2.5 2.5 0 0 1 2 6.5V6a2.5 2.5 0 0 1 2.5-2.5H6" />
     <path d="M18 9h1.5A2.5 2.5 0 0 0 22 6.5V6a2.5 2.5 0 0 0-2.5-2.5H18" />
@@ -537,6 +539,8 @@ export const UserGroupIcon: React.FC<IconProps> = ({ size = 'md', className = ''
     strokeWidth="1.5"
     strokeLinecap="round"
     strokeLinejoin="round"
+    role="img"
+    aria-hidden="true"
   >
     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
     <circle cx="9" cy="7" r="4" />
@@ -603,6 +607,8 @@ export const LightningIcon: React.FC<IconProps> = ({ size = 'md', className = ''
     strokeWidth="1.5"
     strokeLinecap="round"
     strokeLinejoin="round"
+    role="img"
+    aria-hidden="true"
   >
     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
   </svg>
@@ -617,6 +623,8 @@ export const BookIcon: React.FC<IconProps> = ({ size = 'md', className = '' }) =
     strokeWidth="1.5"
     strokeLinecap="round"
     strokeLinejoin="round"
+    role="img"
+    aria-hidden="true"
   >
     <path d="M2 3h6v18H2z" />
     <path d="M8 3h6v18H8z" />
@@ -635,6 +643,8 @@ export const ShieldIcon: React.FC<IconProps> = ({ size = 'md', className = '' })
     strokeWidth="1.5"
     strokeLinecap="round"
     strokeLinejoin="round"
+    role="img"
+    aria-hidden="true"
   >
     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
   </svg>
@@ -649,6 +659,8 @@ export const StarIcon: React.FC<IconProps> = ({ size = 'md', className = '' }) =
     strokeWidth="1.5"
     strokeLinecap="round"
     strokeLinejoin="round"
+    role="img"
+    aria-hidden="true"
   >
     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
   </svg>
@@ -663,6 +675,8 @@ export const ZapIcon: React.FC<IconProps> = ({ size = 'md', className = '' }) =>
     strokeWidth="1.5"
     strokeLinecap="round"
     strokeLinejoin="round"
+    role="img"
+    aria-hidden="true"
   >
     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
   </svg>
@@ -692,7 +706,43 @@ export const PlayIcon: React.FC<IconProps> = ({ size = 'md', className = '' }) =
     strokeWidth="1.5"
     strokeLinecap="round"
     strokeLinejoin="round"
+    role="img"
+    aria-hidden="true"
   >
     <polygon points="5 3 19 12 5 12 19 21 12" />
+  </svg>
+)
+
+export const ShieldCheckIcon: React.FC<IconProps> = ({ size = 'md', className = '' }) => (
+  <svg
+    className={`${sizeStyles[size]} ${className}`}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    role="img"
+    aria-hidden="true"
+  >
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    <path d="M9 12l2 2 4-4" />
+  </svg>
+)
+
+export const ClockIcon: React.FC<IconProps> = ({ size = 'md', className = '' }) => (
+  <svg
+    className={`${sizeStyles[size]} ${className}`}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    role="img"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
   </svg>
 )

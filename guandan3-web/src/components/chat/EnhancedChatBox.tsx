@@ -4,6 +4,7 @@ import { useChat, ChatMessage } from '@/lib/hooks/useChat';
 import RippleEffect from '@/components/effects/RippleEffect';
 import { EMOJI_CATEGORIES, QUICK_PHRASES, EMOJI_CATEGORY_NAMES } from '@/lib/constants/chatConstants';
 import { useDebouncedValue, usePrefersReducedMotion } from '@/lib/performance/optimization';
+import { X, MessageCircle } from 'lucide-react';
 
 interface EnhancedChatBoxProps {
   roomId: string;
@@ -89,7 +90,7 @@ export const EnhancedChatBox = ({ roomId, userId, userName }: EnhancedChatBoxPro
                     onClick={() => setIsOpen(false)}
                     className="text-white/50 hover:text-white transition-colors"
                   >
-                    ✕
+                    <X className="w-5 h-5" strokeWidth={2.5} />
                   </button>
                 </RippleEffect>
               </div>
@@ -236,9 +237,9 @@ export const EnhancedChatBox = ({ roomId, userId, userName }: EnhancedChatBoxPro
         <button
           onClick={() => setIsOpen(!isOpen)}
           data-testid="chat-toggle"
-          className="w-12 h-12 rounded-full bg-blue-600 text-white shadow-lg flex items-center justify-center text-xl hover:bg-blue-500 transition-colors border-2 border-white/20 transform active:scale-95 hover:scale-105 transition-transform"
+          className="w-12 h-12 rounded-full bg-blue-600 text-white shadow-lg flex items-center justify-center text-xl hover:bg-blue-500 transition-opacity duration-200 border-2 border-white/20 active:opacity-100 hover:opacity-90"
         >
-          {isOpen ? '✕' : '💬'}
+          {isOpen ? <X className="w-6 h-6" strokeWidth={2.5} /> : <MessageCircle className="w-6 h-6" strokeWidth={2} />}
         </button>
       </RippleEffect>
     </div>

@@ -65,15 +65,15 @@ export default function NetworkPerformanceMonitor() {
   if (!isVisible || !metrics) return null
 
   const getLatencyColor = (latency: number) => {
-    if (latency < 200) return 'text-green-500'
-    if (latency < 500) return 'text-yellow-500'
-    return 'text-red-500'
+    if (latency < 200) return 'text-success'
+    if (latency < 500) return 'text-warning'
+    return 'text-error'
   }
 
   const getErrorRateColor = (rate: number) => {
-    if (rate < 0.01) return 'text-green-500'
-    if (rate < 0.05) return 'text-yellow-500'
-    return 'text-red-500'
+    if (rate < 0.01) return 'text-success'
+    if (rate < 0.05) return 'text-warning'
+    return 'text-error'
   }
 
   const formatBytes = (bytes: number) => {
@@ -133,7 +133,7 @@ export default function NetworkPerformanceMonitor() {
         <div className="mt-3 pt-3 border-t border-gray-700 space-y-2">
           {slowRequests.length > 0 && (
             <div>
-              <div className="text-yellow-500 font-bold mb-1">慢请求 (Top 5)</div>
+              <div className="text-warning font-bold mb-1">慢请求 (Top 5)</div>
               {slowRequests.map((req, i) => (
                 <div key={i} className="text-xs text-gray-300 truncate">
                   {req.method} {req.url} - {req.duration.toFixed(2)}ms
@@ -144,7 +144,7 @@ export default function NetworkPerformanceMonitor() {
 
           {failedRequests.length > 0 && (
             <div>
-              <div className="text-red-500 font-bold mb-1">失败请求 (Top 5)</div>
+              <div className="text-error font-bold mb-1">失败请求 (Top 5)</div>
               {failedRequests.map((req, i) => (
                 <div key={i} className="text-xs text-gray-300 truncate">
                   {req.method} {req.url} - {req.status}
@@ -154,7 +154,7 @@ export default function NetworkPerformanceMonitor() {
           )}
 
           {slowRequests.length === 0 && failedRequests.length === 0 && (
-            <div className="text-green-500 text-center">
+            <div className="text-success text-center">
               无慢请求或失败请求
             </div>
           )}

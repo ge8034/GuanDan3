@@ -107,7 +107,7 @@ export function PWAInstallPrompt({
       className={`
         fixed z-50
         ${positionClasses}
-        bg-gradient-to-r from-green-600 to-green-500
+        bg-gradient-to-r from-primary-600 to-primary-500
         text-white
         rounded-xl
         p-4
@@ -136,7 +136,7 @@ export function PWAInstallPrompt({
       <div className="flex items-center gap-2">
         <button
           onClick={handleInstall}
-          className="px-4 py-2 bg-white text-green-600 rounded-lg font-medium hover:bg-green-50 transition-colors"
+          className="px-4 py-2 bg-white text-primary-600 rounded-lg font-medium hover:bg-primary-50 transition-colors"
         >
           安装
         </button>
@@ -188,7 +188,7 @@ export function PWAInstallButton({ className = '' }: { className?: string }) {
       className={`
         flex items-center gap-2
         px-4 py-2
-        bg-green-500 hover:bg-green-600
+        bg-primary-500 hover:bg-primary-600
         text-white rounded-lg
         transition-colors
         ${className}
