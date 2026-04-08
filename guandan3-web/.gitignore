@@ -87,3 +87,4 @@ __pycache__/
 
 # 嵌入的外部仓库
 /impeccable/
+/playwright-report
