@@ -77,3 +77,6 @@ export type { SwitchProps } from './Switch'
 
 export { Rate } from './Rate'
 export type { RateProps } from './Rate'
+
+export { Notification } from './Notification'
+export type { NotificationProps, NotificationType } from './Notification'
