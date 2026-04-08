@@ -56,3 +56,12 @@ export type { TooltipProps } from './Tooltip'
 
 export { Progress } from './Progress'
 export type { ProgressProps } from './Progress'
+
+export {
+  Skeleton,
+  SkeletonAvatar,
+  SkeletonButton,
+  SkeletonInput,
+  SkeletonImage,
+} from './Skeleton'
+export type { SkeletonProps, SkeletonAvatarProps, SkeletonImageProps } from './Skeleton'
