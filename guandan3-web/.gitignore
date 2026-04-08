@@ -71,3 +71,19 @@ scripts/validate-*.js
 *.bak
 
 .vercel
+
+# AI工具临时文件
+.superpowers/
+.workbuddy/
+
+# 测试结果
+/test-results/
+test-smoke-result.log
+test-poker-theme.html
+
+# Python缓存
+__pycache__/
+*.pyc
+
+# 嵌入的外部仓库
+/impeccable/
