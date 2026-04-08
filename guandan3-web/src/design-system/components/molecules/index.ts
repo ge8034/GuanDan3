@@ -14,6 +14,9 @@ export type { DropdownProps, DropdownItemProps, DropdownSeparatorProps } from '.
 export { Pagination } from './Pagination'
 export type { PaginationProps } from './Pagination'
 
+export { Steps, Step } from './Steps'
+export type { StepsProps, StepProps } from './Steps'
+
 export { Modal, ModalDescription, ModalContent, ModalFooter } from './Modal'
 export type { ModalProps } from './Modal'
 
