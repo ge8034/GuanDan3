@@ -23,30 +23,32 @@ export interface ResistResult {
 }
 
 export function canResistTribute(hand: Card[]): boolean {
-  // 抗贡需要双王（红大王+黑小王）
+  // 抗贡需要双大王（两张红大王 hr）
   const jokers = hand.filter(c => c.suit === 'J')
-  // 检查是否同时有红王和黑王
-  const hasRedJoker = jokers.some(c => c.rank === 'hr')
-  const hasBlackJoker = jokers.some(c => c.rank === 'hb' || c.rank === 'sb')
-  return hasRedJoker && hasBlackJoker
+  // 检查是否同时有两张红大王
+  const redJokerCount = jokers.filter(c => c.rank === 'hr').length
+  return redJokerCount >= 2
 }
 
 export function analyzeResistCapability(hand: Card[], levelRank: number): ResistResult {
-  if (!canResistTribute(hand)) {
+  // 新规则：需要双红大王才能抗贡
+  const redJokerCount = hand.filter(c => c.suit === 'J' && c.rank === 'hr').length
+
+  if (redJokerCount < 2) {
     return {
       canResist: false,
-      reason: '没有双王，无法抗贡',
+      reason: '没有双红大王，无法抗贡',
       strategy: 'defensive'
     }
   }
 
-  const jokers = hand.filter(c => c.suit === 'J')
+  // 有双红大王，可以抗贡
   const nonJokerCards = hand.filter(c => c.suit !== 'J')
 
   if (nonJokerCards.length === 0) {
     return {
       canResist: true,
-      reason: '只有双王，必须抗贡',
+      reason: '只有双红大王，必须抗贡',
       strategy: 'aggressive'
     }
   }
@@ -91,10 +93,11 @@ export function analyzeResistCapability(hand: Card[], levelRank: number): Resist
     }
   }
 
+  // 有双红大王，即使牌力不足也可以抗贡
   return {
-    canResist: false,
-    reason: '牌力不足，不建议抗贡',
-    strategy: 'defensive'
+    canResist: true,
+    reason: '有双红大王，可以抗贡',
+    strategy: 'aggressive'
   }
 }
 
@@ -106,14 +109,28 @@ export function shouldResistTribute(hand: Card[], levelRank: number): boolean {
 export function findBestTributeCard(hand: Card[], levelRank: number): Card | null {
   if (hand.length === 0) return null
 
+  // 检查是否有王，新规则：有王必须进贡
+  const jokers = hand.filter(c => c.suit === 'J')
+
   const validCards = hand.filter(card => {
-    // 不能进贡王
-    if (card.suit === 'J') return false
-    // 级牌可以进贡（新规则）
-    // 进贡牌必须>=10（新规则）
+    // 不能进逢人配（红桃级牌）
+    if (card.suit === 'H' && card.val === levelRank) return false
+    // 王可以进贡（新规则：有王必须进贡）
+    // 进贡牌必须>=10
     if (card.val < TRIBUTE_THRESHOLDS.MIN_CARD_VALUE) return false
     return true
   })
+
+  if (validCards.length === 0) return null
+
+  // 如果手中有王，优先进贡王
+  const validJokers = jokers.filter(card => {
+    return validCards.some(c => c.id === card.id)
+  })
+
+  if (validJokers.length > 0) {
+    return validJokers[0]
+  }
 
   if (validCards.length === 0) return null
 
@@ -133,44 +150,36 @@ export function findBestTributeCard(hand: Card[], levelRank: number): Card | nul
 }
 
 export function findBestReturnCard(
-  hand: Card[], 
-  levelRank: number, 
+  hand: Card[],
+  levelRank: number,
   excludeCard: Card | null,
   tributeCard: Card | null
 ): Card | null {
   if (hand.length === 0) return null
-  
-  const availableHand = excludeCard 
+
+  const availableHand = excludeCard
     ? hand.filter(c => c.id !== excludeCard.id)
     : [...hand]
-  
+
   if (availableHand.length === 0) return null
-  
-  const sortedHand = availableHand.sort((a, b) => {
+
+  // 新规则：还贡一张小于10的牌
+  const validCards = availableHand.filter(card => card.val < 10)
+
+  if (validCards.length === 0) return null
+
+  const sortedHand = validCards.sort((a, b) => {
     const valueA = getCardValue(a, levelRank)
     const valueB = getCardValue(b, levelRank)
-    
+
     if (valueA !== valueB) {
       return valueA - valueB
     }
-    
+
     const suitOrder = { 'D': 4, 'C': 3, 'H': 2, 'S': 1 }
     return suitOrder[b.suit as keyof typeof suitOrder] - suitOrder[a.suit as keyof typeof suitOrder]
   })
-  
-  if (tributeCard) {
-    const tributeValue = getCardValue(tributeCard, levelRank)
-    
-    const suitableCards = sortedHand.filter(card => {
-      const cardValue = getCardValue(card, levelRank)
-      return cardValue <= tributeValue + 2
-    })
-    
-    if (suitableCards.length > 0) {
-      return suitableCards[0]
-    }
-  }
-  
+
   return sortedHand[0]
 }
 
@@ -232,11 +241,30 @@ export function calculateTeamTribute(
   const tributeFrom: number[] = []
   const tributeTo: number[] = []
   const resistTribute: number[] = []
-  
+
+  // 新规则：检查失败方是否有双王
+  let losingTeamHasJoker = false
+  for (const [seat, hand] of Object.entries(loserHands)) {
+    if (canResistTribute(hand)) {
+      losingTeamHasJoker = true
+      break
+    }
+  }
+
+  // 如果失败方有双王，两人都无需进贡
+  if (losingTeamHasJoker) {
+    return {
+      isTributePhase: false,
+      tributeFrom: [],
+      tributeTo,
+      resistTribute: []
+    }
+  }
+
   for (const [seat, hand] of Object.entries(loserHands)) {
     const seatNum = parseInt(seat)
     const team = seatNum % 2
-    
+
     if (team === losingTeam) {
       const resistAnalysis = analyzeResistCapability(hand, levelRank)
       if (resistAnalysis.canResist) {
@@ -246,16 +274,16 @@ export function calculateTeamTribute(
       }
     }
   }
-  
+
   for (const [seat, hand] of Object.entries(winnerHands)) {
     const seatNum = parseInt(seat)
     const team = seatNum % 2
-    
+
     if (team === winningTeam) {
       tributeTo.push(seatNum)
     }
   }
-  
+
   return {
     isTributePhase: tributeFrom.length > 0 || resistTribute.length > 0,
     tributeFrom,
@@ -299,12 +327,13 @@ export function validateTributeCard(
   }
 
   if (card.suit === 'J') {
-    return { valid: false, reason: '不能进贡王' }
+    // 新规则：有王必须进贡，所以王是有效的进贡牌
+    return { valid: true, reason: '王可以进贡' }
   }
 
-  // 级牌不能进贡
-  if (card.val === levelRank) {
-    return { valid: false, reason: '不能进贡级牌' }
+  // 不能进逢人配（红桃级牌）
+  if (card.suit === 'H' && card.val === levelRank) {
+    return { valid: false, reason: '不能进逢人配（红桃级牌）' }
   }
 
   // 进贡牌必须>=10
@@ -321,16 +350,21 @@ export function validateReturnCard(
   levelRank: number,
   excludeCard: Card | null
 ): { valid: boolean; reason: string } {
-  const availableHand = excludeCard 
+  const availableHand = excludeCard
     ? hand.filter(c => c.id !== excludeCard.id)
     : hand
-  
+
   const cardInHand = availableHand.some(c => c.id === card.id)
-  
+
   if (!cardInHand) {
     return { valid: false, reason: '还贡牌不在手中' }
   }
-  
+
+  // 新规则：还贡牌必须小于10
+  if (card.val >= 10) {
+    return { valid: false, reason: '还贡牌必须小于10' }
+  }
+
   return { valid: true, reason: '有效还贡牌' }
 }
 
@@ -353,25 +387,20 @@ export function getTributePairs(
   const pairs: Array<{ from: number; to: number }> = []
 
   // rankings[0] = 头游, rankings[1] = 二游, rankings[2] = 三游, rankings[3] = 四游
-  // 输家按排名顺序排序（从前到后）
-  const sortedFrom = [...tributeFrom].sort((a, b) => {
-    const rankA = rankings.indexOf(a)
-    const rankB = rankings.indexOf(b)
-    return rankA - rankB
-  })
+  // V2 规则：末游 (4th) 向头游 (1st) 进贡，三游 (3rd) 向二游 (2nd) 进贡
 
-  // 赢家按排名顺序排序（从前到后）
-  const sortedTo = [...tributeTo].sort((a, b) => {
-    const rankA = rankings.indexOf(a)
-    const rankB = rankings.indexOf(b)
-    return rankA - rankB
-  })
+  // 从rankings中提取需要进贡的座位（保持排名顺序：从头游到末游）
+  const rankedFrom: number[] = rankings.filter(r => tributeFrom.includes(r))
+  // 从rankings中提取接收进贡的座位（保持排名顺序：从头游到末游）
+  const rankedTo: number[] = rankings.filter(r => tributeTo.includes(r))
 
-  // 按顺序配对：第一个输家向第一个赢家进贡，以此类推
-  for (let i = 0; i < Math.min(sortedFrom.length, sortedTo.length); i++) {
+  // 末游向头游进贡：反转进贡方，使末游在前
+  const reversedFrom = [...rankedFrom].reverse()
+
+  for (let i = 0; i < Math.min(reversedFrom.length, rankedTo.length); i++) {
     pairs.push({
-      from: sortedFrom[i],
-      to: sortedTo[i]
+      from: reversedFrom[i],    // 末游、三游...
+      to: rankedTo[i]           // 头游、二游...
     })
   }
 
