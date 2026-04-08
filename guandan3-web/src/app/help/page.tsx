@@ -1,9 +1,171 @@
+'use client'
+
 import Link from 'next/link'
-import Card, { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Book, HelpCircle, MessageCircle, Settings, Users, Zap } from 'lucide-react'
+import SimpleEnvironmentBackground from '@/components/backgrounds/SimpleEnvironmentBackground'
+import { useTheme } from '@/lib/theme/theme-context'
+import { useRouter } from 'next/navigation'
+import { Book, HelpCircle, MessageCircle, Settings, Users, Zap, ArrowLeft, Search } from 'lucide-react'
+
+// 内联样式卡片组件
+function InlineCard({
+  title,
+  description,
+  icon: Icon,
+  style,
+  href,
+  onClick
+}: {
+  title: string
+  description?: string
+  icon?: React.ComponentType<{ className?: string; style?: React.CSSProperties }>
+  style?: React.CSSProperties
+  href?: string
+  onClick?: () => void
+}) {
+  const content = (
+    <>
+      {Icon && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+          <Icon style={{ width: '24px', height: '24px', color: '#1a472a' }} />
+          <span style={{ fontSize: '1.125rem', fontWeight: 600, color: '#111827' }}>{title}</span>
+        </div>
+      )}
+      {description && <p style={{ fontSize: '0.875rem', color: '#6b7280' }}>{description}</p>}
+    </>
+  )
+
+  const cardStyle: React.CSSProperties = {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backdropFilter: 'blur(8px)',
+    borderRadius: '16px',
+    border: '2px solid #e5e7eb',
+    padding: '1.5rem',
+    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+    transition: 'box-shadow 0.2s',
+    cursor: href || onClick ? 'pointer' : 'default',
+    ...style,
+  }
+
+  if (href) {
+    return (
+      <Link href={href} style={cardStyle} onMouseEnter={(e) => {
+        e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+      }} onMouseLeave={(e) => {
+        e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+      }}>
+        {content}
+      </Link>
+    )
+  }
+
+  return (
+    <div style={cardStyle} onClick={onClick} onMouseEnter={(e) => {
+      if (onClick) e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+    }} onMouseLeave={(e) => {
+      e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+    }}>
+      {content}
+    </div>
+  )
+}
+
+// 内联样式按钮组件
+function InlineButton({
+  children,
+  variant = 'primary',
+  size = 'md',
+  onClick,
+  style,
+  href
+}: {
+  children: React.ReactNode
+  variant?: 'primary' | 'outline' | 'ghost'
+  size?: 'sm' | 'md' | 'lg'
+  onClick?: () => void
+  style?: React.CSSProperties
+  href?: string
+}) {
+  const baseStyle: React.CSSProperties = {
+    padding: size === 'sm' ? '0.5rem 1rem' : size === 'lg' ? '0.75rem 1.5rem' : '0.625rem 1.25rem',
+    borderRadius: '8px',
+    fontSize: size === 'lg' ? '1rem' : '0.875rem',
+    fontWeight: 500,
+    cursor: 'pointer',
+    border: '2px solid',
+    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0.5rem',
+    textDecoration: 'none',
+    ...style,
+  }
+
+  const variantStyles = {
+    primary: {
+      backgroundColor: '#1a472a',
+      borderColor: '#1a472a',
+      color: 'white',
+    },
+    outline: {
+      backgroundColor: 'transparent',
+      borderColor: '#e5e7eb',
+      color: '#111827',
+    },
+    ghost: {
+      backgroundColor: 'transparent',
+      borderColor: 'transparent',
+      color: '#6b7280',
+    },
+  }
+
+  const buttonStyle = { ...baseStyle, ...variantStyles[variant] }
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        style={buttonStyle}
+        onMouseEnter={(e) => {
+          if (variant === 'primary') {
+            e.currentTarget.style.backgroundColor = '#2d5a3d'
+          } else if (variant === 'outline') {
+            e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.05)'
+          }
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = variantStyles[variant].backgroundColor as string
+        }}
+      >
+        {children}
+      </Link>
+    )
+  }
+
+  return (
+    <button
+      onClick={onClick}
+      style={buttonStyle}
+      onMouseEnter={(e) => {
+        if (variant === 'primary') {
+          e.currentTarget.style.backgroundColor = '#2d5a3d'
+        } else if (variant === 'outline') {
+          e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.05)'
+        }
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = variantStyles[variant].backgroundColor as string
+      }}
+    >
+      {children}
+    </button>
+  )
+}
 
 export default function HelpPage() {
+  const router = useRouter()
+  const { theme } = useTheme()
+
   const helpCategories = [
     {
       title: '快速入门',
@@ -68,115 +230,164 @@ export default function HelpPage() {
   ]
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">帮助中心</h1>
-          <p className="text-lg text-muted-foreground">
-            欢迎来到掼蛋3帮助中心，这里可以找到您需要的所有帮助信息
-          </p>
-        </div>
-
-        <div className="mb-8">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="搜索帮助内容..."
-              className="w-full px-4 py-3 pl-12 rounded-lg border border-input bg-background"
-            />
-            <HelpCircle className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
+    <SimpleEnvironmentBackground theme={theme}>
+      <div style={{ minHeight: '100vh', paddingTop: '64px' }}>
+        {/* 头部 */}
+        <header
+          style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 10,
+            backgroundColor: 'rgba(245, 245, 220, 0.9)',
+            backdropFilter: 'blur(8px)',
+            borderBottom: '2px solid rgba(0, 0, 0, 0.1)',
+          }}
+        >
+          <div style={{ maxWidth: '80rem', margin: '0 auto', padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#111827' }}>
+              帮助中心
+            </h1>
+            <button
+              onClick={() => router.push('/lobby')}
+              style={{
+                padding: '0.5rem 1rem',
+                borderRadius: '8px',
+                border: '2px solid rgba(0, 0, 0, 0.1)',
+                backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                color: '#374151',
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                minHeight: '36px',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 1)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)'
+              }}
+            >
+              <ArrowLeft style={{ width: '16px', height: '16px' }} />
+              返回大厅
+            </button>
           </div>
-        </div>
+        </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {helpCategories.map((category) => {
-            const Icon = category.icon
-            return (
-              <Card key={category.title} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-center gap-3 mb-2">
-                    <Icon className="h-6 w-6 text-primary" />
-                    <CardTitle className="text-xl">{category.title}</CardTitle>
-                  </div>
-                  <CardDescription>{category.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2">
+        {/* 主内容 */}
+        <main style={{ maxWidth: '80rem', margin: '0 auto', padding: '2rem 1rem' }}>
+          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <h2 style={{ fontSize: '2.25rem', fontWeight: 700, marginBottom: '1rem', color: '#111827' }}>
+              帮助中心
+            </h2>
+            <p style={{ fontSize: '1.125rem', color: '#6b7280' }}>
+              欢迎来到掼蛋3帮助中心，这里可以找到您需要的所有帮助信息
+            </p>
+          </div>
+
+          {/* 搜索框 */}
+          <div style={{ marginBottom: '2rem' }}>
+            <div style={{ position: 'relative' }}>
+              <input
+                type="text"
+                placeholder="搜索帮助内容..."
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1rem 0.75rem 3rem',
+                  borderRadius: '8px',
+                  border: '2px solid #e5e7eb',
+                  fontSize: '0.9375rem',
+                  backgroundColor: 'white',
+                  color: '#111827',
+                }}
+              />
+              <Search style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', width: '20px', height: '20px' }} />
+            </div>
+          </div>
+
+          {/* 帮助分类 */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
+            {helpCategories.map((category) => {
+              const Icon = category.icon
+              return (
+                <InlineCard
+                  key={category.title}
+                  title={category.title}
+                  description={category.description}
+                  icon={Icon}
+                >
+                  <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                     {category.items.map((item) => (
                       <li key={item.title}>
                         <Link
                           href={item.href}
-                          className="text-sm text-primary hover:underline"
+                          style={{
+                            fontSize: '0.875rem',
+                            color: '#1a472a',
+                            textDecoration: 'none',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.textDecoration = 'underline'
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.textDecoration = 'none'
+                          }}
                         >
                           {item.title}
                         </Link>
                       </li>
                     ))}
                   </ul>
-                </CardContent>
-              </Card>
-            )
-          })}
-        </div>
+                </InlineCard>
+              )
+            })}
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-          <Card>
-            <CardHeader>
-              <CardTitle>用户指南</CardTitle>
-              <CardDescription>完整的游戏使用指南</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
+          {/* 快速链接 */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
+            <InlineCard title="用户指南" description="完整的游戏使用指南">
+              <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1rem' }}>
                 查看详细的用户指南，了解游戏的所有功能和操作方法。
               </p>
-              <Button asChild>
-                <Link href="/docs/user-guide">查看用户指南</Link>
-              </Button>
-            </CardContent>
-          </Card>
+              <InlineButton variant="primary" href="/docs/user-guide">查看用户指南</InlineButton>
+            </InlineCard>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>常见问题</CardTitle>
-              <CardDescription>快速找到问题答案</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
+            <InlineCard title="常见问题" description="快速找到问题答案">
+              <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1rem' }}>
                 浏览常见问题解答，快速解决您遇到的问题。
               </p>
-              <Button asChild variant="outline">
-                <Link href="/docs/faq">查看常见问题</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+              <InlineButton variant="outline" href="/docs/faq">查看常见问题</InlineButton>
+            </InlineCard>
+          </div>
 
-        <Card className="bg-primary/5">
-          <CardHeader>
-            <CardTitle>需要更多帮助？</CardTitle>
-            <CardDescription>我们的客服团队随时为您服务</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold mb-1">邮箱</div>
-                <div className="text-sm text-muted-foreground">support@guandan3.com</div>
+          {/* 联系支持 */}
+          <InlineCard
+            title="需要更多帮助？"
+            description="我们的客服团队随时为您服务"
+            style={{ backgroundColor: 'rgba(26, 71, 42, 0.05)' }}
+          >
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.25rem', color: '#111827' }}>邮箱</div>
+                <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>support@guandan3.com</div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold mb-1">客服热线</div>
-                <div className="text-sm text-muted-foreground">400-XXX-XXXX</div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.25rem', color: '#111827' }}>客服热线</div>
+                <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>400-XXX-XXXX</div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold mb-1">工作时间</div>
-                <div className="text-sm text-muted-foreground">9:00-22:00</div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.25rem', color: '#111827' }}>工作时间</div>
+                <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>9:00-22:00</div>
               </div>
             </div>
-            <div className="mt-6 text-center">
-              <Button size="lg">联系在线客服</Button>
+            <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+              <InlineButton variant="primary" size="lg">联系在线客服</InlineButton>
             </div>
-          </CardContent>
-        </Card>
+          </InlineCard>
+        </main>
       </div>
-    </div>
+    </SimpleEnvironmentBackground>
   )
 }
