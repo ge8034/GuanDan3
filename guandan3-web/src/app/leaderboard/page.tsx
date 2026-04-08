@@ -1,11 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { Avatar } from '@/design-system/components/atoms'
-import { Button } from '@/design-system/components/atoms'
-import { Badge } from '@/design-system/components/atoms'
-import { Card } from '@/design-system/components/atoms'
-import { cn } from '@/design-system/utils/cn'
 import SimpleEnvironmentBackground from '@/components/backgrounds/SimpleEnvironmentBackground'
 import { useTheme } from '@/lib/theme/theme-context'
 import { Trophy, TrendingUp, Star, Gamepad2, Flame, Award, Inbox, ArrowLeft } from 'lucide-react'
@@ -25,52 +22,8 @@ type LeaderboardEntry = typeof mockLeaderboard[0]
 
 type SortBy = 'win_rate' | 'total_score' | 'total_games'
 
-// 排名按钮组件
-function SortButton({
-  active,
-  value,
-  icon,
-  label,
-  onClick
-}: {
-  active: boolean
-  value: SortBy
-  icon: React.ReactNode
-  label: string
-  onClick: () => void
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        'inline-flex items-center gap-2 px-4 py-2 rounded-lg border-2',
-        'min-h-[36px] text-sm font-medium cursor-pointer',
-        'transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]',
-        active
-          ? 'bg-primary text-white border-primary'
-          : 'bg-white/80 text-neutral-700 border-transparent hover:bg-neutral-50 hover:border-neutral-200'
-      )}
-    >
-      {icon}
-      {label}
-    </button>
-  )
-}
-
-// 骨架屏行
-function TableRowSkeleton() {
-  return (
-    <tr>
-      {[...Array(13)].map((_, i) => (
-        <td key={i} className="p-3">
-          <div className="h-10 bg-neutral-200 rounded animate-pulse" />
-        </td>
-      ))}
-    </tr>
-  )
-}
-
 export default function LeaderboardPage() {
+  const router = useRouter()
   const { theme } = useTheme()
   const [loading, setLoading] = useState(true)
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>(mockLeaderboard)
@@ -95,148 +48,222 @@ export default function LeaderboardPage() {
   })
 
   const getRankColor = useCallback((rank: number) => {
-    if (rank === 1) return 'text-warning' // 金色
-    if (rank === 2) return 'text-neutral-400' // 银色
-    if (rank === 3) return 'text-error' // 铜色
-    return 'text-neutral-700'
+    if (rank === 1) return '#eab308'
+    if (rank === 2) return '#9ca3af'
+    if (rank === 3) return '#f97316'
+    return '#111827'
   }, [])
 
-  const getWinRateVariant = useCallback((winRate: number): 'success' | 'warning' | 'error' => {
-    if (winRate >= 50) return 'success'
-    if (winRate >= 30) return 'warning'
-    return 'error'
+  const getWinRateColor = useCallback((winRate: number) => {
+    if (winRate >= 50) return '#22c55e'
+    if (winRate >= 30) return '#f59e0b'
+    return '#ef4444'
   }, [])
 
   return (
     <SimpleEnvironmentBackground theme={theme}>
-      <div className="min-h-screen p-4 md:p-8 pt-20">
-        <div className="max-w-6xl mx-auto">
-          {/* 主卡片 */}
-          <Card variant="elevated" padding="lg">
-            {/* 标题和排序按钮 */}
-            <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
-              <h1 className="text-2xl font-bold text-neutral-900 flex items-center gap-2">
-                <Trophy className="w-8 h-8 text-accent-gold" />
-                排行榜
-              </h1>
+      <div style={{ minHeight: '100vh', padding: '1rem', paddingTop: '80px' }}>
+        {/* 头部 */}
+        <header
+          style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 10,
+            backgroundColor: 'rgba(245, 245, 220, 0.9)',
+            backdropFilter: 'blur(8px)',
+            borderBottom: '2px solid rgba(0, 0, 0, 0.1)',
+            marginBottom: '1rem',
+          }}
+        >
+          <div style={{ maxWidth: '80rem', margin: '0 auto', padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#111827', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Trophy style={{ width: '32px', height: '32px', color: '#d4af37' }} />
+              排行榜
+            </h1>
+            <button
+              onClick={() => router.push('/lobby')}
+              style={{
+                padding: '0.5rem 1rem',
+                borderRadius: '8px',
+                border: '2px solid rgba(0, 0, 0, 0.1)',
+                backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                color: '#374151',
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                cursor: 'pointer',
+                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                minHeight: '36px',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 1)'
+                e.currentTarget.style.borderColor = '#d4af37'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)'
+                e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.1)'
+              }}
+            >
+              <ArrowLeft style={{ width: '16px', height: '16px' }} />
+              返回大厅
+            </button>
+          </div>
+        </header>
 
-              <div className="flex gap-2 flex-wrap">
-                <SortButton
-                  active={sortBy === 'win_rate'}
-                  value="win_rate"
-                  icon={<TrendingUp className="w-4 h-4" />}
-                  label="胜率"
-                  onClick={() => setSortBy('win_rate')}
-                />
-                <SortButton
-                  active={sortBy === 'total_score'}
-                  value="total_score"
-                  icon={<Star className="w-4 h-4" />}
-                  label="得分"
-                  onClick={() => setSortBy('total_score')}
-                />
-                <SortButton
-                  active={sortBy === 'total_games'}
-                  value="total_games"
-                  icon={<Gamepad2 className="w-4 h-4" />}
-                  label="场次"
-                  onClick={() => setSortBy('total_games')}
-                />
-              </div>
+        <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
+          {/* 主容器 */}
+          <div
+            style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              backdropFilter: 'blur(8px)',
+              borderRadius: '16px',
+              border: '2px solid #e5e7eb',
+              padding: '1.5rem',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+            }}
+          >
+            {/* 排序按钮 */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+              {(['win_rate', 'total_score', 'total_games'] as const).map((option) => (
+                <button
+                  key={option}
+                  onClick={() => setSortBy(option)}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    borderRadius: '8px',
+                    border: '2px solid transparent',
+                    backgroundColor: sortBy === option ? '#1a472a' : 'rgba(255, 255, 255, 0.8)',
+                    color: sortBy === option ? 'white' : '#374151',
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    minHeight: '36px',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (sortBy !== option) {
+                      e.currentTarget.style.backgroundColor = 'rgba(26, 71, 42, 0.05)'
+                      e.currentTarget.style.borderColor = '#2d5a3d'
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (sortBy !== option) {
+                      e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)'
+                      e.currentTarget.style.borderColor = 'transparent'
+                    }
+                  }}
+                >
+                  {option === 'win_rate' ? (
+                    <><TrendingUp style={{ width: '16px', height: '16px' }} />胜率</>
+                  ) : option === 'total_score' ? (
+                    <><Star style={{ width: '16px', height: '16px' }} />得分</>
+                  ) : (
+                    <><Gamepad2 style={{ width: '16px', height: '16px' }} />场次</>
+                  )}
+                </button>
+              ))}
             </div>
 
             {/* 表格 */}
             {loading ? (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <tbody>
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <TableRowSkeleton key={i} />
-                    ))}
-                  </tbody>
-                </table>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                  <div
+                    key={i}
+                    style={{
+                      height: '60px',
+                      backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                      borderRadius: '8px',
+                      border: '2px solid #e5e7eb',
+                      animation: 'pulse 1.5s ease-in-out infinite'
+                    }}
+                  />
+                ))}
               </div>
             ) : sortedLeaderboard.length === 0 ? (
-              <div className="py-12 text-center">
-                <Inbox className="w-16 h-16 mx-auto mb-4 text-neutral-400" />
-                <p className="text-lg font-semibold text-neutral-700 mb-1">
-                  暂无排行榜数据
-                </p>
-                <p className="text-sm text-neutral-500">快去完成一局游戏吧！</p>
+              <div style={{ padding: '3rem', textAlign: 'center' }}>
+                <Inbox style={{ width: '64px', height: '64px', margin: '0 auto 1rem', color: '#9ca3af' }} />
+                <div style={{ fontSize: '1.125rem', color: '#6b7280', marginBottom: '0.5rem' }}>暂无排行榜数据</div>
+                <p style={{ fontSize: '0.875rem', color: '#9ca3af' }}>快去完成一局游戏吧！</p>
               </div>
             ) : (
-              <div className="overflow-x-auto rounded-lg border border-neutral-200">
-                <table className="w-full">
-                  <thead className="bg-neutral-100">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-700">排名</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-700">玩家</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-700">场次</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-700">胜/负</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-700">胜率</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-700">总得分</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-700">平均得分</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-700">炸弹</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-700">出牌数</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-700">连胜</th>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', color: '#1f2937' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
+                      <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: 600, color: '#1f2937' }}>排名</th>
+                      <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: 600, color: '#1f2937' }}>玩家</th>
+                      <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: 600, color: '#1f2937' }}>场次</th>
+                      <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: 600, color: '#1f2937' }}>胜/负</th>
+                      <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: 600, color: '#1f2937' }}>胜率</th>
+                      <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: 600, color: '#1f2937' }}>总得分</th>
+                      <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: 600, color: '#1f2937' }}>平均得分</th>
+                      <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: 600, color: '#1f2937' }}>炸弹</th>
+                      <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: 600, color: '#1f2937' }}>出牌数</th>
+                      <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: 600, color: '#1f2937' }}>连胜</th>
                     </tr>
                   </thead>
                   <tbody>
                     {sortedLeaderboard.map((entry) => (
                       <tr
                         key={entry.userId}
-                        className="border-b border-neutral-100 transition-colors duration-150 hover:bg-neutral-50"
+                        style={{
+                          borderBottom: '1px solid #e5e7eb',
+                          transition: 'background-color 0.2s ease-out'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.02)'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent'
+                        }}
                       >
-                        <td className="px-4 py-3">
-                          <div className="flex items-center justify-center w-8 h-8">
+                        <td style={{ padding: '0.75rem 1rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', color: getRankColor(entry.rank) }}>
                             {entry.rank <= 3 ? (
-                              <Award
-                                className={cn(
-                                  'w-6 h-6',
-                                  entry.rank === 1 && 'text-warning fill-current',
-                                  entry.rank === 2 && 'text-neutral-400',
-                                  entry.rank === 3 && 'text-error'
-                                )}
-                              />
+                              <Award style={{ width: '24px', height: '24px', strokeWidth: 2.5 }} fill={entry.rank === 1 ? 'currentColor' : 'none'} />
                             ) : (
-                              <span className={cn('text-sm font-bold', getRankColor(entry.rank))}>
-                                #{entry.rank}
-                              </span>
+                              <span style={{ fontSize: '1rem', fontWeight: 700 }}>#{entry.rank}</span>
                             )}
                           </div>
                         </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-3">
+                        <td style={{ padding: '0.75rem 1rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                             <Avatar
                               alt={entry.nickname}
                               size="md"
                               src={entry.avatar_url}
                             />
-                            <span className="font-medium text-neutral-900">{entry.nickname}</span>
+                            <span style={{ fontWeight: 500, color: '#1f2937' }}>{entry.nickname}</span>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-neutral-700">{entry.totalGames}</td>
-                        <td className="px-4 py-3">
-                          <span className="text-success">{entry.totalWins}</span>
-                          <span className="text-neutral-400 mx-1">/</span>
-                          <span className="text-error">{entry.totalLosses}</span>
+                        <td style={{ padding: '0.75rem 1rem', color: '#1f2937' }}>{entry.totalGames}</td>
+                        <td style={{ padding: '0.75rem 1rem', color: '#1f2937' }}>
+                          <span style={{ color: '#22c55e', fontWeight: 500 }}>{entry.totalWins}</span>
+                          <span style={{ color: '#6b7280', margin: '0 0.25rem' }}>/</span>
+                          <span style={{ color: '#ef4444', fontWeight: 500 }}>{entry.totalLosses}</span>
                         </td>
-                        <td className="px-4 py-3">
-                          <span className={cn('font-semibold', getWinRateVariant(entry.winRate))}>
+                        <td style={{ padding: '0.75rem 1rem' }}>
+                          <span style={{ fontWeight: 600, color: getWinRateColor(entry.winRate) }}>
                             {entry.winRate.toFixed(1)}%
                           </span>
                         </td>
-                        <td className="px-4 py-3 font-semibold text-primary">{entry.totalScore}</td>
-                        <td className="px-4 py-3 text-neutral-700">{entry.avgScore.toFixed(1)}</td>
-                        <td className="px-4 py-3 text-neutral-700">{entry.bombsPlayed}</td>
-                        <td className="px-4 py-3 text-neutral-700">{entry.cardsPlayed}</td>
-                        <td className="px-4 py-3">
-                          <span className="font-semibold text-warning flex items-center gap-1">
-                            <Flame className="w-4 h-4" />
+                        <td style={{ padding: '0.75rem 1rem', fontWeight: 600, color: '#1a472a' }}>{entry.totalScore}</td>
+                        <td style={{ padding: '0.75rem 1rem', color: '#1f2937' }}>{entry.avgScore.toFixed(1)}</td>
+                        <td style={{ padding: '0.75rem 1rem', color: '#1f2937' }}>{entry.bombsPlayed}</td>
+                        <td style={{ padding: '0.75rem 1rem', color: '#1f2937' }}>{entry.cardsPlayed}</td>
+                        <td style={{ padding: '0.75rem 1rem' }}>
+                          <span style={{ fontWeight: 600, color: '#f59e0b', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <Flame style={{ width: '16px', height: '16px' }} />
                             {entry.currentStreak}
                           </span>
                           {entry.maxStreak > 0 && (
-                            <span className="text-neutral-400 text-xs ml-2">
+                            <span style={{ color: '#6b7280', fontSize: '0.75rem', marginLeft: '0.5rem' }}>
                               (最高: {entry.maxStreak})
                             </span>
                           )}
@@ -247,9 +274,16 @@ export default function LeaderboardPage() {
                 </table>
               </div>
             )}
-          </Card>
+          </div>
         </div>
       </div>
+
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+      `}</style>
     </SimpleEnvironmentBackground>
   )
 }
