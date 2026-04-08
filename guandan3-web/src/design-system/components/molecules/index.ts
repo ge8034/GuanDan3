@@ -71,3 +71,6 @@ export type { BadgeProps } from './Badge'
 
 export { Tag } from './Tag'
 export type { TagProps } from './Tag'
+
+export { Switch } from './Switch'
+export type { SwitchProps } from './Switch'
