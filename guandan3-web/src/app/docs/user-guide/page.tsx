@@ -5,18 +5,21 @@ import SimpleEnvironmentBackground from '@/components/backgrounds/SimpleEnvironm
 import { useTheme } from '@/lib/theme/theme-context'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, BookOpen } from 'lucide-react'
+import { useState } from 'react'
 
 // 内联样式按钮组件
 function InlineButton({
   children,
   onClick,
   href,
-  variant = 'ghost'
+  variant = 'ghost',
+  style: customStyle
 }: {
   children: React.ReactNode
   onClick?: () => void
   href?: string
   variant?: 'ghost'
+  style?: React.CSSProperties
 }) {
   const [isHovered, setIsHovered] = useState(false)
 
@@ -32,6 +35,7 @@ function InlineButton({
     gap: '0.5rem',
     transition: 'all 0.2s',
     textDecoration: 'none',
+    ...customStyle,
   }
 
   const variantStyles = {
@@ -88,8 +92,6 @@ function InlineCard({
     </div>
   )
 }
-
-import { useState } from 'react'
 
 export default function UserGuidePage() {
   const router = useRouter()

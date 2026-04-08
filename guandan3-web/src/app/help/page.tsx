@@ -13,7 +13,8 @@ function InlineCard({
   icon: Icon,
   style,
   href,
-  onClick
+  onClick,
+  children
 }: {
   title: string
   description?: string
@@ -21,6 +22,7 @@ function InlineCard({
   style?: React.CSSProperties
   href?: string
   onClick?: () => void
+  children?: React.ReactNode
 }) {
   const content = (
     <>
@@ -31,6 +33,7 @@ function InlineCard({
         </div>
       )}
       {description && <p style={{ fontSize: '0.875rem', color: '#6b7280' }}>{description}</p>}
+      {children}
     </>
   )
 

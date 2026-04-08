@@ -212,6 +212,14 @@ export interface BadgeAnchorProps extends HTMLAttributes<HTMLDivElement> {
    * 是否显示点状徽章
    */
   showDot?: boolean
+  /**
+   * 数字徽章计数
+   */
+  count?: number
+  /**
+   * 最大显示数字（超过显示+N）
+   */
+  max?: number
 }
 
 /**
@@ -220,6 +228,10 @@ export interface BadgeAnchorProps extends HTMLAttributes<HTMLDivElement> {
  * @example
  * ```tsx
  * <BadgeAnchor badge={<Badge count={5} />}>
+ *   <Button>通知</Button>
+ * </BadgeAnchor>
+ *
+ * <BadgeAnchor count={5}>
  *   <Button>通知</Button>
  * </BadgeAnchor>
  *
@@ -235,6 +247,8 @@ export const BadgeAnchor = forwardRef<HTMLDivElement, BadgeAnchorProps>(
       badge,
       placement = 'top-right',
       showDot = false,
+      count,
+      max = 99,
       className,
       ...props
     },
@@ -257,7 +271,7 @@ export const BadgeAnchor = forwardRef<HTMLDivElement, BadgeAnchorProps>(
         {children}
 
         {/* 徽章 */}
-        {(badge || showDot) && (
+        {(badge || showDot || count !== undefined) && (
           <div
             className={cn(
               'absolute',
@@ -271,16 +285,18 @@ export const BadgeAnchor = forwardRef<HTMLDivElement, BadgeAnchorProps>(
               placement === 'top-left' && '-translate-x-1/2 -translate-y-1/2'
             )}
           >
-            {showDot && !badge ? (
+            {showDot && !badge && count === undefined ? (
               <Badge
                 variant="error"
                 size="sm"
                 dot
                 className="ring-2 ring-white"
               />
-            ) : (
+            ) : badge ? (
               badge
-            )}
+            ) : count !== undefined ? (
+              <Badge count={count} max={max} variant="error" size="sm" />
+            ) : null}
           </div>
         )}
       </div>
