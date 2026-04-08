@@ -344,6 +344,8 @@ export function findStraights(cards: Card[], _levelRank?: number): Card[][] {
 /**
  * 查找三带二（葫芦）
  *
+ * 规则：三张相同点数 + 两张对子（两张必须是对子）
+ *
  * @param cards - 卡牌数组
  * @param _levelRank - 级牌点数（保持API兼容性，未使用）
  * @returns 所有三带二组合
@@ -352,7 +354,7 @@ export function findFullHouses(cards: Card[], _levelRank?: number): Card[][] {
   const fullHouses: Card[][] = [];
   const valueMap = buildValueMap(cards);
 
-  // 分离三张和对子
+  // 分离三张和对子（对子是指两张相同点数的牌）
   const tripleEntries: Array<[number, Card[]]> = [];
   const pairEntries: Array<[number, Card[]]> = [];
 
@@ -365,7 +367,7 @@ export function findFullHouses(cards: Card[], _levelRank?: number): Card[][] {
     }
   }
 
-  // 生成所有三带二组合
+  // 生成所有三带二组合（三张+对子，对子必须与三张点数不同）
   for (const [tripleValue, tripleCards] of tripleEntries) {
     for (const tripleCombo of generateCombinations(tripleCards, 3)) {
       for (const [pairValue, pairCards] of pairEntries) {

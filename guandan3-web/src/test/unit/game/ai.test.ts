@@ -77,15 +77,17 @@ describe('ai.decideMove', () => {
     const move = decideMove(
       hand,
       [
-        c({ id: 9, suit: 'S', rank: '7', val: 7 }),
-        c({ id: 10, suit: 'D', rank: '7', val: 7 }),
-        c({ id: 11, suit: 'C', rank: '7', val: 7 }),
-        c({ id: 12, suit: 'H', rank: '7', val: 7 }),
+        c({ id: 9, suit: 'S', rank: '9', val: 9 }),
+        c({ id: 10, suit: 'D', rank: '9', val: 9 }),
+        c({ id: 11, suit: 'C', rank: '9', val: 9 }),
+        c({ id: 12, suit: 'H', rank: '9', val: 9 }),
       ],
       2,
       'hard',
       false
     );
+    // 上家出4张9，AI只有5张8能压过（张数多压张数少）
+    // 如果上家出4张7，AI应该用4张8（最优策略），而不是5张8
     expect(move.type).toBe('play');
     expect(move.cards?.length).toBe(5);
   });

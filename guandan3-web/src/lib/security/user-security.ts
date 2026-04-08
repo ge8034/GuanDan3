@@ -16,11 +16,11 @@ interface LoginAttempt {
 
 interface SecurityEvent {
   id: string
-  type: 'login' | 'logout' | 'password_change' | 'account_lock' | 'suspicious_activity'
+  type: 'login' | 'login_success' | 'login_failed' | 'logout' | 'password_change' | 'account_lock' | 'suspicious_activity'
   timestamp: number
   userId: string
   details: Record<string, any>
-  severity: 'low' | 'medium' | 'high' | 'critical'
+  severity: 'info' | 'low' | 'medium' | 'high' | 'critical'
 }
 
 export class UserSecurity {
@@ -49,6 +49,7 @@ export class UserSecurity {
 
   private loadSecurityState(): void {
     try {
+      if (typeof window === 'undefined') return // SSR 安全检查
       const stored = localStorage.getItem('user-security-state')
       if (stored) {
         const state = JSON.parse(stored)
@@ -63,6 +64,7 @@ export class UserSecurity {
 
   private saveSecurityState(): void {
     try {
+      if (typeof window === 'undefined') return // SSR 安全检查
       const state = {
         loginAttempts: Array.from(this.loginAttempts.entries()),
         lockedAccounts: Array.from(this.lockedAccounts.entries()),

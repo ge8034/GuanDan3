@@ -330,8 +330,6 @@ export async function getAIHand(this: GameState, seatNo: number): Promise<Card[]
   return []
 }
 
-}
-
 /**
  * 获取最后一个出牌动作
  */

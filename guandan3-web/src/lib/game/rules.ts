@@ -93,10 +93,14 @@ function isValidStraight(uniqueRawVals: number[], rawVals: number[], cardCount: 
   if (cardCount < HAND_LENGTHS.MIN_STRAIGHT) return false
   if (cardCount > HAND_LENGTHS.MAX_STRAIGHT) return false
   if (uniqueRawVals.length !== cardCount) return false
-  if (!isConsecutive(uniqueRawVals)) return false
+  
+  // 处理 2 (15) 的逻辑：在顺子中 2 < 3
+  // 将 15 映射为 2 进行连续性检查
+  const normalizedVals = uniqueRawVals.map(v => v === 15 ? 2 : v).sort((a, b) => a - b)
+  if (!isConsecutive(normalizedVals)) return false
 
-  // 顺子不能包含2和王
-  return rawVals.every((v) => v !== 15 && v !== 17)
+  // 顺子不能包含王
+  return rawVals.every((v) => v !== 17)
 }
 
 /**
@@ -158,6 +162,8 @@ function getSequenceTriplesMaxValue(counts: CardValueCounts, cardCount: number):
 /**
  * 判断是否为有效三带二
  *
+ * 规则：三张相同点数 + 两张对子（两张任意牌必须是对子）
+ *
  * @param counts - 原始值统计对象
  * @param cards - 卡牌数组
  * @param levelRank - 级牌点数
@@ -165,15 +171,15 @@ function getSequenceTriplesMaxValue(counts: CardValueCounts, cardCount: number):
  */
 function getFullHousePrimaryValue(counts: CardValueCounts, cards: Card[], levelRank: number): number | null {
   const countValues = Object.values(counts.counts)
-  
-  // 必须恰好有3张相同和2张相同
+
+  // 必须恰好有3张相同和2张相同（两张必须是对子，不能是两张不同的单牌）
   if (!countValues.includes(3) || !countValues.includes(2) || countValues.length !== 2) {
     return null
   }
   
   // 找到三张的值
   const tripleVal = counts.uniqueValues.find((v) => counts.counts[v] === 3)
-  if (!tripleVal) return null
+  if (tripleVal === undefined) return null
   
   const tripleCards = cards.filter((c) => c.val === tripleVal)
   return getCardValue(tripleCards[0], levelRank)
@@ -254,7 +260,7 @@ export function getCardValue(card: Card, levelRank: number): number {
  * - 顺子：5 张及以上连续点数的牌
  * - 连对：3 对及以上连续点数的对子
  * - 连三：2 个及以上连续点的三张
- * - 三带二：1 个三张 + 1 个对子
+ * - 三带二：1 个三张 + 1 个对子（两张必须是对子）
  * - 炸弹：4 张相同点数 或 4 张王
  */
 export function analyzeMove(cards: Card[], levelRank: number): Move | null {
@@ -294,8 +300,8 @@ export function analyzeMove(cards: Card[], levelRank: number): Move | null {
   }
 
   // ========== 炸弹检测 ==========
-  // 王炸（4张王，最大炸弹）
-  if (cards.length === 4 && hasJoker && !hasLevel) {
+  // 王炸：两张大王 + 两张小王（4张王牌组合，掼蛋规则：4张王=最大炸弹）
+  if (cards.length === 4 && hasJoker && cards.every(c => c.suit === 'J')) {
     return { type: 'bomb', cards, primaryValue: BOMB_VALUES.JOKER_BOMB }
   }
   

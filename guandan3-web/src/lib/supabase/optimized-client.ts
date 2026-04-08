@@ -4,16 +4,13 @@ import { networkOptimizer, NetworkMetrics } from '../performance/network-optimiz
 import { supabase as baseSupabase } from './client'
 
 // 重新导出基础客户端实例，避免多个 GoTrueClient 实例
+// 注意：不再创建额外的 Supabase 实例，统一使用 baseSupabase 避免认证状态不同步
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-let baseClient: SupabaseClient | null = null
-
 function getBaseClient(): SupabaseClient {
-  if (!baseClient) {
-    baseClient = createSupabaseClient(supabaseUrl, supabaseAnonKey)
-  }
-  return baseClient
+  // 始终返回同一个全局客户端实例，避免多个 GoTrueClient 导致认证问题
+  return baseSupabase
 }
 
 interface OptimizedSupabaseClient {

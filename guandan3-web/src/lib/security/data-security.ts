@@ -1,6 +1,16 @@
 import CryptoJS from 'crypto-js'
 
-const SECRET_KEY = process.env.NEXT_PUBLIC_ENCRYPTION_KEY || 'guandan3-default-secret-key-2024'
+const SECRET_KEY = process.env.NEXT_PUBLIC_ENCRYPTION_KEY
+
+if (!SECRET_KEY) {
+  // 开发环境警告，生产环境下必须设置此环境变量
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('NEXT_PUBLIC_ENCRYPTION_KEY 环境变量未设置，生产环境必须配置')
+  }
+  console.warn('[DataSecurity] NEXT_PUBLIC_ENCRYPTION_KEY 未设置，使用开发临时密钥（生产环境禁止）')
+}
+
+const EFFECTIVE_KEY = SECRET_KEY || 'guandan3-dev-only-key-do-not-use-in-production'
 
 export class DataSecurity {
   private static instance: DataSecurity
@@ -16,7 +26,7 @@ export class DataSecurity {
 
   encrypt(data: string): string {
     try {
-      return CryptoJS.AES.encrypt(data, SECRET_KEY).toString()
+      return CryptoJS.AES.encrypt(data, EFFECTIVE_KEY).toString()
     } catch (error) {
       console.error('Encryption error:', error)
       throw new Error('Failed to encrypt data')
@@ -25,7 +35,7 @@ export class DataSecurity {
 
   decrypt(encryptedData: string): string {
     try {
-      const bytes = CryptoJS.AES.decrypt(encryptedData, SECRET_KEY)
+      const bytes = CryptoJS.AES.decrypt(encryptedData, EFFECTIVE_KEY)
       return bytes.toString(CryptoJS.enc.Utf8)
     } catch (error) {
       console.error('Decryption error:', error)

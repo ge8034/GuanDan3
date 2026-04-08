@@ -137,7 +137,8 @@ export function assessTeammateSituation(
   const isLeading = !lastPlay || lastPlay.length === 0;
   const isStrong = controlScore > 50;
   const needsSupport = controlScore < 30 || distribution.weakCards > 5;
-  const canLead = isLeading || (lastPlay && lastPlay.length > 0);
+  // canLead：当前是领出回合（没有上家出牌）
+  const canLead = isLeading;
 
   return { isLeading, isStrong, needsSupport, canLead };
 }
@@ -163,11 +164,16 @@ export function findBestSupportMove(
   if (!lastMove) return { type: 'pass' };
 
   if (teammateSituation.needsSupport) {
-    // 检查所有可能的牌型
+    // 检查所有可能的牌型（包括单张、对子、三张等基础牌型）
     const allPossibleMoves = [
-      ...analysis.bombs,
-      ...analysis.fullHouses,
+      ...analysis.singles,
+      ...analysis.pairs,
+      ...analysis.triples,
+      ...analysis.straights,
+      ...analysis.sequencePairs,
       ...analysis.sequenceTriples,
+      ...analysis.fullHouses,
+      ...analysis.bombs,
     ];
 
     allPossibleMoves.forEach((moveCards) => {
