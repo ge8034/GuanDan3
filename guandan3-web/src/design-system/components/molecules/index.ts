@@ -50,3 +50,6 @@ export type {
 
 export { Collapse, CollapseItem } from './Collapse'
 export type { CollapseProps, CollapseItemProps } from './Collapse'
+
+export { Tooltip } from './Tooltip'
+export type { TooltipProps } from './Tooltip'
