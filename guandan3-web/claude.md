@@ -201,6 +201,181 @@ npm run test:coverage
 
 ---
 
+## 3.1 UI/UX 设计规范 (Impeccable)
+
+> **来源**: `.claude/skills/impeccable-design/` - 基于 [pbakaus/impeccable](https://github.com/pbakaus/impeccable)
+
+### Design Tokens
+
+```css
+/* 间距系统 - 4pt 基数 */
+--space-1: 0.25rem;  /* 4px */
+--space-2: 0.5rem;   /* 8px */
+--space-3: 0.75rem;  /* 12px */
+--space-4: 1rem;     /* 16px */
+--space-6: 1.5rem;   /* 24px */
+--space-8: 2rem;     /* 32px */
+
+/* 字体大小 - 模块化比例 (1.25) */
+--text-xs: 0.75rem;   /* 12px - captions, legal */
+--text-sm: 0.875rem;  /* 14px - secondary UI */
+--text-base: 1rem;    /* 16px - body text */
+--text-lg: 1.25rem;   /* 20px - subheadings */
+--text-xl: 1.5rem;    /* 24px - headings */
+--text-2xl: 2rem;     /* 32px - hero text */
+
+/* 过渡时间 */
+--duration-fast: 100ms;   /* 微交互 */
+--duration-base: 200ms;   /* 状态变化 */
+--duration-slow: 300ms;   /* 布局变化 */
+
+/* 缓动函数 */
+--ease-out: cubic-bezier(0.16, 1, 0.3, 1);   /* 进入 */
+--ease-in: cubic-bezier(0.7, 0, 0.84, 0);    /* 离开 */
+```
+
+### 排版规范
+
+#### DO - 使用模块化比例
+```tsx
+// ✅ 正确：使用 5 级字体系统
+<h1 className="text-2xl">标题</h1>      {/* 32px */}
+<p className="text-base">正文</p>       {/* 16px */}
+<small className="text-xs">注释</small> {/* 12px */}
+```
+
+#### DON'T - 使用太多接近的字体大小
+```tsx
+// ❌ 错误：14px, 15px, 16px, 17px, 18px - 层次不清
+<span className="text-[14px]">...</span>
+<span className="text-[15px]">...</span>
+<span className="text-[16px]">...</span>
+```
+
+#### 避免的默认字体
+- ❌ Inter, Roboto, Open Sans, Lato, Montserrat
+- ✅ Instrument Sans, Plus Jakarta Sans, Onest, Figtree
+
+### 空间设计规范
+
+#### DO - 使用 4pt 间距系统
+```tsx
+// ✅ 正确：4, 8, 12, 16, 24, 32, 48px
+className="p-4 gap-4"   // 16px
+className="p-6 gap-6"   // 24px
+className="p-8 gap-8"   // 32px
+```
+
+#### DON'T - 使用任意间距值
+```tsx
+// ❌ 错误：不在 4pt 系统中
+className="p-5"        // 20px
+className="p-[28px]"   // 28px
+className="gap-[22px]" // 22px
+```
+
+#### 使用 gap 优于 margin
+```tsx
+// ✅ 正确：使用 gap
+<div className="flex gap-4">...</div>
+
+// ❌ 错误：使用 margin（会有 margin collapse 问题）
+<div className="flex">
+  <div className="mr-4">...</div>
+</div>
+```
+
+### 动效设计规范
+
+#### DO - 遵循 100/300/500 规则
+```tsx
+// ✅ 正确的过渡时间
+className="transition-all duration-200"  // 状态变化
+className="transition-opacity duration-100" // 即时反馈
+```
+
+#### DON'T - 过长的过渡时间
+```tsx
+// ❌ 错误：超过 500ms 的 UI 反馈
+className="transition-all duration-700"
+```
+
+#### 仅动画 transform 和 opacity
+```tsx
+// ✅ 正确：高性能动画
+style={{ transform: 'scale(1)', opacity: 0 }}
+
+// ❌ 错误：触发 layout recalculations
+style={{ width: 200, height: 100 }}
+```
+
+#### 避免的缓动函数
+- ❌ `ease` - 很少是最优选择
+- ❌ bounce, elastic - 显得业余过时
+- ✅ `ease-out` (进入), `ease-in` (离开)
+
+### 交互设计规范
+
+#### 8 种交互状态
+每个交互元素需要处理：Default, Hover, Focus, Active, Disabled, Loading, Error, Success
+
+```tsx
+// ✅ 正确：完整的状态处理
+<button
+  className="hover:bg-primary active:bg-primary/80 
+             focus:ring-2 disabled:opacity-50
+             focus-visible:ring-2"
+  disabled={isLoading}
+>
+  {isLoading ? <Spinner /> : children}
+</button>
+```
+
+#### 触摸目标最小尺寸
+- 最小 44×44px (Apple HIG)
+- 小图标使用 padding 或伪元素扩展触摸区域
+
+#### 焦点环要求
+- 使用 `:focus-visible` 区分键盘和鼠标焦点
+- 2-3px 厚度，高对比度 (3:1 最小值)
+- 与元素有偏移 (outline-offset: 2px)
+
+### 颜色与对比规范
+
+#### DO - 使用染色中性色
+```css
+/* ✅ 正确：添加品牌色微量到中性色 */
+--gray-100: oklch(95% 0.01 250);  /* 蓝色冷调 */
+--gray-900: oklch(15% 0.01 250);
+
+/* ❌ 错误：纯灰色 */
+--gray-100: oklch(95% 0 0);
+```
+
+#### DON'T - 过度使用强调色
+- 强调色应占 10% 视觉权重
+- 过度使用会失去强调作用
+
+#### 颜色对比度要求
+- 正文文本：最小 4.5:1
+- 大文本 (18px+)：最小 3:1
+- 交互元素：最小 3:1
+
+### 反模式速查表
+
+| 领域 | 避免 | 替代 |
+|------|------|------|
+| 字体 | Inter, Roboto, Open Sans | Instrument Sans, Plus Jakarta Sans |
+| 字体大小 | 14, 15, 16, 17, 18px | 12, 14, 16, 20, 24, 32px |
+| 间距 | p-5, gap-[22px] | p-4, p-6, gap-4, gap-6 |
+| 过渡 | duration-500 (UI反馈) | duration-200 |
+| 缓动 | ease, bounce | ease-out, cubic-bezier(0.16,1,0.3,1) |
+| 动画属性 | width, height, left | transform, opacity |
+| 颜色 | 纯灰色 hsl(0,0,50%) | 染色中性色 |
+| 卡片 | 嵌套卡片 | 间距+分隔线 |
+
+---
+
 ## 5. 部署指南
 
 ### 环境变量
