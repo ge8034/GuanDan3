@@ -137,8 +137,8 @@ export function assessTeammateSituation(
   const isLeading = !lastPlay || lastPlay.length === 0;
   const isStrong = controlScore > 50;
   const needsSupport = controlScore < 30 || distribution.weakCards > 5;
-  // canLead：当前是领出回合（没有上家出牌）
-  const canLead = isLeading;
+  // canLead：队友有牌可出（有能力领出），与当前是否领出无关
+  const canLead = teammateCards.length > 0;
 
   return { isLeading, isStrong, needsSupport, canLead };
 }
@@ -165,15 +165,16 @@ export function findBestSupportMove(
 
   if (teammateSituation.needsSupport) {
     // 检查所有可能的牌型（包括单张、对子、三张等基础牌型）
+    // 按优先级排序：炸弹 > 三张 > 对子 > 单张
     const allPossibleMoves = [
-      ...analysis.singles,
-      ...analysis.pairs,
-      ...analysis.triples,
-      ...analysis.straights,
-      ...analysis.sequencePairs,
-      ...analysis.sequenceTriples,
-      ...analysis.fullHouses,
       ...analysis.bombs,
+      ...analysis.fullHouses,
+      ...analysis.sequenceTriples,
+      ...analysis.sequencePairs,
+      ...analysis.straights,
+      ...analysis.triples,
+      ...analysis.pairs,
+      ...analysis.singles,
     ];
 
     allPossibleMoves.forEach((moveCards) => {
@@ -188,5 +189,6 @@ export function findBestSupportMove(
     return { type: 'pass' };
   }
 
-  return validMoves[Math.floor(Math.random() * validMoves.length)];
+  // 返回第一个有效移动（由于已经按优先级排序，所以是最大的牌型）
+  return validMoves[0];
 }

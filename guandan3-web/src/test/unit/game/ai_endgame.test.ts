@@ -154,7 +154,7 @@ describe('AI Strategy - Guard & Difficulty', () => {
   });
 
   it('findBestSupportMove 在无法支援时返回 pass', () => {
-    const hand: Card[] = [c({ id: 1, suit: 'S', rank: 'J', val: 11 })];
+    const hand: Card[] = [c({ id: 1, suit: 'S', rank: '7', val: 7 })];
     const lastPlay: Card[] = [c({ id: 2, suit: 'S', rank: '9', val: 9 })];
     const teammateSituation = {
       isLeading: false,

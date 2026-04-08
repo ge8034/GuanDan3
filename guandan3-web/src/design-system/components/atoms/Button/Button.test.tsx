@@ -25,7 +25,8 @@ describe('Button - 基础渲染', () => {
   it('使用默认变体 (primary)', () => {
     render(<Button>默认按钮</Button>)
     const button = screen.getByRole('button')
-    expect(button).toHaveClass('bg-poker-table')
+    // primary 变体使用渐变背景
+    expect(button).toHaveClass('bg-gradient-to-br', 'from-poker-table-light', 'to-poker-table-dark')
   })
 
   it('使用默认尺寸 (md)', () => {
@@ -38,7 +39,8 @@ describe('Button - 基础渲染', () => {
 describe('Button - 变体样式', () => {
   it('应用 primary 变体', () => {
     render(<Button variant="primary">主要按钮</Button>)
-    expect(screen.getByRole('button')).toHaveClass('bg-poker-table')
+    const button = screen.getByRole('button')
+    expect(button).toHaveClass('bg-gradient-to-br', 'from-poker-table-light')
   })
 
   it('应用 secondary 变体', () => {
@@ -48,12 +50,12 @@ describe('Button - 变体样式', () => {
 
   it('应用 outline 变体', () => {
     render(<Button variant="outline">轮廓按钮</Button>)
-    expect(screen.getByRole('button')).toHaveClass('bg-transparent', 'border-2')
+    expect(screen.getByRole('button')).toHaveClass('bg-transparent', 'border-accent-gold')
   })
 
   it('应用 ghost 变体', () => {
     render(<Button variant="ghost">幽灵按钮</Button>)
-    expect(screen.getByRole('button')).toHaveClass('bg-transparent')
+    expect(screen.getByRole('button')).toHaveClass('bg-transparent', 'border-transparent')
   })
 
   it('应用 danger 变体', () => {
@@ -116,7 +118,8 @@ describe('Button - 8种交互状态', () => {
       const button = screen.getByRole('button')
 
       await user.hover(button)
-      expect(button).toHaveClass('hover:bg-poker-table-light')
+      // primary 变体的 hover 使用渐变变化
+      expect(button).toHaveClass('hover:from-poker-table-accent')
     })
   })
 
@@ -139,7 +142,8 @@ describe('Button - 8种交互状态', () => {
       const button = screen.getByRole('button')
 
       await user.click(button)
-      expect(button).toHaveClass('active:bg-poker-table-dark')
+      // primary 变体的 active 使用 opacity
+      expect(button).toHaveClass('active:opacity-90')
     })
   })
 
