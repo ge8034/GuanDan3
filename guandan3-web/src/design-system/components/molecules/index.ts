@@ -65,3 +65,6 @@ export {
   SkeletonImage,
 } from './Skeleton'
 export type { SkeletonProps, SkeletonAvatarProps, SkeletonImageProps } from './Skeleton'
+
+export { Badge } from './Badge'
+export type { BadgeProps } from './Badge'
