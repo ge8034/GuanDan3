@@ -80,3 +80,6 @@ export type { RateProps } from './Rate'
 
 export { Notification } from './Notification'
 export type { NotificationProps, NotificationType } from './Notification'
+
+export { Slider } from './Slider'
+export type { SliderProps } from './Slider'
