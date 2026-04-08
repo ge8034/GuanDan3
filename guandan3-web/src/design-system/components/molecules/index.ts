@@ -53,3 +53,6 @@ export type { CollapseProps, CollapseItemProps } from './Collapse'
 
 export { Tooltip } from './Tooltip'
 export type { TooltipProps } from './Tooltip'
+
+export { Progress } from './Progress'
+export type { ProgressProps } from './Progress'
