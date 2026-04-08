@@ -1,15 +1,19 @@
 'use client'
 
-import { useEffect, useState, useCallback, useMemo } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import { mapSupabaseErrorToMessage } from '@/lib/utils/supabaseErrors'
-import { Button } from '@/components/ui/Button'
-import Card, { CardBody } from '@/components/ui/Card'
-import Badge from '@/components/ui/Badge'
-import CloudMountainBackground from '@/components/backgrounds/CloudMountainBackground'
+import { Button } from '@/design-system/components/atoms'
+import { Badge } from '@/design-system/components/atoms'
+import { Card } from '@/design-system/components/atoms'
+import { cn } from '@/design-system/utils/cn'
+import SimpleEnvironmentBackground from '@/components/backgrounds/SimpleEnvironmentBackground'
+import { useTheme } from '@/lib/theme/theme-context'
+import { ScrollText, Inbox, ArrowLeft, Loader2, AlertTriangle } from 'lucide-react'
 
 import { logger } from '@/lib/utils/logger'
+
 type GameRecord = {
   id: string
   created_at: string
@@ -23,14 +27,87 @@ type GameRecord = {
   }
 }
 
+// 战绩卡片组件 - 使用 Impeccable Design 规范
+function RecordCard({
+  roomName,
+  mode,
+  delta,
+  totalAfter,
+  date
+}: {
+  roomName: string
+  mode: string
+  delta: number
+  totalAfter: number
+  date: string
+}) {
+  return (
+    <Card
+      variant="elevated"
+      padding="md"
+      className={cn(
+        'transition-all duration-200 hover:-translate-y-1 hover:shadow-lg'
+      )}
+    >
+      <div className="flex justify-between items-center gap-4">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-semibold text-base text-neutral-900 truncate">
+              {roomName}
+            </span>
+            <Badge
+              variant={mode === 'pve1v3' ? 'primary' : 'secondary'}
+              size="sm"
+            >
+              {mode === 'pve1v3' ? '练习' : '对战'}
+            </Badge>
+          </div>
+          <div className="text-sm text-neutral-500">
+            {date}
+          </div>
+        </div>
+        <div className="text-right shrink-0">
+          <div
+            className={cn(
+              'text-xl font-bold',
+              delta > 0 ? 'text-success' : delta < 0 ? 'text-error' : 'text-neutral-500'
+            )}
+          >
+            {delta > 0 ? '+' : ''}{delta}
+          </div>
+          <div className="text-xs text-neutral-400">
+            积分: {totalAfter}
+          </div>
+        </div>
+      </div>
+    </Card>
+  )
+}
+
+// 骨架屏组件
+function RecordSkeleton() {
+  return (
+    <div className="space-y-4">
+      {[...Array(6)].map((_, i) => (
+        <div
+          key={i}
+          className="h-20 bg-white/50 rounded-xl animate-pulse"
+          style={{ animationDelay: `${i * 50}ms` }}
+        />
+      ))}
+    </div>
+  )
+}
+
 export default function HistoryPage() {
   const router = useRouter()
+  const { theme } = useTheme()
   const [records, setRecords] = useState<GameRecord[]>([])
-  const [loading, setLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const fetchHistory = async () => {
+    const fetchRecords = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) {
@@ -57,100 +134,108 @@ export default function HistoryPage() {
           .limit(50)
 
         if (error) throw error
-        setRecords(data as any)
+
+        setRecords(data as unknown as GameRecord[])
       } catch (e: any) {
-        logger.error(e)
-        setError(mapSupabaseErrorToMessage(e, '获取战绩失败'))
+        logger.error('Fetch records error:', e)
+        setError(mapSupabaseErrorToMessage(e, '加载战绩失败'))
       } finally {
-        setLoading(false)
+        setIsLoading(false)
       }
     }
 
-    fetchHistory()
+    fetchRecords()
   }, [router])
 
-  const renderRecordCard = useCallback((record: GameRecord) => (
-    <Card 
-      key={record.id}
-      hover
-      className="bg-[#F5F5DC]/80 backdrop-blur-sm border-[#D3D3D3] shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
-    >
-      <CardBody className="p-4 flex justify-between items-center">
-        <div className="flex-1 min-w-0">
-          <div className="font-bold text-lg text-gray-900 mb-1 flex items-center gap-2 flex-wrap">
-            {record.game.room.name || '未知房间'}
-            <Badge
-              variant={record.game.room.mode === 'pve1v3' ? 'info' : 'primary'}
-              size="sm"
-            >
-              {record.game.room.mode === 'pve1v3' ? '练习' : '对战'}
-            </Badge>
-          </div>
-          <div className="text-sm text-gray-700">
-            {new Date(record.created_at).toLocaleString('zh-CN')}
+  if (isLoading) {
+    return (
+      <SimpleEnvironmentBackground theme={theme}>
+        <div className="min-h-screen p-4 md:p-8">
+          <div className="max-w-3xl mx-auto">
+            {/* 头部骨架 */}
+            <div className="h-16 bg-white/50 rounded-xl mb-6 animate-pulse" />
+            <RecordSkeleton />
           </div>
         </div>
-        <div className="text-right ml-4">
-          <div className={`text-2xl font-bold ${
-            record.delta > 0 ? 'text-green-700' : 
-            record.delta < 0 ? 'text-red-700' : 'text-gray-700'
-          }`}>
-            {record.delta > 0 ? '+' : ''}{record.delta}
-          </div>
-          <div className="text-xs text-gray-700">
-            当前积分: {record.total_after}
-          </div>
+      </SimpleEnvironmentBackground>
+    )
+  }
+
+  if (error) {
+    return (
+      <SimpleEnvironmentBackground theme={theme}>
+        <div className="min-h-screen flex items-center justify-center p-4">
+          <Card variant="elevated" padding="lg" className="max-w-lg w-full text-center">
+            <AlertTriangle className="w-16 h-16 mx-auto mb-4 text-warning" />
+            <h2 className="text-xl font-bold mb-2">加载失败</h2>
+            <p className="text-neutral-600 mb-6">{error}</p>
+            <Button onClick={() => router.push('/lobby')} fullWidth>
+              返回大厅
+            </Button>
+          </Card>
         </div>
-      </CardBody>
-    </Card>
-  ), [])
+      </SimpleEnvironmentBackground>
+    )
+  }
 
   return (
-    <CloudMountainBackground>
-      <header className="bg-[#F5F5DC]/90 backdrop-blur-sm border-b border-[#D3D3D3] sticky top-0 z-10 relative">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl md:text-3xl font-semibold text-[#1A4A0A] flex items-center gap-2">
-            <span className="text-3xl md:text-4xl">📜</span>
-            战绩记录
-          </h1>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => router.push('/lobby')}
-          >
-            返回大厅
-          </Button>
-        </div>
-      </header>
+    <SimpleEnvironmentBackground theme={theme}>
+      <div className="min-h-screen p-4 md:p-8">
+        {/* 头部 */}
+        <header className="mb-6 max-w-3xl mx-auto animate-in fade-in slide-in-from-top-4 duration-200">
+          <div className="flex items-center justify-between">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push('/lobby')}
+              leftIcon={<ArrowLeft className="w-4 h-4" />}
+            >
+              返回大厅
+            </Button>
+            <div className="text-center flex-1">
+              <h1 className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg">
+                游戏战绩
+              </h1>
+            </div>
+            <div className="w-20" /> {/* Spacer for centering */}
+          </div>
+        </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-6 md:py-8 relative z-10">
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#6BA539] border-t-transparent"></div>
-            <p className="mt-4 text-gray-700">加载中...</p>
-          </div>
-        ) : error ? (
-          <Card className="bg-[#F5F5DC]/80 backdrop-blur-sm border-[#D3D3D3]">
-            <CardBody>
-              <div className="text-center text-red-700">{error}</div>
-            </CardBody>
-          </Card>
-        ) : records.length === 0 ? (
-          <Card className="bg-[#F5F5DC]/80 backdrop-blur-sm border-[#D3D3D3]">
-            <CardBody>
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4">📭</div>
-                <div className="text-xl text-gray-800">暂无战绩</div>
-                <p className="mt-2 text-sm text-gray-700">快去完成一局游戏吧！</p>
-              </div>
-            </CardBody>
-          </Card>
-        ) : (
-          <div className="grid gap-4">
-            {records.map(renderRecordCard)}
-          </div>
-        )}
-      </main>
-    </CloudMountainBackground>
+        {/* 内容区域 */}
+        <main className="max-w-3xl mx-auto">
+          {records.length > 0 ? (
+            <div className="space-y-4 animate-in fade-in duration-300">
+              {records.map((record, index) => (
+                <RecordCard
+                  key={record.id}
+                  roomName={record.game.room.name}
+                  mode={record.game.room.mode}
+                  delta={record.delta}
+                  totalAfter={record.total_after}
+                  date={new Date(record.created_at).toLocaleDateString()}
+                />
+              ))}
+            </div>
+          ) : (
+            <Card
+              variant="elevated"
+              padding="lg"
+              className="text-center animate-in fade-in duration-300"
+            >
+              <Inbox className="w-16 h-16 mx-auto mb-4 text-neutral-400" />
+              <h3 className="text-lg font-semibold text-neutral-700 mb-2">
+                暂无战绩记录
+              </h3>
+              <p className="text-neutral-500 mb-6">
+                完成游戏后将显示战绩记录
+              </p>
+              <Button onClick={() => router.push('/lobby')}>
+                前往大厅
+              </Button>
+            </Card>
+          )}
+        </main>
+      </div>
+    </SimpleEnvironmentBackground>
   )
 }
