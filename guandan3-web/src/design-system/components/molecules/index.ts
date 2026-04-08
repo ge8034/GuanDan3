@@ -47,3 +47,6 @@ export type {
   SelectGroupProps,
   SelectSeparatorProps,
 } from './Select'
+
+export { Collapse, CollapseItem } from './Collapse'
+export type { CollapseProps, CollapseItemProps } from './Collapse'
