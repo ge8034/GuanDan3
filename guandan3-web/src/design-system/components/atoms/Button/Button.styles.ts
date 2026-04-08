@@ -54,23 +54,35 @@ export const buttonVariants = cva(baseStyles, {
   variants: {
     // 视觉变体
     variant: {
-      // 主要按钮
+      // 主要按钮 - 深绿渐变（与原版一致）
       primary: [
-        // 背景
-        'bg-poker-table',
-        'hover:bg-poker-table-light',
-        'active:bg-poker-table-dark',
-
-        // 文本
-        'text-white',
+        // 渐变背景
+        'bg-gradient-to-br',
+        'from-poker-table-light',
+        'via-poker-table',
+        'to-poker-table-dark',
 
         // 边框
         'border-2',
         'border-poker-table-dark',
 
+        // 文本
+        'text-white',
+
         // 阴影
         'shadow-md',
         'hover:shadow-lg',
+
+        // 悬停效果
+        'hover:from-poker-table-accent',
+        'hover:via-poker-table-light',
+        'hover:to-poker-table',
+        'hover:border-accent-gold',
+        'hover:text-white',
+        'hover:shadow-gold-glow',
+
+        // 激活效果
+        'active:opacity-90',
       ],
 
       // 次要按钮
@@ -85,15 +97,17 @@ export const buttonVariants = cva(baseStyles, {
         'hover:shadow-md',
       ],
 
-      // 轮廓按钮
+      // 轮廓按钮 - 金色边框（与原版一致）
       outline: [
         'bg-transparent',
-        'hover:bg-poker-table/10',
-        'active:bg-poker-table/20',
-        'text-poker-table',
         'border-2',
-        'border-poker-table',
-        'shadow-sm',
+        'border-accent-gold',
+        'text-accent-gold',
+        'shadow-lg',
+        'hover:bg-accent-gold/10',
+        'hover:shadow-gold-gold',
+        'hover:text-accent-gold-light',
+        'active:bg-accent-gold/20',
       ],
 
       // 幽灵按钮
