@@ -5,8 +5,14 @@
 export { Alert } from './Alert'
 export type { AlertProps } from './Alert'
 
+export { Breadcrumb, BreadcrumbItem, createBreadcrumbItems } from './Breadcrumb'
+export type { BreadcrumbProps, BreadcrumbItemProps, BreadcrumbData } from './Breadcrumb'
+
 export { Dropdown, DropdownItem, DropdownSeparator } from './Dropdown'
 export type { DropdownProps, DropdownItemProps, DropdownSeparatorProps } from './Dropdown'
+
+export { Pagination } from './Pagination'
+export type { PaginationProps } from './Pagination'
 
 export { Modal, ModalDescription, ModalContent, ModalFooter } from './Modal'
 export type { ModalProps } from './Modal'
