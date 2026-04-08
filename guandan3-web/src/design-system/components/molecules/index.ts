@@ -89,3 +89,6 @@ export type { AvatarProps } from './Avatar'
 
 export { Upload } from './Upload'
 export type { UploadProps, UploadFile } from './Upload'
+
+export { Popover } from './Popover'
+export type { PopoverProps } from './Popover'
