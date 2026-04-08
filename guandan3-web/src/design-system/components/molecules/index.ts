@@ -83,3 +83,6 @@ export type { NotificationProps, NotificationType } from './Notification'
 
 export { Slider } from './Slider'
 export type { SliderProps } from './Slider'
+
+export { Avatar } from './Avatar'
+export type { AvatarProps } from './Avatar'
