@@ -1,3 +1,8 @@
+/**
+ * Chat 聊天页面
+ * 使用设计系统组件重构版本
+ */
+
 'use client'
 
 import { useState, useEffect, useMemo, Suspense } from 'react'
@@ -9,7 +14,9 @@ import ChatWindow from '@/components/chat/ChatWindow'
 import { type ChatRoom } from '@/lib/api/chat'
 import SimpleEnvironmentBackground from '@/components/backgrounds/SimpleEnvironmentBackground'
 import { useTheme } from '@/lib/theme/theme-context'
-import { MessageSquare, ArrowLeft } from 'lucide-react'
+import { MessageSquare } from 'lucide-react'
+import { Button } from '@/design-system/components/atoms'
+import { Card } from '@/design-system/components/atoms'
 
 function ChatPageContent() {
   const router = useRouter()
@@ -41,89 +48,39 @@ function ChatPageContent() {
 
   return (
     <SimpleEnvironmentBackground theme={theme}>
-      <div style={{ minHeight: '100vh', paddingTop: '64px' }}>
+      <div className="min-h-screen pt-20">
         {/* 头部 */}
-        <header
-          style={{
-            position: 'sticky',
-            top: 0,
-            zIndex: 10,
-            backgroundColor: 'rgba(245, 245, 220, 0.9)',
-            backdropFilter: 'blur(8px)',
-            borderBottom: '2px solid rgba(0, 0, 0, 0.1)',
-          }}
-        >
-          <div style={{ maxWidth: '80rem', margin: '0 auto', padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#111827', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <MessageSquare style={{ width: '32px', height: '32px' }} />
+        <header className="sticky top-0 z-10 bg-amber-50/90 backdrop-blur-md border-b-2 border-black/10">
+          <div className="max-w-5xl mx-auto px-4 flex justify-between items-center">
+            <h1 className="text-2xl font-bold text-neutral-900 flex items-center gap-3">
+              <MessageSquare className="w-8 h-8" />
               聊天
             </h1>
-            <button
+            <Button
               onClick={() => router.push('/lobby')}
-              style={{
-                padding: '0.5rem 1rem',
-                borderRadius: '8px',
-                border: '2px solid rgba(0, 0, 0, 0.1)',
-                backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                color: '#374151',
-                fontSize: '0.875rem',
-                fontWeight: 500,
-                cursor: 'pointer',
-                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                minHeight: '36px',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 1)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)'
-              }}
+              variant="ghost"
+              size="sm"
+              leftIcon={<MessageSquare className="w-4 h-4" />}
             >
-              <ArrowLeft style={{ width: '16px', height: '16px' }} />
               返回大厅
-            </button>
+            </Button>
           </div>
         </header>
 
         {/* 主内容 */}
-        <main style={{ maxWidth: '80rem', margin: '0 auto', padding: '1.5rem 1rem' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
+        <main className="max-w-5xl mx-auto px-4 py-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* 聊天室列表 */}
-            <div
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                backdropFilter: 'blur(8px)',
-                borderRadius: '16px',
-                border: '2px solid #e5e7eb',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                height: '600px',
-                display: 'flex',
-                flexDirection: 'column',
-              }}
-            >
+            <Card className="bg-white/90 backdrop-blur-md h-[600px] flex flex-col">
               <ChatRoomList
                 selectedRoomId={currentSelectedRoom?.room_id || null}
                 onSelectRoom={setSelectedRoom}
                 onRoomsLoaded={setRooms}
               />
-            </div>
+            </Card>
 
             {/* 聊天窗口 */}
-            <div
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                backdropFilter: 'blur(8px)',
-                borderRadius: '16px',
-                border: '2px solid #e5e7eb',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                height: '600px',
-                display: 'flex',
-                flexDirection: 'column',
-              }}
-            >
+            <Card className="bg-white/90 backdrop-blur-md h-[600px] flex flex-col">
               {currentUserId ? (
                 <ChatWindow
                   room={currentSelectedRoom}
@@ -131,13 +88,13 @@ function ChatPageContent() {
                   className="h-[600px]"
                 />
               ) : (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '600px' }}>
-                  <div style={{ textAlign: 'center', color: '#6b7280' }}>
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center text-neutral-600">
                     <p>加载中...</p>
                   </div>
                 </div>
               )}
-            </div>
+            </Card>
           </div>
         </main>
       </div>
@@ -148,8 +105,8 @@ function ChatPageContent() {
 export default function ChatPage() {
   return (
     <Suspense fallback={
-      <div style={{ minHeight: '100vh', paddingTop: '64px' }}>
-        <div style={{ textAlign: 'center' }}>加载中...</div>
+      <div className="min-h-screen pt-20">
+        <div className="text-center">加载中...</div>
       </div>
     }>
       <ChatPageContent />

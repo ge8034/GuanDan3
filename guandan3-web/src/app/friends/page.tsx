@@ -1,14 +1,19 @@
+/**
+ * Friends 好友系统页面
+ * 使用设计系统组件重构版本
+ */
+
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase/client'
-import { mapSupabaseErrorToMessage } from '@/lib/utils/supabaseErrors'
-import { Avatar } from '@/design-system/components/atoms'
+import { Avatar, Button, Badge, Card, Input } from '@/design-system/components/atoms'
+import { Spinner } from '@/design-system/components/atoms'
 import SimpleEnvironmentBackground from '@/components/backgrounds/SimpleEnvironmentBackground'
 import { useTheme } from '@/lib/theme/theme-context'
 import { useToast } from '@/lib/hooks/useToast'
-import { Users, Inbox, Search, Loader2, ArrowLeft } from 'lucide-react'
+import { Users, Inbox, Search, ArrowLeft } from 'lucide-react'
+import { cn } from '@/design-system/utils/cn'
 
 // 模拟数据（用于演示）
 const mockFriends = [
@@ -78,10 +83,10 @@ const mockSearchResults = [
 
 // 状态配置
 const statusConfig = {
-  online: { color: '#22c55e', text: '在线' },
-  busy: { color: '#f59e0b', text: '游戏中' },
-  away: { color: '#f97316', text: '离开' },
-  offline: { color: '#6b7280', text: '离线' }
+  online: { color: 'bg-success-500', text: '在线' },
+  busy: { color: 'bg-amber-500', text: '游戏中' },
+  away: { color: 'bg-orange-500', text: '离开' },
+  offline: { color: 'bg-neutral-500', text: '离线' }
 }
 
 type UserStatus = keyof typeof statusConfig
@@ -107,93 +112,43 @@ function UserCard({
   const config = statusConfig[status] || statusConfig.offline
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '1rem',
-        borderRadius: '12px',
-        border: '2px solid #e5e7eb',
-        backgroundColor: 'white',
-        transition: 'all 0.15s ease-out',
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.02)'
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.backgroundColor = 'white'
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-        <div style={{ position: 'relative' }}>
+    <Card className="flex items-center justify-between p-4 border-2 border-neutral-200 bg-white transition-colors duration-150 hover:bg-black/5">
+      <div className="flex items-center gap-3">
+        <div className="relative">
           <Avatar
             alt={nickname}
             size="lg"
             src={avatarUrl}
           />
-          <div
-            style={{
-              position: 'absolute',
-              bottom: '-4px',
-              right: '-4px',
-              width: '12px',
-              height: '12px',
-              borderRadius: '50%',
-              backgroundColor: config.color,
-              border: '2px solid white'
-            }}
-          />
+          <div className={cn(
+            'absolute bottom-[-4px] right-[-4px]',
+            'w-3 h-3 rounded-full',
+            'border-2 border-white',
+            config.color
+          )} />
         </div>
         <div>
-          <div style={{ fontWeight: 500, fontSize: '0.875rem', color: '#111827' }}>
+          <div className="font-medium text-sm text-neutral-900">
             {nickname}
           </div>
-          <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+          <div className="text-xs text-neutral-600">
             {config.text} · Lv.{level} · 胜率 {winRate.toFixed(1)}%
           </div>
         </div>
       </div>
       {action && actionLabel && (
-        <button
+        <Button
           onClick={action}
-          style={{
-            padding: '0.5rem 1rem',
-            borderRadius: '8px',
-            border: actionLabel === '删除'
-              ? '2px solid transparent'
-              : '2px solid #1a472a',
-            backgroundColor: actionLabel === '删除'
-              ? 'transparent'
-              : '#1a472a',
-            color: actionLabel === '删除' ? '#ef4444' : 'white',
-            fontSize: '0.875rem',
-            fontWeight: 500,
-            cursor: 'pointer',
-            transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-            minHeight: '36px',
-          }}
-          onMouseEnter={(e) => {
-            if (actionLabel === '删除') {
-              e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)'
-            } else {
-              e.currentTarget.style.backgroundColor = '#2d5a3d'
-              e.currentTarget.style.borderColor = '#2d5a3d'
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (actionLabel === '删除') {
-              e.currentTarget.style.backgroundColor = 'transparent'
-            } else {
-              e.currentTarget.style.backgroundColor = '#1a472a'
-              e.currentTarget.style.borderColor = '#1a472a'
-            }
-          }}
+          variant={actionLabel === '删除' ? 'ghost' : 'primary'}
+          size="sm"
+          className={cn(
+            actionLabel === '删除' && 'text-error-500 hover:bg-error-500/10'
+          )}
         >
           {actionLabel}
-        </button>
+        </Button>
       )}
-    </div>
+    </Card>
   )
 }
 
@@ -246,190 +201,94 @@ export default function FriendsPage() {
 
   return (
     <SimpleEnvironmentBackground theme={theme}>
-      <div style={{ minHeight: '100vh', paddingTop: '64px' }}>
+      <div className="min-h-screen pt-20">
         {/* 头部 */}
-        <header
-          style={{
-            position: 'sticky',
-            top: 0,
-            zIndex: 10,
-            backgroundColor: 'rgba(245, 245, 220, 0.9)',
-            backdropFilter: 'blur(8px)',
-            borderBottom: '2px solid rgba(0, 0, 0, 0.1)',
-          }}
-        >
-          <div style={{ maxWidth: '64rem', margin: '0 auto', padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h1 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#111827', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Users style={{ width: '24px', height: '24px' }} />
+        <header className="sticky top-0 z-10 bg-amber-50/90 backdrop-blur-md border-b-2 border-black/10">
+          <div className="max-w-4xl mx-auto px-4 flex justify-between items-center">
+            <h1 className="text-xl font-bold text-neutral-900 flex items-center gap-2">
+              <Users className="w-6 h-6" />
               好友系统
             </h1>
-            <button
+            <Button
               onClick={() => router.push('/lobby')}
-              style={{
-                padding: '0.5rem 1rem',
-                borderRadius: '8px',
-                border: '2px solid rgba(0, 0, 0, 0.1)',
-                backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                color: '#374151',
-                fontSize: '0.875rem',
-                fontWeight: 500,
-                cursor: 'pointer',
-                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                minHeight: '36px',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 1)'
-                e.currentTarget.style.borderColor = '#d4af37'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)'
-                e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.1)'
-              }}
+              variant="ghost"
+              size="sm"
+              leftIcon={<ArrowLeft className="w-4 h-4" />}
             >
-              <ArrowLeft style={{ width: '16px', height: '16px' }} />
               返回大厅
-            </button>
+            </Button>
           </div>
         </header>
 
-        <main style={{ maxWidth: '64rem', margin: '0 auto', padding: '1.5rem 1rem' }}>
+        <main className="max-w-4xl mx-auto px-4 py-6">
           {/* 选项卡 */}
-          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+          <div className="flex gap-2 mb-6 flex-wrap">
             <button
               onClick={() => setActiveTab('friends')}
-              style={{
-                padding: '0.75rem 1.5rem',
-                borderRadius: '12px',
-                border: '2px solid ' + (activeTab === 'friends' ? '#d4af37' : 'transparent'),
-                backgroundColor: activeTab === 'friends' ? 'rgba(212, 175, 55, 0.1)' : 'rgba(255, 255, 255, 0.9)',
-                color: activeTab === 'friends' ? '#d4af37' : '#374151',
-                fontSize: '0.9375rem',
-                fontWeight: activeTab === 'friends' ? 600 : 500,
-                cursor: 'pointer',
-                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                minHeight: '44px',
-                backdropFilter: 'blur(8px)',
-              }}
-              onMouseEnter={(e) => {
-                if (activeTab !== 'friends') {
-                  e.currentTarget.style.backgroundColor = 'rgba(26, 71, 42, 0.05)'
-                  e.currentTarget.style.borderColor = '#2d5a3d'
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (activeTab !== 'friends') {
-                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)'
-                  e.currentTarget.style.borderColor = 'transparent'
-                }
-              }}
+              className={cn(
+                'px-6 py-3 rounded-xl border-2 min-h-11',
+                'inline-flex items-center gap-2',
+                'backdrop-blur-md transition-all duration-200',
+                'font-medium text-base',
+                activeTab === 'friends'
+                  ? 'border-accent-gold bg-accent-gold/10 text-accent-gold'
+                  : 'border-transparent bg-white/90 text-neutral-700 hover:bg-poker-table-500/5 hover:border-poker-table-600'
+              )}
             >
-              <Users style={{ width: '16px', height: '16px' }} />
+              <Users className="w-4 h-4" />
               好友列表 ({friends.length})
             </button>
 
             <button
               onClick={() => setActiveTab('requests')}
-              style={{
-                padding: '0.75rem 1.5rem',
-                borderRadius: '12px',
-                border: '2px solid ' + (activeTab === 'requests' ? '#d4af37' : 'transparent'),
-                backgroundColor: activeTab === 'requests' ? 'rgba(212, 175, 55, 0.1)' : 'rgba(255, 255, 255, 0.9)',
-                color: activeTab === 'requests' ? '#d4af37' : '#374151',
-                fontSize: '0.9375rem',
-                fontWeight: activeTab === 'requests' ? 600 : 500,
-                cursor: 'pointer',
-                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                minHeight: '44px',
-                backdropFilter: 'blur(8px)',
-              }}
-              onMouseEnter={(e) => {
-                if (activeTab !== 'requests') {
-                  e.currentTarget.style.backgroundColor = 'rgba(26, 71, 42, 0.05)'
-                  e.currentTarget.style.borderColor = '#2d5a3d'
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (activeTab !== 'requests') {
-                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)'
-                  e.currentTarget.style.borderColor = 'transparent'
-                }
-              }}
+              className={cn(
+                'px-6 py-3 rounded-xl border-2 min-h-11',
+                'inline-flex items-center gap-2',
+                'backdrop-blur-md transition-all duration-200',
+                'font-medium text-base',
+                activeTab === 'requests'
+                  ? 'border-accent-gold bg-accent-gold/10 text-accent-gold'
+                  : 'border-transparent bg-white/90 text-neutral-700 hover:bg-poker-table-500/5 hover:border-poker-table-600'
+              )}
             >
-              <Inbox style={{ width: '16px', height: '16px' }} />
+              <Inbox className="w-4 h-4" />
               好友请求 ({pendingRequests.length})
             </button>
 
             <button
               onClick={() => setActiveTab('search')}
-              style={{
-                padding: '0.75rem 1.5rem',
-                borderRadius: '12px',
-                border: '2px solid ' + (activeTab === 'search' ? '#d4af37' : 'transparent'),
-                backgroundColor: activeTab === 'search' ? 'rgba(212, 175, 55, 0.1)' : 'rgba(255, 255, 255, 0.9)',
-                color: activeTab === 'search' ? '#d4af37' : '#374151',
-                fontSize: '0.9375rem',
-                fontWeight: activeTab === 'search' ? 600 : 500,
-                cursor: 'pointer',
-                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                minHeight: '44px',
-                backdropFilter: 'blur(8px)',
-              }}
-              onMouseEnter={(e) => {
-                if (activeTab !== 'search') {
-                  e.currentTarget.style.backgroundColor = 'rgba(26, 71, 42, 0.05)'
-                  e.currentTarget.style.borderColor = '#2d5a3d'
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (activeTab !== 'search') {
-                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)'
-                  e.currentTarget.style.borderColor = 'transparent'
-                }
-              }}
+              className={cn(
+                'px-6 py-3 rounded-xl border-2 min-h-11',
+                'inline-flex items-center gap-2',
+                'backdrop-blur-md transition-all duration-200',
+                'font-medium text-base',
+                activeTab === 'search'
+                  ? 'border-accent-gold bg-accent-gold/10 text-accent-gold'
+                  : 'border-transparent bg-white/90 text-neutral-700 hover:bg-poker-table-500/5 hover:border-poker-table-600'
+              )}
             >
-              <Search style={{ width: '16px', height: '16px' }} />
+              <Search className="w-4 h-4" />
               搜索用户
             </button>
           </div>
 
           {loading ? (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
-              <Loader2 style={{ width: '32px', height: '32px', animation: 'spin 1s linear infinite' }} />
+            <div className="flex justify-center p-12">
+              <Spinner size="lg" />
             </div>
           ) : (
             <>
               {/* 好友列表 */}
               {activeTab === 'friends' && (
-                <div
-                  style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                    backdropFilter: 'blur(8px)',
-                    borderRadius: '16px',
-                    border: '2px solid #e5e7eb',
-                    padding: '1.5rem',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                  }}
-                >
+                <Card className="bg-white/90 backdrop-blur-md border-2 border-neutral-200 p-6">
                   {friends.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '3rem' }}>
-                      <Users style={{ width: '64px', height: '64px', margin: '0 auto 1rem', color: '#9ca3af' }} />
-                      <div style={{ fontSize: '1.125rem', color: '#6b7280', marginBottom: '0.5rem' }}>暂无好友</div>
-                      <p style={{ fontSize: '0.875rem', color: '#9ca3af' }}>去搜索用户添加好友吧！</p>
+                    <div className="text-center p-12">
+                      <Users className="w-16 h-16 mx-auto mb-4 text-neutral-400" />
+                      <div className="text-lg text-neutral-600 mb-2">暂无好友</div>
+                      <p className="text-sm text-neutral-400">去搜索用户添加好友吧！</p>
                     </div>
                   ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <div className="flex flex-col gap-3">
                       {friends.map(friend => (
                         <UserCard
                           key={friend.friend_uid}
@@ -444,218 +303,118 @@ export default function FriendsPage() {
                       ))}
                     </div>
                   )}
-                </div>
+                </Card>
               )}
 
               {/* 好友请求 */}
               {activeTab === 'requests' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div className="flex flex-col gap-4">
                   {pendingRequests.length === 0 && sentRequests.length === 0 ? (
-                    <div
-                      style={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                        backdropFilter: 'blur(8px)',
-                        borderRadius: '16px',
-                        border: '2px solid #e5e7eb',
-                        padding: '3rem',
-                        textAlign: 'center'
-                      }}
-                    >
-                      <Inbox style={{ width: '64px', height: '64px', margin: '0 auto 1rem', color: '#9ca3af' }} />
-                      <div style={{ fontSize: '1.125rem', color: '#6b7280' }}>暂无好友请求</div>
-                    </div>
+                    <Card className="bg-white/90 backdrop-blur-md border-2 border-neutral-200 p-12 text-center">
+                      <Inbox className="w-16 h-16 mx-auto mb-4 text-neutral-400" />
+                      <div className="text-lg text-neutral-600">暂无好友请求</div>
+                    </Card>
                   ) : (
                     <>
                       {pendingRequests.length > 0 && (
-                        <div
-                          style={{
-                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                            backdropFilter: 'blur(8px)',
-                            borderRadius: '16px',
-                            border: '2px solid #e5e7eb',
-                            padding: '1.5rem',
-                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                          }}
-                        >
-                          <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: '#111827' }}>
+                        <Card className="bg-white/90 backdrop-blur-md border-2 border-neutral-200 p-6">
+                          <h3 className="text-base font-semibold mb-4 text-neutral-900">
                             收到的好友请求
                           </h3>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                          <div className="flex flex-col gap-3">
                             {pendingRequests.map(request => (
-                              <div
-                                key={request.request_id}
-                                style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'space-between',
-                                  padding: '1rem',
-                                  borderRadius: '12px',
-                                  border: '2px solid #e5e7eb',
-                                  backgroundColor: 'white',
-                                }}
-                              >
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                              <Card key={request.request_id} className="flex items-center justify-between p-4 border-2 border-neutral-200 bg-white">
+                                <div className="flex items-center gap-3">
                                   <Avatar
                                     alt={request.sender_nickname}
                                     size="lg"
                                     src={request.sender_avatar_url}
                                   />
                                   <div>
-                                    <div style={{ fontWeight: 500, fontSize: '0.875rem', color: '#111827' }}>
+                                    <div className="font-medium text-sm text-neutral-900">
                                       {request.sender_nickname}
                                     </div>
-                                    <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                                    <div className="text-xs text-neutral-600">
                                       {new Date(request.created_at).toLocaleString('zh-CN')}
                                     </div>
                                   </div>
                                 </div>
-                                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                  <button
+                                <div className="flex gap-2">
+                                  <Button
                                     onClick={() => handleAcceptRequest(request.request_id)}
-                                    style={{
-                                      padding: '0.5rem 1rem',
-                                      borderRadius: '8px',
-                                      border: '2px solid #1a472a',
-                                      backgroundColor: '#1a472a',
-                                      color: 'white',
-                                      fontSize: '0.875rem',
-                                      fontWeight: 500,
-                                      cursor: 'pointer',
-                                      transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                                      minHeight: '36px',
-                                    }}
-                                    onMouseEnter={(e) => {
-                                      e.currentTarget.style.backgroundColor = '#2d5a3d'
-                                      e.currentTarget.style.borderColor = '#2d5a3d'
-                                    }}
-                                    onMouseLeave={(e) => {
-                                      e.currentTarget.style.backgroundColor = '#1a472a'
-                                      e.currentTarget.style.borderColor = '#1a472a'
-                                    }}
+                                    variant="primary"
+                                    size="sm"
                                   >
                                     接受
-                                  </button>
-                                  <button
+                                  </Button>
+                                  <Button
                                     onClick={() => handleRejectRequest(request.request_id)}
-                                    style={{
-                                      padding: '0.5rem 1rem',
-                                      borderRadius: '8px',
-                                      border: '2px solid transparent',
-                                      backgroundColor: 'transparent',
-                                      color: '#ef4444',
-                                      fontSize: '0.875rem',
-                                      fontWeight: 500,
-                                      cursor: 'pointer',
-                                      transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                                      minHeight: '36px',
-                                    }}
-                                    onMouseEnter={(e) => {
-                                      e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)'
-                                    }}
-                                    onMouseLeave={(e) => {
-                                      e.currentTarget.style.backgroundColor = 'transparent'
-                                    }}
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-error-500 hover:bg-error-500/10"
                                   >
                                     拒绝
-                                  </button>
+                                  </Button>
                                 </div>
-                              </div>
+                              </Card>
                             ))}
                           </div>
-                        </div>
+                        </Card>
                       )}
 
                       {sentRequests.length > 0 && (
-                        <div
-                          style={{
-                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                            backdropFilter: 'blur(8px)',
-                            borderRadius: '16px',
-                            border: '2px solid #e5e7eb',
-                            padding: '1.5rem',
-                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                          }}
-                        >
-                          <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: '#111827' }}>
+                        <Card className="bg-white/90 backdrop-blur-md border-2 border-neutral-200 p-6">
+                          <h3 className="text-base font-semibold mb-4 text-neutral-900">
                             发送的好友请求
                           </h3>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                          <div className="flex flex-col gap-3">
                             {sentRequests.map(request => (
-                              <div
-                                key={request.request_id}
-                                style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'space-between',
-                                  padding: '1rem',
-                                  borderRadius: '12px',
-                                  border: '2px solid #e5e7eb',
-                                  backgroundColor: 'white',
-                                }}
-                              >
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                              <Card key={request.request_id} className="flex items-center justify-between p-4 border-2 border-neutral-200 bg-white">
+                                <div className="flex items-center gap-3">
                                   <Avatar
                                     alt={request.receiver_nickname}
                                     size="lg"
                                     src={request.receiver_avatar_url}
                                   />
                                   <div>
-                                    <div style={{ fontWeight: 500, fontSize: '0.875rem', color: '#111827' }}>
+                                    <div className="font-medium text-sm text-neutral-900">
                                       {request.receiver_nickname}
                                     </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                      <span
-                                        style={{
-                                          padding: '0.25rem 0.5rem',
-                                          borderRadius: '4px',
-                                          fontSize: '0.75rem',
-                                          fontWeight: 500,
-                                          backgroundColor:
-                                            request.status === 'pending' ? '#3b82f6' :
-                                            request.status === 'accepted' ? '#22c55e' : '#ef4444',
-                                          color: 'white'
-                                        }}
+                                    <div className="flex items-center gap-2">
+                                      <Badge
+                                        variant={
+                                          request.status === 'pending' ? 'primary' :
+                                          request.status === 'accepted' ? 'success' : 'error'
+                                        }
+                                        size="sm"
+                                        className={cn(
+                                          request.status === 'pending' && 'bg-blue-500',
+                                          request.status === 'accepted' && 'bg-success-500',
+                                          request.status === 'rejected' && 'bg-error-500'
+                                        )}
                                       >
                                         {request.status === 'pending' ? '等待中' :
                                           request.status === 'accepted' ? '已接受' : '已拒绝'}
-                                      </span>
-                                      <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                                      </Badge>
+                                      <span className="text-xs text-neutral-600">
                                         {new Date(request.created_at).toLocaleString('zh-CN')}
                                       </span>
                                     </div>
                                   </div>
                                 </div>
                                 {request.status === 'pending' && (
-                                  <button
+                                  <Button
                                     onClick={() => handleCancelRequest(request.request_id)}
-                                    style={{
-                                      padding: '0.5rem 1rem',
-                                      borderRadius: '8px',
-                                      border: '2px solid #e5e7eb',
-                                      backgroundColor: 'transparent',
-                                      color: '#374151',
-                                      fontSize: '0.875rem',
-                                      fontWeight: 500,
-                                      cursor: 'pointer',
-                                      transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                                      minHeight: '36px',
-                                    }}
-                                    onMouseEnter={(e) => {
-                                      e.currentTarget.style.backgroundColor = 'rgba(26, 71, 42, 0.05)'
-                                      e.currentTarget.style.borderColor = '#2d5a3d'
-                                    }}
-                                    onMouseLeave={(e) => {
-                                      e.currentTarget.style.backgroundColor = 'transparent'
-                                      e.currentTarget.style.borderColor = '#e5e7eb'
-                                    }}
+                                    variant="outline"
+                                    size="sm"
                                   >
                                     取消
-                                  </button>
+                                  </Button>
                                 )}
-                              </div>
+                              </Card>
                             ))}
                           </div>
-                        </div>
+                        </Card>
                       )}
                     </>
                   )}
@@ -664,67 +423,34 @@ export default function FriendsPage() {
 
               {/* 搜索用户 */}
               {activeTab === 'search' && (
-                <div
-                  style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                    backdropFilter: 'blur(8px)',
-                    borderRadius: '16px',
-                    border: '2px solid #e5e7eb',
-                    padding: '1.5rem',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                  }}
-                >
-                  <div style={{ marginBottom: '1rem' }}>
-                    <div
-                      style={{
-                        position: 'relative',
-                        display: 'flex',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <Search style={{ position: 'absolute', left: '0.75rem', color: '#9ca3af', width: '16px', height: '16px' }} />
-                      <input
+                <Card className="bg-white/90 backdrop-blur-md border-2 border-neutral-200 p-6">
+                  <div className="mb-4">
+                    <div className="relative flex items-center">
+                      <Search className="absolute left-3 text-neutral-400 w-4 h-4" />
+                      <Input
                         type="text"
                         placeholder="搜索用户昵称..."
                         value={searchTerm}
                         onChange={(e) => handleSearch(e.target.value)}
-                        style={{
-                          width: '100%',
-                          padding: '0.75rem 1rem 0.75rem 2.5rem',
-                          borderRadius: '12px',
-                          border: '2px solid #e5e7eb',
-                          fontSize: '0.875rem',
-                          backgroundColor: 'white',
-                          color: '#111827',
-                          outline: 'none',
-                          transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                        }}
-                        onFocus={(e) => {
-                          e.target.style.borderColor = '#a78bfa'
-                          e.target.style.boxShadow = '0 0 0 3px rgba(167, 139, 250, 0.2)'
-                        }}
-                        onBlur={(e) => {
-                          e.target.style.borderColor = '#e5e7eb'
-                          e.target.style.boxShadow = 'none'
-                        }}
+                        className="pl-10"
                       />
                     </div>
                   </div>
 
                   {searchTerm.length > 0 && searchTerm.length < 2 && (
-                    <div style={{ textAlign: 'center', padding: '1rem', color: '#6b7280' }}>
+                    <div className="text-center p-4 text-neutral-600">
                       请输入至少2个字符进行搜索
                     </div>
                   )}
 
                   {searchResults.length === 0 && searchTerm.length >= 2 && (
-                    <div style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
+                    <div className="text-center p-8 text-neutral-600">
                       未找到匹配的用户
                     </div>
                   )}
 
                   {searchResults.length > 0 && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <div className="flex flex-col gap-3">
                       {searchResults.map(user => (
                         <UserCard
                           key={user.uid}
@@ -739,19 +465,12 @@ export default function FriendsPage() {
                       ))}
                     </div>
                   )}
-                </div>
+                </Card>
               )}
             </>
           )}
         </main>
       </div>
-
-      <style>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </SimpleEnvironmentBackground>
   )
 }
