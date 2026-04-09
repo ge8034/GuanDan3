@@ -14,7 +14,7 @@ import { type HTMLAttributes, type ReactNode } from 'react'
 // ============================================
 // 类型定义
 // ============================================
-export interface EmptyProps extends HTMLAttributes<HTMLDivElement> {
+export interface EmptyProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
   /**
    * 图片
    */

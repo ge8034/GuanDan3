@@ -14,11 +14,8 @@ export default function AISystemSetup() {
     // 只在客户端运行
     if (typeof window === 'undefined') return
 
-    // 启动定期清理（每5分钟清理一次超过30分钟未使用的系统）
-    const stopCleanup = aiSystemManager.startPeriodicCleanup(
-      5 * 60 * 1000, // 清理间隔：5分钟
-      30 * 60 * 1000 // 最大存活时间：30分钟
-    )
+    // 启动定期清理（每5分钟清理一次）
+    const stopCleanup = aiSystemManager.startPeriodicCleanup(5 * 60 * 1000)
 
     // 组件卸载时停止清理
     return () => {

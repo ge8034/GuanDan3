@@ -14,7 +14,7 @@ import { type HTMLAttributes, type ReactNode } from 'react'
 // ============================================
 // 类型定义
 // ============================================
-export interface StepsProps extends HTMLAttributes<HTMLElement> {
+export interface StepsProps extends Omit<HTMLAttributes<HTMLElement>, 'onChange'> {
   /**
    * 当前步骤（从0开始）
    */

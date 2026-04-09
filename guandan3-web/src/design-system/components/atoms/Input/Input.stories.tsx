@@ -39,10 +39,10 @@ export const Sizes: Story = {
 export const States: Story = {
   render: () => (
     <div className="flex flex-col gap-4 p-4 max-w-xs">
-      <Input state="default" placeholder="Default state" />
-      <Input state="error" placeholder="Error state" errorMessage="This field is required" />
-      <Input state="success" placeholder="Success state" />
-      <Input state="warning" placeholder="Warning state" />
+      <Input placeholder="Default state" />
+      <Input error placeholder="Error state" errorMessage="This field is required" />
+      <Input placeholder="Success state" className="border-success" />
+      <Input placeholder="Warning state" className="border-amber-500" />
     </div>
   ),
 }
@@ -50,9 +50,18 @@ export const States: Story = {
 export const WithLabel: Story = {
   render: () => (
     <div className="flex flex-col gap-4 p-4 max-w-xs">
-      <Input label="Username" placeholder="Enter your username" />
-      <Input label="Email" type="email" placeholder="Enter your email" />
-      <Input label="Password" type="password" placeholder="Enter your password" />
+      <div>
+        <label className="block text-sm font-medium mb-1">Username</label>
+        <Input placeholder="Enter your username" />
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">Email</label>
+        <Input type="email" placeholder="Enter your email" />
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">Password</label>
+        <Input type="password" placeholder="Enter your password" />
+      </div>
     </div>
   ),
 }
@@ -90,20 +99,24 @@ export const Disabled: Story = {
 export const WithHelperText: Story = {
   render: () => (
     <div className="flex flex-col gap-4 p-4 max-w-xs">
-      <Input
-        label="Email Address"
-        type="email"
-        placeholder="you@example.com"
-        helperText="We'll never share your email with anyone else."
-      />
-      <Input
-        label="Password"
-        type="password"
-        placeholder="Enter password"
-        helperText="Must be at least 8 characters long."
-        state="error"
-        errorMessage="Password is too short"
-      />
+      <div>
+        <label className="block text-sm font-medium mb-1">Email Address</label>
+        <Input
+          type="email"
+          placeholder="you@example.com"
+        />
+        <p className="text-xs text-neutral-500 mt-1">We'll never share your email with anyone else.</p>
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">Password</label>
+        <Input
+          type="password"
+          placeholder="Enter password"
+          error
+          errorMessage="Password is too short"
+        />
+        <p className="text-xs text-neutral-500 mt-1">Must be at least 8 characters long.</p>
+      </div>
     </div>
   ),
 }

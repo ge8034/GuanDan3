@@ -88,12 +88,14 @@ function InlineButton({
   onClick,
   href,
   disabled = false,
+  style,
 }: {
   children: React.ReactNode
   variant?: 'primary' | 'secondary'
   onClick?: () => void
   href?: string
   disabled?: boolean
+  style?: React.CSSProperties
 }) {
   const baseStyle: React.CSSProperties = {
     padding: '0.625rem 1.5rem',
@@ -122,7 +124,7 @@ function InlineButton({
     },
   }
 
-  const buttonStyle = { ...baseStyle, ...variantStyles[variant] }
+  const buttonStyle = { ...baseStyle, ...variantStyles[variant], ...style }
 
   const content = (
     <>

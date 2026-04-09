@@ -14,7 +14,7 @@ import { type HTMLAttributes, type ReactNode } from 'react'
 // ============================================
 // 类型定义
 // ============================================
-export interface TooltipProps extends HTMLAttributes<HTMLDivElement> {
+export interface TooltipProps extends Omit<HTMLAttributes<HTMLDivElement>, 'content'> {
   /**
    * 触发元素
    */
@@ -100,7 +100,7 @@ export const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
     ref
   ) => {
     const [isVisible, setIsVisible] = useState(false)
-    const timeoutRef = useRef<number>()
+    const timeoutRef = useRef<number | undefined>(undefined)
     const triggerRef = useRef<HTMLElement>(null)
 
     // 清除定时器
@@ -128,29 +128,43 @@ export const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
 
     // 克隆子元素并添加事件监听
     const trigger = cloneElement(children, {
-      ref: triggerRef,
+      // @ts-ignore - ref merging
+      ref: (node: HTMLElement | null) => {
+        triggerRef.current = node
+        // Forward ref to original child ref if it exists
+        const { ref: originalRef } = children as any
+        if (typeof originalRef === 'function') {
+          originalRef(node)
+        } else if (originalRef) {
+          originalRef.current = node
+        }
+      },
       onMouseEnter: (e: React.MouseEvent) => {
         handleMouseEnter()
-        if (children.props.onMouseEnter) {
-          children.props.onMouseEnter(e)
+        const childProps = children.props as any
+        if (childProps.onMouseEnter) {
+          childProps.onMouseEnter(e)
         }
       },
       onMouseLeave: (e: React.MouseEvent) => {
         handleMouseLeave()
-        if (children.props.onMouseLeave) {
-          children.props.onMouseLeave(e)
+        const childProps = children.props as any
+        if (childProps.onMouseLeave) {
+          childProps.onMouseLeave(e)
         }
       },
       onFocus: (e: React.FocusEvent) => {
         handleMouseEnter()
-        if (children.props.onFocus) {
-          children.props.onFocus(e)
+        const childProps = children.props as any
+        if (childProps.onFocus) {
+          childProps.onFocus(e)
         }
       },
       onBlur: (e: React.FocusEvent) => {
         handleMouseLeave()
-        if (children.props.onBlur) {
-          children.props.onBlur(e)
+        const childProps = children.props as any
+        if (childProps.onBlur) {
+          childProps.onBlur(e)
         }
       },
       'aria-describedby': isVisible ? `tooltip-${Math.random().toString(36).substr(2, 9)}` : undefined,

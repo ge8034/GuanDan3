@@ -14,7 +14,7 @@ import { type HTMLAttributes, type ReactNode } from 'react'
 // ============================================
 // 类型定义
 // ============================================
-export interface BadgeProps extends HTMLAttributes<HTMLDivElement> {
+export interface BadgeProps extends Omit<HTMLAttributes<HTMLDivElement>, 'content'> {
   /**
    * 徽章内容
    */
@@ -261,10 +261,12 @@ export const Badge = forwardRef<HTMLDivElement, BadgeProps>(
 
     // 克隆子元素并附加徽章
     if (isValidElement(children)) {
+      const childProps = children.props as any
       return (
         <div ref={ref} className="inline-relative" {...props}>
           {cloneElement(children as ReactElement, {
-            className: cn('relative inline-block', children.props.className),
+            // @ts-ignore - cloneElement does support className
+            className: cn('relative inline-block', childProps.className),
           })}
           {badgeContent}
         </div>

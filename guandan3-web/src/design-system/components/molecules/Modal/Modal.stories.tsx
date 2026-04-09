@@ -9,7 +9,7 @@ const meta: Meta<typeof Modal> = {
   argTypes: {
     size: {
       control: 'select',
-      options: ['xs', 'sm', 'md', 'lg', 'xl', 'full'],
+      options: ['sm', 'md', 'lg', 'xl', 'full'],
     },
   },
 }
@@ -19,21 +19,16 @@ type Story = StoryObj<typeof Modal>
 
 export const Default: Story = {
   render: () => {
-    const [isOpen, setIsOpen] = useState(false)
+    const [open, setIsOpen] = useState(false)
     return (
       <>
         <button onClick={() => setIsOpen(true)}>Open Modal</button>
-        <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
-          <Modal.Header>
-            <Modal.Title>Modal Title</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <p>This is a modal dialog. It can contain any content you need.</p>
-          </Modal.Body>
-          <Modal.Footer>
+        <Modal open={open} onOpenChange={setIsOpen} title="Modal Title">
+          <p className="p-6">This is a modal dialog. It can contain any content you need.</p>
+          <div className="p-6 pt-0 flex justify-end gap-2">
             <button onClick={() => setIsOpen(false)}>Cancel</button>
             <button onClick={() => setIsOpen(false)}>Confirm</button>
-          </Modal.Footer>
+          </div>
         </Modal>
       </>
     )
@@ -43,7 +38,7 @@ export const Default: Story = {
 export const Sizes: Story = {
   render: () => {
     const [openSize, setOpenSize] = useState<string | null>(null)
-    const sizes: Array<'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'full'> = ['xs', 'sm', 'md', 'lg', 'xl', 'full']
+    const sizes: Array<'sm' | 'md' | 'lg' | 'xl' | 'full'> = ['sm', 'md', 'lg', 'xl', 'full']
 
     return (
       <div className="flex flex-wrap gap-2 p-4">
@@ -55,19 +50,15 @@ export const Sizes: Story = {
         {sizes.map((size) => (
           <Modal
             key={size}
-            isOpen={openSize === size}
-            onClose={() => setOpenSize(null)}
+            open={openSize === size}
+            onOpenChange={() => setOpenSize(null)}
+            title={`${size.toUpperCase()} Modal`}
             size={size}
           >
-            <Modal.Header>
-              <Modal.Title>{size.toUpperCase()} Modal</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <p>This is a {size} sized modal.</p>
-            </Modal.Body>
-            <Modal.Footer>
+            <p className="p-6">This is a {size} sized modal.</p>
+            <div className="p-6 pt-0 flex justify-end">
               <button onClick={() => setOpenSize(null)}>Close</button>
-            </Modal.Footer>
+            </div>
           </Modal>
         ))}
       </div>
@@ -75,90 +66,33 @@ export const Sizes: Story = {
   },
 }
 
-export const WithoutHeader: Story = {
+export const WithDescription: Story = {
   render: () => {
-    const [isOpen, setIsOpen] = useState(false)
+    const [open, setIsOpen] = useState(false)
     return (
       <>
         <button onClick={() => setIsOpen(true)}>Open Modal</button>
-        <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
-          <Modal.Body>
-            <p>This modal has no header section.</p>
-          </Modal.Body>
-          <Modal.Footer>
-            <button onClick={() => setIsOpen(false)}>Close</button>
-          </Modal.Footer>
+        <Modal
+          open={open}
+          onOpenChange={setIsOpen}
+          title="Modal Title"
+          description="Additional description text for accessibility"
+        >
+          <p className="p-6">This modal has both a title and description.</p>
         </Modal>
       </>
     )
   },
 }
 
-export const WithoutFooter: Story = {
+export const WithoutCloseButton: Story = {
   render: () => {
-    const [isOpen, setIsOpen] = useState(false)
+    const [open, setIsOpen] = useState(false)
     return (
       <>
         <button onClick={() => setIsOpen(true)}>Open Modal</button>
-        <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
-          <Modal.Header>
-            <Modal.Title>Modal without Footer</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <p>This modal has no footer section. Close it using the X button or clicking outside.</p>
-          </Modal.Body>
-        </Modal>
-      </>
-    )
-  },
-}
-
-export const BodyOnly: Story = {
-  render: () => {
-    const [isOpen, setIsOpen] = useState(false)
-    return (
-      <>
-        <button onClick={() => setIsOpen(true)}>Open Modal</button>
-        <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
-          <Modal.Body>
-            <p>This modal only has a body. No header, no footer.</p>
-          </Modal.Body>
-        </Modal>
-      </>
-    )
-  },
-}
-
-export const WithForm: Story = {
-  render: () => {
-    const [isOpen, setIsOpen] = useState(false)
-    return (
-      <>
-        <button onClick={() => setIsOpen(true)}>Open Form Modal</button>
-        <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
-          <Modal.Header>
-            <Modal.Title>Create Account</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <form className="space-y-4">
-              <div>
-                <label htmlFor="name">Name</label>
-                <input id="name" type="text" className="w-full border rounded px-3 py-2" />
-              </div>
-              <div>
-                <label htmlFor="email">Email</label>
-                <input id="email" type="email" className="w-full border rounded px-3 py-2" />
-              </div>
-              <div>
-                <label htmlFor="password">Password</label>
-                <input id="password" type="password" className="w-full border rounded px-3 py-2" />
-              </div>
-            </form>
-          </Modal.Body>
-          <Modal.Footer>
-            <button onClick={() => setIsOpen(false)}>Cancel</button>
-            <button onClick={() => setIsOpen(false)}>Create Account</button>
-          </Modal.Footer>
+        <Modal open={open} onOpenChange={setIsOpen} title="No Close Button" showCloseButton={false}>
+          <p className="p-6">This modal has no X button. Close by clicking outside or pressing Escape.</p>
         </Modal>
       </>
     )
@@ -167,21 +101,36 @@ export const WithForm: Story = {
 
 export const NonDismissible: Story = {
   render: () => {
-    const [isOpen, setIsOpen] = useState(false)
+    const [open, setIsOpen] = useState(false)
     return (
       <>
         <button onClick={() => setIsOpen(true)}>Open Non-Dismissable Modal</button>
-        <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} dismissible={false}>
-          <Modal.Header>
-            <Modal.Title>Confirm Action</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <p>This modal cannot be dismissed by clicking outside or pressing Escape. You must click one of the buttons below.</p>
-          </Modal.Body>
-          <Modal.Footer>
+        <Modal
+          open={open}
+          onOpenChange={setIsOpen}
+          title="Confirm Action"
+          closeOnOverlayClick={false}
+          closeOnEscape={false}
+        >
+          <p className="p-6">This modal cannot be dismissed by clicking outside or pressing Escape.</p>
+          <div className="p-6 pt-0 flex justify-end gap-2">
             <button onClick={() => setIsOpen(false)}>Cancel</button>
             <button onClick={() => setIsOpen(false)}>Confirm</button>
-          </Modal.Footer>
+          </div>
+        </Modal>
+      </>
+    )
+  },
+}
+
+export const WithoutOverlay: Story = {
+  render: () => {
+    const [open, setIsOpen] = useState(false)
+    return (
+      <>
+        <button onClick={() => setIsOpen(true)}>Open Modal</button>
+        <Modal open={open} onOpenChange={setIsOpen} title="No Overlay" showOverlay={false}>
+          <p className="p-6">This modal has no overlay background.</p>
         </Modal>
       </>
     )

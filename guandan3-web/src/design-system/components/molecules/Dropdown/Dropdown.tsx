@@ -14,7 +14,7 @@ import { type HTMLAttributes, type ReactNode } from 'react'
 // ============================================
 // 类型定义
 // ============================================
-export interface DropdownProps extends HTMLAttributes<HTMLDivElement> {
+export interface DropdownProps extends Omit<HTMLAttributes<HTMLDivElement>, 'content'> {
   /**
    * 触发元素
    */
@@ -113,11 +113,22 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
     }
 
     const trigger = cloneElement(children, {
-      ref: triggerRef,
+      // @ts-ignore - ref merging
+      ref: (node: HTMLElement | null) => {
+        triggerRef.current = node
+        // Forward ref to original child ref if it exists
+        const { ref: originalRef } = children as any
+        if (typeof originalRef === 'function') {
+          originalRef(node)
+        } else if (originalRef) {
+          originalRef.current = node
+        }
+      },
       onClick: (e: React.MouseEvent) => {
         handleToggle()
-        if (children.props.onClick) {
-          children.props.onClick(e)
+        const childProps = children.props as any
+        if (childProps.onClick) {
+          childProps.onClick(e)
         }
       },
       'aria-haspopup': true,

@@ -66,9 +66,9 @@ export const Fallback: Story = {
 export const WithText: Story = {
   render: () => (
     <div className="flex items-center gap-4">
-      <Avatar size="md" initials="AB" />
-      <Avatar size="lg" initials="CD" />
-      <Avatar size="xl" initials="EF" />
+      <Avatar size="md" alt="AB" />
+      <Avatar size="lg" alt="CD" />
+      <Avatar size="xl" alt="EF" />
     </div>
   ),
 }

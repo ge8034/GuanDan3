@@ -50,6 +50,7 @@ const getRankDisplay = (card: Card) => {
 function getCardStyles(
   variant: CardViewVariant,
   selected: boolean,
+  disabled: boolean,
   color: string,
   rank: string,
   icon: string
@@ -102,8 +103,8 @@ const CardViewComponent = ({ card, variant, selected, disabled, onClick, style, 
   const icon = useMemo(() => getSuitIcon(card.suit), [card.suit])
 
   const { container: cardStyles, topBottom, center } = useMemo(
-    () => getCardStyles(variant, selected || false, color, rank, icon),
-    [variant, selected, color, rank, icon]
+    () => getCardStyles(variant, selected || false, disabled || false, color, rank, icon),
+    [variant, selected, disabled, color, rank, icon]
   )
 
   return (

@@ -153,6 +153,23 @@ export const buttonVariants = cva(baseStyles, {
         'shadow-md',
         'hover:shadow-lg',
       ],
+
+      // 金色按钮（Poker主题）
+      gold: [
+        'bg-gradient-to-br',
+        'from-accent-gold',
+        'via-[#f59e0b]',
+        'to-[#d97706]',
+        'hover:from-[#fbbf24]',
+        'hover:via-[#f59e0b]',
+        'hover:to-[#d97706]',
+        'text-white',
+        'border-2',
+        'border-accent-gold',
+        'shadow-md',
+        'hover:shadow-gold-glow',
+        'active:opacity-90',
+      ],
     },
 
     // 大小变体

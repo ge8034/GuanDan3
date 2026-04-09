@@ -97,7 +97,7 @@ export class UserSecurity {
       id: `event-${Date.now()}-${Math.random()}`,
       userId,
       type: success ? 'login_success' : 'login_failed',
-      severity: success ? 'info' : 'warning',
+      severity: success ? 'info' : 'low',
       timestamp: now,
       details: {
         ip,

@@ -51,12 +51,6 @@ export type {
 export { Collapse, CollapseItem } from './Collapse'
 export type { CollapseProps, CollapseItemProps } from './Collapse'
 
-export { Tooltip } from './Tooltip'
-export type { TooltipProps } from './Tooltip'
-
-export { Progress } from './Progress'
-export type { ProgressProps } from './Progress'
-
 export {
   Skeleton,
   SkeletonAvatar,
@@ -66,14 +60,8 @@ export {
 } from './Skeleton'
 export type { SkeletonProps, SkeletonAvatarProps, SkeletonImageProps } from './Skeleton'
 
-export { Badge } from './Badge'
-export type { BadgeProps } from './Badge'
-
 export { Tag } from './Tag'
 export type { TagProps } from './Tag'
-
-export { Switch } from './Switch'
-export type { SwitchProps } from './Switch'
 
 export { Rate } from './Rate'
 export type { RateProps } from './Rate'
@@ -83,9 +71,6 @@ export type { NotificationProps, NotificationType } from './Notification'
 
 export { Slider } from './Slider'
 export type { SliderProps } from './Slider'
-
-export { Avatar } from './Avatar'
-export type { AvatarProps } from './Avatar'
 
 export { Upload } from './Upload'
 export type { UploadProps, UploadFile } from './Upload'

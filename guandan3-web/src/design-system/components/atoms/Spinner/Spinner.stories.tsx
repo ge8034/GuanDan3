@@ -41,11 +41,10 @@ export const Sizes: Story = {
 export const Variants: Story = {
   render: () => (
     <div className="flex items-center gap-6 p-4">
-      <Spinner variant="default" />
       <Spinner variant="primary" />
-      <Spinner variant="success" />
-      <Spinner variant="warning" />
-      <Spinner variant="error" />
+      <Spinner variant="secondary" />
+      <Spinner variant="white" className="bg-neutral-900" />
+      <Spinner variant="gold" />
     </div>
   ),
 }

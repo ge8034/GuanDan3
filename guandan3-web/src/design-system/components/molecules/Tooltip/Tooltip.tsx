@@ -7,14 +7,14 @@
 
 'use client'
 
-import { forwardRef, useState, useRef, useEffect, cloneElement, ReactElement } from 'react'
+import { forwardRef, useState, useRef, useEffect, cloneElement, ReactElement, MouseEvent } from 'react'
 import { cn } from '@/design-system/utils/cn'
 import { type HTMLAttributes, type ReactNode } from 'react'
 
 // ============================================
 // 类型定义
 // ============================================
-export interface TooltipProps extends HTMLAttributes<HTMLDivElement> {
+export interface TooltipProps extends Omit<HTMLAttributes<HTMLDivElement>, 'content'> {
   /**
    * 触发元素
    */
@@ -97,7 +97,7 @@ export const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
     const [position, setPosition] = useState({ top: 0, left: 0 })
     const triggerRef = useRef<HTMLDivElement>(null)
     const tooltipRef = useRef<HTMLDivElement>(null)
-    const timeoutRef = useRef<NodeJS.Timeout>()
+    const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
     // 更新提示框位置
     const updatePosition = () => {
@@ -178,7 +178,7 @@ export const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
         onMouseLeave: hideTooltip,
       },
       click: {
-        onClick: (e: MouseEvent) => {
+        onClick: (e: React.MouseEvent) => {
           e.stopPropagation()
           setVisible(v => !v)
           onVisibleChange?.(!visible)
@@ -218,7 +218,7 @@ export const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
     // 点击外部关闭
     useEffect(() => {
       if (visible && trigger === 'click') {
-        const handleClickOutside = (e: MouseEvent) => {
+        const handleClickOutside = (e: Event) => {
           if (
             triggerRef.current &&
             !triggerRef.current.contains(e.target as Node) &&
@@ -266,8 +266,8 @@ export const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
           className="inline-block"
         >
           {cloneElement(children, {
-            ...children.props,
-            tabIndex: trigger === 'focus' ? 0 : children.props.tabIndex,
+            ...(children.props as any),
+            tabIndex: trigger === 'focus' ? 0 : (children.props as any).tabIndex,
           })}
         </div>
 

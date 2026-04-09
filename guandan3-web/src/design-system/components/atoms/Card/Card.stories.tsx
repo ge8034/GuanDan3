@@ -79,7 +79,7 @@ export const Padding: Story = {
 export const Interactive: Story = {
   render: () => (
     <div className="grid grid-cols-2 gap-4 p-4">
-      <Card hover>
+      <Card hoverable>
         <h3 className="font-semibold mb-2">Hoverable Card</h3>
         <p className="text-sm text-gray-600">Try hovering over this card</p>
       </Card>

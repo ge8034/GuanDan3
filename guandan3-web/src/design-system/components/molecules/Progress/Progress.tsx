@@ -288,7 +288,7 @@ export const Progress = forwardRef<HTMLDivElement, ProgressProps>(
                 cy={center}
                 r={radius}
                 fill="none"
-                stroke={isGradient ? `url(#${gradientId})` : strokeColor || 'currentColor'}
+                stroke={isGradient ? `url(#${gradientId})` : (typeof strokeColor === 'string' ? strokeColor : 'currentColor')}
                 strokeWidth={strokeWidth}
                 strokeDasharray={calculateCirclePath(safePercent, radius, gap)}
                 strokeLinecap="round"

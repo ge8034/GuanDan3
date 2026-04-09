@@ -23,7 +23,7 @@ export interface UploadFile {
   url?: string
 }
 
-export interface UploadProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
+export interface UploadProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'defaultValue'> {
   /**
    * 已上传文件列表
    */

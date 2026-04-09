@@ -14,7 +14,7 @@ import { type HTMLAttributes, type ReactNode } from 'react'
 // ============================================
 // 类型定义
 // ============================================
-export interface CollapseProps extends HTMLAttributes<HTMLDivElement> {
+export interface CollapseProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
   /**
    * 默认展开的项
    */
@@ -32,7 +32,7 @@ export interface CollapseProps extends HTMLAttributes<HTMLDivElement> {
   onChange?: (activeKey: string | string[]) => void
 }
 
-export interface CollapseItemProps extends HTMLAttributes<HTMLDivElement> {
+export interface CollapseItemProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'title'> {
   /**
    * 唯一标识
    */
@@ -72,6 +72,7 @@ export interface CollapseItemProps extends HTMLAttributes<HTMLDivElement> {
 interface CollapseContextValue {
   activeKeys: string[]
   toggleItem: (key: string) => void
+  accordion?: boolean
 }
 
 const CollapseContext = createContext<CollapseContextValue | null>(null)

@@ -14,7 +14,7 @@ import { type HTMLAttributes, type ReactNode } from 'react'
 // ============================================
 // 类型定义
 // ============================================
-export interface PaginationProps extends HTMLAttributes<HTMLElement> {
+export interface PaginationProps extends Omit<HTMLAttributes<HTMLElement>, 'onChange'> {
   /**
    * 当前页码
    */

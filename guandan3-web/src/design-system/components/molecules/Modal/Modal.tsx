@@ -15,7 +15,7 @@ import { X } from 'lucide-react'
 // ============================================
 // 类型定义
 // ============================================
-export interface ModalProps extends HTMLAttributes<HTMLDivElement> {
+export interface ModalProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
   /**
    * 是否打开
    */

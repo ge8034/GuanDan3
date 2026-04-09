@@ -15,7 +15,7 @@ import { ChevronUp } from 'lucide-react'
 // ============================================
 // 类型定义
 // ============================================
-export interface PopoverProps extends HTMLAttributes<HTMLDivElement> {
+export interface PopoverProps extends Omit<HTMLAttributes<HTMLDivElement>, 'content'> {
   /**
    * 触发元素
    */

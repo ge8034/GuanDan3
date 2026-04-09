@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react'
+import { useState } from 'react'
 import { Tag } from './Tag'
 
 const meta: Meta<typeof Tag> = {
@@ -210,7 +211,7 @@ export const WithIcon: Story = {
 
 export const Clickable: Story = {
   render: () => {
-    const [selected, setSelected] = React.useState('')
+    const [selected, setSelected] = useState('')
 
     return (
       <div className="p-8 flex flex-wrap gap-3">
@@ -353,7 +354,6 @@ export const FilterTags: Story = {
 
 export const DynamicTags: Story = {
   render: () => {
-    const { useState } = React
     const [tags, setTags] = useState(['React', 'TypeScript'])
 
     const handleClose = (tagToRemove: string) => {

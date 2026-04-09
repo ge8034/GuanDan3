@@ -9,7 +9,7 @@
 
 import { forwardRef, useState } from 'react'
 import { cn } from '@/design-system/utils/cn'
-import { type HTMLAttributes } from 'react'
+import { type HTMLAttributes, type ReactNode } from 'react'
 
 // ============================================
 // 类型定义

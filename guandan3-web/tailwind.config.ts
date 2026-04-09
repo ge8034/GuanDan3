@@ -122,10 +122,6 @@ const config: Config = {
           muted: '#9ca3af',
         },
         border: '#2d5a3d',
-        card: {
-          DEFAULT: '#ffffff',
-          hover: '#f5f5f5',
-        },
       },
       boxShadow: {
         sm: 'var(--shadow-sm)',

@@ -268,9 +268,9 @@ export async function getAIHand(this: GameState, seatNo: number): Promise<Card[]
     error,
     gameId,
     seatNo,
-    message: error.message,
-    details: error.details,
-    hint: error.hint
+    message: error?.message || 'Unknown error',
+    details: error?.details,
+    hint: error?.hint
   })
 
   // fallback: 从 game_hands 表读取

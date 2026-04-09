@@ -33,7 +33,7 @@ export interface ListProps extends HTMLAttributes<HTMLUListElement> {
   size?: 'small' | 'medium' | 'large'
 }
 
-export interface ListItemProps extends HTMLAttributes<HTMLLIElement> {
+export interface ListItemProps extends Omit<HTMLAttributes<HTMLLIElement>, 'title'> {
   /**
    * 主内容
    */
