@@ -1,5 +1,6 @@
 /**
  * 我的手牌区域组件
+ * 使用设计系统组件重构版本
  *
  * 显示玩家的手牌和控制按钮
  */
@@ -8,6 +9,7 @@ import { memo } from 'react'
 import { PlayerAvatar } from '../PlayerAvatar'
 import { HandArea } from '../HandArea'
 import type { Card } from '@/lib/store/game'
+import { cn } from '@/design-system/utils/cn'
 
 interface MyHandSectionProps {
   mySeat: number
@@ -44,36 +46,18 @@ export const MyHandSection = memo(function MyHandSection({
 }: MyHandSectionProps) {
   return (
     <div
-      style={{
-        gridColumn: '1 / -1',
-        gridRow: '3',
-        width: '100%',
-        height: '192px',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'flex-end',
-        padding: '0.5rem 1rem',
-        background: 'linear-gradient(to top, rgba(26, 71, 42, 0.1), transparent)',
-        position: 'relative',
-      }}
+      className={cn(
+        'col-span-full row-3',
+        'w-full h-48',
+        'flex flex-col justify-end',
+        'p-2 px-4',
+        'relative',
+        'bg-gradient-to-t from-poker-table-500/10 to-transparent'
+      )}
     >
       {/* My Avatar (Bottom Left Overlay) */}
       <div
-        style={{
-          position: 'absolute',
-          bottom: '8px',
-          left: '8px',
-          transform: 'scale(0.9)',
-          transformOrigin: 'bottom left',
-          opacity: 0.8,
-          transition: 'opacity 0.2s',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.opacity = '1'
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.opacity = '0.8'
-        }}
+        className="absolute bottom-2 left-2 scale-90 origin-bottom-left opacity-80 transition-opacity hover:opacity-100"
       >
         <PlayerAvatar
           seatNo={mySeat}

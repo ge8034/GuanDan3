@@ -1,4 +1,13 @@
+/**
+ * GameOverOverlay 组件
+ * 使用设计系统组件重构版本
+ */
+
 'use client'
+
+import { Button } from '@/design-system/components/atoms'
+import { Card } from '@/design-system/components/atoms'
+import { cn } from '@/design-system/utils/cn'
 
 export type GameOverOverlayProps = {
   visible: boolean
@@ -28,119 +37,66 @@ export const GameOverOverlay = ({ visible, rankings, mySeat, isOwner, onRestart 
   return (
     <div
       data-testid="game-over-overlay"
-      style={{
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backdropFilter: 'blur(12px)',
-        zIndex: 1000,
-      }}
+      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/80 backdrop-blur-md"
     >
-      <div
-        style={{
-          background: 'linear-gradient(to bottom right, #78350f, #000000)',
-          border: '2px solid #eab308',
-          borderRadius: '12px',
-          padding: '2rem',
-          maxWidth: '28rem',
-          width: '100%',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-          textAlign: 'center',
-          margin: '1rem',
-        }}
+      <Card
+        className={cn(
+          'max-w-md w-full mx-4 p-8 text-center',
+          'bg-gradient-to-br from-amber-900 to-black',
+          'border-2 border-yellow-500',
+          'shadow-2xl'
+        )}
       >
-        <h2
-          style={{
-            fontSize: '2.25rem',
-            fontWeight: 700,
-            color: '#facc15',
-            marginBottom: '1.5rem',
-            filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2))',
-          }}
-        >
+        <h2 className="text-4xl font-bold text-yellow-400 mb-6 drop-shadow-md">
           游戏结束
         </h2>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div className="flex flex-col gap-4">
           {rankings.map((seat, index) => (
             <div
               key={seat}
               data-testid={`ranking-${index}`}
               data-seat={seat}
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                padding: '0.75rem',
-                borderRadius: '8px',
-                border: '1px solid rgba(255, 255, 255, 0.05)',
-              }}
+              className={cn(
+                'flex justify-between items-center',
+                'p-3 rounded-lg',
+                'bg-white/10',
+                'border border-white/5'
+              )}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <span style={{ fontSize: '1.5rem' }}>{getRankEmoji(index)}</span>
-                <span
-                  style={{
-                    fontWeight: 600,
-                    fontSize: '1.125rem',
-                    color: 'white',
-                  }}
-                >
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">{getRankEmoji(index)}</span>
+                <span className="font-semibold text-lg text-white">
                   {seat === mySeat ? '我' : `座位 ${seat}`}
                 </span>
               </div>
-              <span
-                style={{
-                  color: '#fef08a',
-                  fontFamily: 'monospace',
-                  fontWeight: 600,
-                }}
-              >
+              <span className="text-yellow-200 font-mono font-semibold">
                 {getRankTitle(index)}
               </span>
             </div>
           ))}
         </div>
-        <div
-          style={{
-            marginTop: '2rem',
-            display: 'flex',
-            justifyContent: 'center',
-          }}
-        >
+        <div className="mt-8 flex justify-center">
           {isOwner ? (
-            <button
+            <Button
               onClick={onRestart}
-              style={{
-                backgroundColor: '#eab308',
-                color: 'black',
-                fontWeight: 600,
-                padding: '0.75rem 2rem',
-                borderRadius: '9999px',
-                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-                cursor: 'pointer',
-                fontSize: '1rem',
-                border: 'none',
-                transition: 'opacity 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.opacity = '0.9'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.opacity = '1'
-              }}
+              variant="primary"
+              className={cn(
+                'bg-yellow-500 text-black font-semibold',
+                'px-8 py-3 rounded-full',
+                'shadow-lg',
+                'hover:bg-yellow-400',
+                'transition-opacity'
+              )}
             >
               再来一局
-            </button>
+            </Button>
           ) : (
-            <div style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+            <div className="text-white/60">
               等待房主开始新游戏...
             </div>
           )}
         </div>
-      </div>
+      </Card>
     </div>
   )
 }
