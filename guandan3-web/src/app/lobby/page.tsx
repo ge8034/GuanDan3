@@ -1,3 +1,8 @@
+/**
+ * Lobby 大厅页面
+ * 使用设计系统组件重构版本
+ */
+
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
@@ -6,17 +11,28 @@ import Image from 'next/image'
 import { supabase } from '@/lib/supabase/client'
 import { useRoomStore } from '@/lib/store/room'
 import { useToast } from '@/lib/hooks/useToast'
-import { modeLabel, typeLabel, sortRooms } from '@/lib/utils/lobby'
+import { sortRooms } from '@/lib/utils/lobby'
 import { mapSupabaseErrorToMessage } from '@/lib/utils/supabaseErrors'
 import { ensureAuthed } from '@/lib/utils/ensureAuthed'
 import { throttle } from '@/lib/utils/throttle'
 import QRCode from 'qrcode'
-import { Avatar } from '@/design-system/components/atoms'
 import SimpleEnvironmentBackground from '@/components/backgrounds/SimpleEnvironmentBackground'
 import { useTheme } from '@/lib/theme/theme-context'
-import { BuildingIcon, RefreshIcon, UserGroupIcon, OnlineIcon, CheckCircleIcon, DocumentIcon } from '@/components/icons/LandscapeIcons'
-import { Loader2, X } from 'lucide-react'
+import { BuildingIcon, UserGroupIcon, OnlineIcon, CheckCircleIcon, RefreshIcon } from '@/components/icons/LandscapeIcons'
+import { Loader2, Users } from 'lucide-react'
 import { logger } from '@/lib/utils/logger'
+
+// 设计系统组件
+import { Button } from '@/design-system/components/atoms'
+import { Card } from '@/design-system/components/atoms'
+import { Input } from '@/design-system/components/atoms'
+import { Switch } from '@/design-system/components/atoms'
+import { Badge } from '@/design-system/components/atoms'
+import { Spinner } from '@/design-system/components/atoms'
+import { Skeleton } from '@/design-system/components/molecules'
+import { Modal, ModalContent, ModalFooter } from '@/design-system/components/molecules'
+import { Avatar } from '@/design-system/components/atoms'
+import { cn } from '@/design-system/utils/cn'
 
 type Room = {
   id: string
@@ -56,16 +72,13 @@ function getTypeLabel(type: string) {
 // 房间卡片骨架屏
 function RoomCardSkeleton() {
   return (
-    <div
-      style={{
-        backgroundColor: 'rgba(255, 255, 255, 0.5)',
-        borderRadius: '16px',
-        border: '2px solid #e5e7eb',
-        padding: '1rem',
-        height: '180px',
-        animation: 'pulse 1.5s ease-in-out infinite'
-      }}
-    />
+    <Card className="h-[180px]">
+      <Skeleton variant="rect" className="h-24 w-full" />
+      <div className="space-y-3 p-4">
+        <Skeleton variant="text" className="h-4 w-1/2" />
+        <Skeleton variant="text" className="h-4 w-1/3" />
+      </div>
+    </Card>
   )
 }
 
@@ -201,19 +214,19 @@ export default function LobbyPage() {
 
     setIsCreating(true)
     try {
-       const { ok } = await ensureAuthed({ onError: msg => showToast({ message: msg, kind: 'error' }) })
-       if (!ok) return
+      const { ok } = await ensureAuthed({ onError: msg => showToast({ message: msg, kind: 'error' }) })
+      if (!ok) return
 
-       let result;
-       if (isPractice) {
-          result = await createPracticeRoom('public')
-       } else {
-          result = await createRoom(newRoomName, 'classic', 'pvp4', 'public')
-       }
+      let result
+      if (isPractice) {
+        result = await createPracticeRoom('public')
+      } else {
+        result = await createRoom(newRoomName, 'classic', 'pvp4', 'public')
+      }
 
-       if (result?.id) {
-         router.push(`/room/${result.id}`)
-       }
+      if (result?.id) {
+        router.push(`/room/${result.id}`)
+      }
     } catch (e: any) {
       showToast({ message: mapSupabaseErrorToMessage(e, '创建失败'), kind: 'error' })
     } finally {
@@ -260,123 +273,55 @@ export default function LobbyPage() {
 
   return (
     <SimpleEnvironmentBackground theme={theme}>
-      <div style={{ minHeight: '100vh', padding: '1rem', paddingTop: '80px' }}>
+      <div className="min-h-screen p-4 pt-20">
         {toastView}
 
         {/* 实时状态横幅 */}
         {realtimeStatus && realtimeStatus !== 'SUBSCRIBED' && (
-          <div style={{
-            marginBottom: '1rem',
-            maxWidth: '80rem',
-            margin: '0 auto 1rem',
-            backgroundColor: 'rgba(217, 119, 6, 0.2)',
-            backdropFilter: 'blur(4px)',
-            borderRadius: '12px',
-            border: '2px solid rgba(251, 191, 36, 0.5)',
-            padding: '0.5rem 1rem',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Loader2 style={{ width: '16px', height: '16px', animation: 'spin 1s linear infinite' }} />
-              <span style={{ fontSize: '0.875rem', color: '#fed7aa' }}>实时连接中... ({realtimeStatus})</span>
+          <div className="mb-4 max-w-[80rem] mx-auto px-4 py-2 bg-warning-500/20 backdrop-blur-sm rounded-lg border border-warning-500/50">
+            <div className="flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span className="text-sm text-amber-700">实时连接中... ({realtimeStatus})</span>
             </div>
           </div>
         )}
 
-        <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
+        <div className="max-w-80rem mx-auto px-4">
           {/* 头部区域 */}
-          <header
-            style={{
-              marginBottom: '2rem',
-              animation: 'fadeIn 0.3s ease-out'
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
+          <header className="mb-8">
+            <div className="flex flex-wrap justify-between items-start gap-4">
               {/* 标题区域 */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div
-                  style={{
-                    width: '56px',
-                    height: '56px',
-                    background: 'linear-gradient(135deg, #408040 0%, #1a472a 100%)',
-                    border: '2px solid #d4af37',
-                    borderRadius: '16px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                  }}
-                >
-                  <BuildingIcon style={{ width: '32px', height: '32px', color: '#d4af37' }} />
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-gradient-to-br from-emerald-800 to-emerald-950 border-2 border-yellow-500 rounded-2xl flex items-center justify-center shadow-lg">
+                  <BuildingIcon className="w-8 h-8 text-yellow-500" />
                 </div>
                 <div>
-                  <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#111827' }}>
-                    对战大厅
-                  </h1>
-                  <p style={{ fontSize: '0.875rem', color: '#9ca3af', marginTop: '0.25rem' }}>
-                    选择或创建房间开始对局
-                  </p>
+                  <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">对战大厅</h1>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">选择或创建房间开始对局</p>
                 </div>
               </div>
 
               {/* 操作按钮 */}
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                <button
+              <div className="flex gap-2 flex-wrap">
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => router.push('/friends')}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    borderRadius: '8px',
-                    border: '2px solid rgba(255, 255, 255, 0.2)',
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    backdropFilter: 'blur(4px)',
-                    color: 'white',
-                    fontSize: '0.875rem',
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    minHeight: '36px',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
-                  }}
+                  leftIcon={<UserGroupIcon className="w-4 h-4" />}
                 >
-                  <UserGroupIcon style={{ width: '16px', height: '16px' }} />
                   好友
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => router.push('/history')}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    borderRadius: '8px',
-                    border: '2px solid rgba(255, 255, 255, 0.2)',
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    backdropFilter: 'blur(4px)',
-                    color: 'white',
-                    fontSize: '0.875rem',
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    minHeight: '36px',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
-                  }}
                 >
                   战绩
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  leftIcon={<RefreshIcon className="w-4 h-4" />}
                   onClick={async () => {
                     const now = Date.now()
                     if (now - lastRefreshAt < 1000) return
@@ -390,191 +335,76 @@ export default function LobbyPage() {
                     }
                   }}
                   disabled={isLoading || Date.now() - lastRefreshAt < 1000}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    borderRadius: '8px',
-                    border: '2px solid rgba(255, 255, 255, 0.2)',
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    backdropFilter: 'blur(4px)',
-                    color: 'white',
-                    fontSize: '0.875rem',
-                    fontWeight: 500,
-                    cursor: (isLoading || Date.now() - lastRefreshAt < 1000) ? 'not-allowed' : 'pointer',
-                    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    minHeight: '36px',
-                    opacity: (isLoading || Date.now() - lastRefreshAt < 1000) ? 0.6 : 1,
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isLoading && Date.now() - lastRefreshAt >= 1000) {
-                      e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
-                  }}
                 >
-                  <RefreshIcon style={{ width: '16px', height: '16px', animation: isLoading ? 'spin 1s linear infinite' : 'none' }} />
                   刷新
-                </button>
-                <div style={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  backdropFilter: 'blur(4px)',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '8px',
-                  border: '2px solid rgba(255, 255, 255, 0.2)',
-                }}>
-                  <span style={{ fontSize: '0.875rem', color: '#d1d5db' }}>
-                    显示 <span style={{ fontWeight: 700, color: '#d4af37' }}>{sortedRooms.length}</span>
-                    <span style={{ color: '#9ca3af', margin: '0 0.25rem' }}>/</span>
-                    <span style={{ color: '#9ca3af' }}>{rooms.length}</span>
+                </Button>
+                <Badge variant="default" className="px-3 py-1">
+                  <span className="text-sm text-neutral-600 dark:text-neutral-400">
+                    显示 <span className="font-semibold text-yellow-600 dark:text-yellow-400">{sortedRooms.length}</span>
+                    <span className="text-neutral-400 mx-1">/</span>
+                    <span>{rooms.length}</span>
                   </span>
-                </div>
+                </Badge>
               </div>
             </div>
           </header>
 
           {/* 筛选和创建区域 */}
-          <section
-            style={{
-              marginBottom: '2rem',
-              display: 'flex',
-              justifyContent: 'space-between',
-              gap: '1rem',
-              flexWrap: 'wrap',
-              animation: 'fadeIn 0.3s ease-out 0.1s both'
-            }}
-          >
+          <section className="mb-8 flex flex-wrap justify-between gap-4">
             {/* 筛选选项 */}
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <label
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '8px',
-                  border: '2px solid rgba(255, 255, 255, 0.2)',
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  backdropFilter: 'blur(4px)',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={onlyJoinable}
-                  onChange={(e) => setOnlyJoinable(e.target.checked)}
-                  style={{ width: '16px', height: '16px', cursor: 'pointer' }}
-                />
-                <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'white' }}>仅显示可加入</span>
-              </label>
-              <label
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '8px',
-                  border: '2px solid rgba(255, 255, 255, 0.2)',
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  backdropFilter: 'blur(4px)',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={onlyHasOnline}
-                  onChange={(e) => setOnlyHasOnline(e.target.checked)}
-                  style={{ width: '16px', height: '16px', cursor: 'pointer' }}
-                />
-                <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'white' }}>仅显示有人在线</span>
-              </label>
+            <div className="flex gap-2 flex-wrap">
+              <Switch
+                checked={onlyJoinable}
+                onChange={setOnlyJoinable}
+                label="仅显示可加入"
+                size="sm"
+              />
+              <Switch
+                checked={onlyHasOnline}
+                onChange={setOnlyHasOnline}
+                label="仅显示有人在线"
+                size="sm"
+              />
             </div>
 
             {/* 创建房间 */}
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-              <label
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '8px',
-                  border: '2px solid rgba(255, 255, 255, 0.2)',
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  backdropFilter: 'blur(4px)',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={isPractice}
-                  onChange={(e) => setIsPractice(e.target.checked)}
-                  style={{ width: '16px', height: '16px', cursor: 'pointer' }}
-                />
-                <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'white' }}>练习模式</span>
-              </label>
+            <div className="flex gap-2 flex-wrap items-center">
+              <Switch
+                checked={isPractice}
+                onChange={setIsPractice}
+                label="练习模式"
+                size="sm"
+              />
               {!isPractice && (
-                <input
-                  type="text"
+                <Input
                   placeholder="房间名称"
                   value={newRoomName}
                   onChange={(e) => setNewRoomName(e.target.value)}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    borderRadius: '8px',
-                    border: '2px solid rgba(255, 255, 255, 0.2)',
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                    color: '#111827',
-                    fontSize: '0.9375rem',
-                    width: '180px',
-                  }}
+                  className="w-48"
+                  size="sm"
                 />
               )}
-              <button
+              <Button
                 onClick={handleCreate}
                 disabled={isCreating || (!isPractice && !newRoomName.trim())}
-                style={{
-                  padding: '0.5rem 1.5rem',
-                  borderRadius: '8px',
-                  border: '2px solid #1a472a',
-                  backgroundColor: '#1a472a',
-                  color: 'white',
-                  fontSize: '0.9375rem',
-                  fontWeight: 500,
-                  cursor: (isCreating || (!isPractice && !newRoomName.trim())) ? 'not-allowed' : 'pointer',
-                  transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                  opacity: (isCreating || (!isPractice && !newRoomName.trim())) ? 0.5 : 1,
-                }}
-                onMouseEnter={(e) => {
-                  if (isPractice || newRoomName.trim()) {
-                    e.currentTarget.style.backgroundColor = '#2d5a3d'
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#1a472a'
-                }}
+                loading={isCreating}
+                size="sm"
               >
-                {isCreating ? '创建中...' : isPractice ? '创建练习房' : '创建房间'}
-              </button>
+                {isPractice ? '创建练习房' : '创建房间'}
+              </Button>
             </div>
           </section>
 
           {/* 房间列表 */}
           <main>
             {isLoading ? (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
-                {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                   <RoomCardSkeleton key={i} />
                 ))}
               </div>
             ) : sortedRooms.length > 0 ? (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {sortedRooms.map((room, index) => {
                   const members = (room?.room_members || []) as Array<{ online?: boolean }>
                   const memberCount = members.length
@@ -582,458 +412,243 @@ export default function LobbyPage() {
                   const joinable = memberCount < 4
 
                   return (
-                    <article
+                    <Card
                       key={room.id}
-                      style={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                        backdropFilter: 'blur(8px)',
-                        borderRadius: '16px',
-                        border: '2px solid ' + (joinable ? '#2d5a3d' : '#d1d5db'),
-                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                        transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                        overflow: 'hidden',
-                        animation: `fadeIn 0.3s ease-out ${index * 50}ms both`,
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-4px)'
-                        e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.15)'
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)'
-                        e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                      }}
+                      className={cn(
+                        'transition-all duration-200',
+                        'hover:-translate-y-1',
+                        'hover:shadow-lg',
+                        joinable ? 'border-primary-500' : 'border-neutral-300'
+                      )}
                     >
                       {/* 卡片头部 */}
-                      <div style={{ padding: '1rem', borderBottom: '1px solid #e5e7eb' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem' }}>
-                          <h3 style={{ fontWeight: 600, fontSize: '1rem', color: '#111827', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {room.name || '未命名房间'}
-                          </h3>
-                          <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <span
-                              style={{
-                                padding: '0.25rem 0.5rem',
-                                borderRadius: '4px',
-                                backgroundColor: '#f3f4f6',
-                                color: '#374151',
-                                fontSize: '0.75rem',
-                                fontWeight: 500
-                              }}
-                            >
-                              {getTypeLabel(room.type)}
-                            </span>
-                            <span
-                              style={{
-                                padding: '0.25rem 0.5rem',
-                                borderRadius: '4px',
-                                backgroundColor: '#d4af37',
-                                color: 'white',
-                                fontSize: '0.75rem',
-                                fontWeight: 500
-                              }}
-                            >
-                              {getModeLabel(room.mode)}
-                            </span>
+                      <div className="p-4 border-b border-neutral-200">
+                        <div className="flex justify-between items-start gap-3">
+                          <h3 className="font-semibold text-base truncate">{room.name || '未命名房间'}</h3>
+                          <div className="flex gap-1">
+                            <Badge variant="secondary" size="sm">{getTypeLabel(room.type)}</Badge>
+                            <Badge variant="primary" size="sm">{getModeLabel(room.mode)}</Badge>
                           </div>
                         </div>
                       </div>
 
                       {/* 卡片内容 */}
-                      <div style={{ padding: '1rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-                          <div
-                            style={{
-                              width: '12px',
-                              height: '12px',
-                              borderRadius: '50%',
-                              backgroundColor: joinable ? '#d4af37' : '#9ca3af',
-                              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
-                            }}
-                          />
-                          <span style={{ fontSize: '0.9375rem', fontWeight: 500, color: '#374151' }}>
+                      <div className="p-4">
+                        <div className="flex items-center gap-2 mb-4">
+                          <div className={cn(
+                            'w-3 h-3 rounded-full',
+                            joinable ? 'bg-primary-500' : 'bg-neutral-400'
+                          )} />
+                          <span className={cn(
+                            'text-sm font-medium',
+                            joinable ? 'text-neutral-700' : 'text-neutral-500'
+                          )}>
                             {joinable ? '可加入' : '已满'}
                           </span>
                         </div>
-                        <div style={{ display: 'flex', gap: '1.5rem', fontSize: '0.875rem' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <UserGroupIcon style={{ width: '16px', height: '16px', color: '#d4af37' }} />
-                            <span style={{ color: '#6b7280' }}>玩家</span>
-                            <span style={{ fontWeight: 600, color: '#d4af37' }}>{memberCount}/4</span>
+                        <div className="flex gap-6 text-sm text-neutral-600">
+                          <div className="flex items-center gap-2">
+                            <Users className="w-4 h-4 text-primary-500" />
+                            <span>玩家</span>
+                            <span className="font-semibold text-primary-600">{memberCount}/4</span>
                           </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <OnlineIcon style={{ width: '16px', height: '16px', color: '#d4af37' }} />
-                            <span style={{ color: '#6b7280' }}>在线</span>
-                            <span style={{ fontWeight: 600, color: '#d4af37' }}>{onlineCount}</span>
+                          <div className="flex items-center gap-2">
+                            <OnlineIcon className="w-4 h-4 text-primary-500" />
+                            <span>在线</span>
+                            <span className="font-semibold text-primary-600">{onlineCount}</span>
                           </div>
                         </div>
                       </div>
 
                       {/* 卡片底部 */}
-                      <div style={{ padding: '0 1rem 1rem' }}>
-                        <button
+                      <div className="p-4 pt-0">
+                        <Button
                           onClick={() => handleJoin(room.id)}
                           disabled={!joinable || joiningId === room.id}
-                          style={{
-                            width: '100%',
-                            padding: '0.625rem',
-                            borderRadius: '8px',
-                            border: '2px solid ' + (joinable ? '#1a472a' : 'transparent'),
-                            backgroundColor: joinable ? '#1a472a' : 'transparent',
-                            color: joinable ? 'white' : '#9ca3af',
-                            fontSize: '0.9375rem',
-                            fontWeight: 500,
-                            cursor: (joinable && joiningId !== room.id) ? 'pointer' : 'not-allowed',
-                            transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                            opacity: (!joinable || joiningId === room.id) ? 0.5 : 1,
-                          }}
-                          onMouseEnter={(e) => {
-                            if (joinable && joiningId !== room.id) {
-                              e.currentTarget.style.backgroundColor = '#2d5a3d'
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = joinable ? '#1a472a' : 'transparent'
-                          }}
+                          variant={joinable ? 'primary' : 'ghost'}
+                          size="sm"
+                          className="w-full"
+                          loading={joiningId === room.id}
                         >
                           {joiningId === room.id ? '加入中...' : joinable ? '加入对局' : '已满'}
-                        </button>
+                        </Button>
                       </div>
-                    </article>
+                    </Card>
                   )
                 })}
               </div>
             ) : (
-              <div
-                style={{
-                  textAlign: 'center',
-                  padding: '4rem 2rem',
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  backdropFilter: 'blur(4px)',
-                  borderRadius: '16px',
-                  border: '2px dashed rgba(255, 255, 255, 0.2)',
-                }}
-              >
-                <div style={{ width: '80px', height: '80px', margin: '0 auto 1rem', backgroundColor: 'rgba(212, 175, 55, 0.2)', border: '2px solid rgba(212, 175, 55, 0.3)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <CheckCircleIcon style={{ width: '40px', height: '40px', color: '#d4af37' }} />
+              <div className="text-center py-16 px-8 bg-white/5 backdrop-blur-sm rounded-2xl border-2 border-dashed border-white/20">
+                <div className="w-20 h-20 mx-auto mb-4 bg-primary-100 border-2 border-primary-300 rounded-full flex items-center justify-center">
+                  <CheckCircleIcon className="w-10 h-10 text-primary-500" />
                 </div>
-                <p style={{ fontSize: '1rem', color: '#e5e7eb', marginBottom: '0.5rem', fontWeight: 500 }}>没有符合条件的房间</p>
-                <p style={{ fontSize: '0.875rem', color: '#9ca3af' }}>可以尝试取消筛选或创建新房间。</p>
+                <p className="text-lg font-medium text-neutral-700 mb-2">没有符合条件的房间</p>
+                <p className="text-sm text-neutral-500">可以尝试取消筛选或创建新房间。</p>
               </div>
             )}
           </main>
         </div>
 
-        {/* 房间详情弹窗 */}
-        {detailRoom && (
-          <div
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              zIndex: 1000,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '1rem',
-              animation: 'fadeIn 0.2s ease-out'
-            }}
-            onClick={() => setDetailRoom(null)}
-          >
-            <div
-              style={{
-                backgroundColor: 'white',
-                borderRadius: '16px',
-                maxWidth: '500px',
-                width: '100%',
-                maxHeight: '80vh',
-                overflow: 'auto',
-                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* 弹窗头部 */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 1.5rem', borderBottom: '1px solid #e5e7eb' }}>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#111827' }}>{detailRoom.name || '未命名房间'}</h2>
-                <button
-                  onClick={() => setDetailRoom(null)}
-                  style={{
-                    padding: '0.5rem',
-                    borderRadius: '8px',
-                    border: 'none',
-                    backgroundColor: 'transparent',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <X style={{ width: '20px', height: '20px', color: '#6b7280' }} />
-                </button>
-              </div>
+        {/* 房间详情 Modal */}
+        <Modal
+          open={detailRoom !== null}
+          onOpenChange={(open) => !open && setDetailRoom(null)}
+          title={detailRoom?.name || '房间详情'}
+          size="md"
+        >
+          <ModalContent className="space-y-4">
+            {/* 房间标签 */}
+            <div className="flex gap-2">
+              <Badge variant="primary">{detailRoom && getModeLabel(detailRoom.mode)}</Badge>
+              <Badge variant="secondary">{detailRoom && getTypeLabel(detailRoom.type)}</Badge>
+            </div>
 
-              {/* 弹窗内容 */}
-              <div style={{ padding: '1.5rem' }}>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
-                  <span
-                    style={{
-                      padding: '0.25rem 0.5rem',
-                      borderRadius: '4px',
-                      backgroundColor: '#d4af37',
-                      color: 'white',
-                      fontSize: '0.75rem',
-                      fontWeight: 500
-                    }}
-                  >
-                    {getModeLabel(detailRoom.mode)}
-                  </span>
-                  <span
-                    style={{
-                      padding: '0.25rem 0.5rem',
-                      borderRadius: '4px',
-                      backgroundColor: '#f3f4f6',
-                      color: '#374151',
-                      fontSize: '0.75rem',
-                      fontWeight: 500
-                    }}
-                  >
-                    {getTypeLabel(detailRoom.type)}
-                  </span>
-                </div>
-
-                {/* 在线人数统计 */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1.5rem', backgroundColor: '#f9fafb', borderRadius: '12px', padding: '1rem', border: '2px solid #e5e7eb' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <OnlineIcon style={{ width: '24px', height: '24px', color: '#d4af37' }} />
-                    <div>
-                      <div style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.25rem' }}>在线人数</div>
-                      <div style={{ fontWeight: 700, color: '#d4af37', fontSize: '1.125rem' }}>
-                        {(detailRoom.room_members || []).filter((m: any) => m?.online).length}
-                        <span style={{ color: '#9ca3af', fontSize: '0.875rem', margin: '0 0.25rem' }}>/</span>
-                        <span style={{ color: '#1f2937', fontSize: '1.125rem' }}>{(detailRoom.room_members || []).length}</span>
-                      </div>
+            {/* 在线人数统计 */}
+            {detailRoom && (
+              <div className="flex items-center gap-6 p-4 bg-neutral-50 rounded-lg border border-neutral-200">
+                <div className="flex items-center gap-3">
+                  <OnlineIcon className="w-6 h-6 text-primary-500" />
+                  <div>
+                    <div className="text-xs text-neutral-600 mb-1">在线人数</div>
+                    <div className="text-xl font-bold text-primary-600">
+                      {(detailRoom.room_members || []).filter((m: any) => m?.online).length}
+                      <span className="text-neutral-400 mx-1">/</span>
+                      <span>{(detailRoom.room_members || []).length}</span>
                     </div>
                   </div>
                 </div>
+              </div>
+            )}
 
-                {/* 成员列表 */}
-                <div style={{ border: '2px solid #e5e7eb', borderRadius: '12px', overflow: 'hidden' }}>
-                  {(detailRoom.room_members || [])
-                    .slice()
-                    .sort((a: any, b: any) => (a.seat_no ?? 99) - (b.seat_no ?? 99))
-                    .map((m: any, idx: number) => (
+            {/* 成员列表 */}
+            {detailRoom && (
+              <div className="border border-neutral-200 rounded-lg overflow-hidden">
+                {(detailRoom.room_members || [])
+                  .slice()
+                  .sort((a: any, b: any) => (a.seat_no ?? 99) - (b.seat_no ?? 99))
+                  .map((m: any, idx: number) => (
                     <div
                       key={m.id || idx}
+                      className="flex items-center justify-between p-4 hover:bg-neutral-50 transition-colors"
                       style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '1rem',
-                        borderBottom: idx < (detailRoom.room_members || []).length - 1 ? '1px solid #e5e7eb' : 'none',
-                        transition: 'background-color 0.15s ease-out'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = '#f9fafb'
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'transparent'
+                        borderBottom: idx < (detailRoom.room_members || []).length - 1 ? '1px solid #e5e7eb' : 'none'
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <div className="flex items-center gap-3">
                         <Avatar alt={m.member_type === 'ai' ? 'AI' : '玩家'} size="sm" />
                         <div>
-                          <div style={{ fontSize: '0.9375rem', fontWeight: 500, color: '#111827' }}>
+                          <div className="text-sm font-medium">
                             座位 {m.seat_no ?? '-'} · {m.member_type === 'ai' ? 'AI' : '真人'}
                           </div>
-                          <div style={{ fontSize: '0.75rem', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                          <div className="text-xs text-neutral-600 flex items-center gap-1">
                             {m.ready ? (
                               <>
-                                <svg style={{ width: '12px', height: '12px', color: '#22c55e' }} fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                </svg>
-                                <span style={{ marginLeft: '0.25rem' }}>已准备</span>
+                                <CheckCircleIcon className="w-3 h-3 text-success-500" />
+                                <span>已准备</span>
                               </>
                             ) : (
                               <>
-                                <svg style={{ width: '12px', height: '12px', color: '#9ca3af' }} fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                </svg>
-                                <span style={{ marginLeft: '0.25rem' }}>未准备</span>
+                                <span className="w-3 h-3 rounded-full bg-neutral-300" />
+                                <span>未准备</span>
                               </>
                             )}
                           </div>
                         </div>
                       </div>
-                      <span
-                        style={{
-                          padding: '0.25rem 0.5rem',
-                          borderRadius: '4px',
-                          backgroundColor: m.online ? '#22c55e' : '#9ca3af',
-                          color: 'white',
-                          fontSize: '0.75rem',
-                          fontWeight: 500
-                        }}
+                      <Badge
+                        variant={m.online ? 'success' : 'default'}
+                        size="sm"
                       >
                         {m.online ? '在线' : '离线'}
-                      </span>
+                      </Badge>
                     </div>
                   ))}
-                  {(detailRoom.room_members || []).length === 0 && (
-                    <div style={{ padding: '2rem', fontSize: '0.875rem', color: '#6b7280', textAlign: 'center' }}>暂无成员</div>
-                  )}
-                </div>
+                {(detailRoom.room_members || []).length === 0 && (
+                  <div className="p-8 text-center text-sm text-neutral-500">暂无成员</div>
+                )}
               </div>
+            )}
+          </ModalContent>
 
-              {/* 弹窗底部 */}
-              <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid #e5e7eb', display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
-                <button
-                  onClick={async () => {
-                    const roomId = String(detailRoom.id)
-                    const roomMembers = (detailRoom.room_members || []) as Array<{ id: string }>
-                    const joinable = roomMembers.length < 4
-                    if (!joinable) return
-                    await handleJoin(roomId)
-                  }}
-                  disabled={joiningId === String(detailRoom.id) || (detailRoom.room_members || []).length >= 4}
-                  style={{
-                    flex: 1,
-                    padding: '0.625rem',
-                    borderRadius: '8px',
-                    border: '2px solid #1a472a',
-                    backgroundColor: '#1a472a',
-                    color: 'white',
-                    fontSize: '0.9375rem',
-                    fontWeight: 500,
-                    cursor: (joiningId === String(detailRoom.id) || (detailRoom.room_members || []).length >= 4) ? 'not-allowed' : 'pointer',
-                    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                    opacity: (joiningId === String(detailRoom.id) || (detailRoom.room_members || []).length >= 4) ? 0.5 : 1,
-                    minWidth: '120px',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (joiningId !== String(detailRoom.id) && (detailRoom.room_members || []).length < 4) {
-                      e.currentTarget.style.backgroundColor = '#2d5a3d'
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#1a472a'
-                  }}
-                >
-                  {joiningId === String(detailRoom.id) ? '加入中...' : '直接加入'}
-                </button>
-                <button
-                  onClick={async () => {
-                    const url = `${window.location.origin}/room/${detailRoom.id}`
-                    try {
-                      await navigator.clipboard.writeText(url)
-                      showToast({ message: '房间链接已复制', kind: 'success' })
-                    } catch {
-                      showToast({ message: '复制失败，请手动复制：' + url, kind: 'error', timeoutMs: 6000 })
-                    }
-                  }}
-                  style={{
-                    flex: 1,
-                    padding: '0.625rem',
-                    borderRadius: '8px',
-                    border: '2px solid #d1d5db',
-                    backgroundColor: 'transparent',
-                    color: '#374151',
-                    fontSize: '0.9375rem',
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                    minWidth: '120px',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.05)'
-                    e.currentTarget.style.borderColor = '#2d5a3d'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent'
-                    e.currentTarget.style.borderColor = '#d1d5db'
-                  }}
-                >
-                  复制房间链接
-                </button>
-                <button
-                  onClick={async () => {
-                    const next = !qrVisible
-                    setQrVisible(next)
-                    if (!next) return
-                    if (qrDataUrl) return
-                    try {
-                      const url = `${window.location.origin}/room/${detailRoom.id}`
-                      const dataUrl = await QRCode.toDataURL(url, { margin: 1, width: 180 })
-                      setQrDataUrl(dataUrl)
-                    } catch (e: any) {
-                      showToast({ message: '二维码生成失败: ' + (e?.message || String(e)), kind: 'error' })
-                    }
-                  }}
-                  style={{
-                    flex: 1,
-                    padding: '0.625rem',
-                    borderRadius: '8px',
-                    border: '2px solid #d1d5db',
-                    backgroundColor: 'transparent',
-                    color: '#374151',
-                    fontSize: '0.9375rem',
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                    minWidth: '120px',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.05)'
-                    e.currentTarget.style.borderColor = '#2d5a3d'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent'
-                    e.currentTarget.style.borderColor = '#d1d5db'
-                  }}
-                >
-                  {qrVisible ? '隐藏二维码' : '显示二维码'}
-                </button>
-              </div>
+          <ModalFooter className="flex-wrap gap-2">
+            <Button
+              variant="secondary"
+              onClick={() => setDetailRoom(null)}
+            >
+              关闭
+            </Button>
+            <Button
+              onClick={async () => {
+                const roomId = String(detailRoom?.id)
+                const roomMembers = (detailRoom?.room_members || []) as Array<{ id: string }>
+                const joinable = roomMembers.length < 4
+                if (!joinable) return
+                await handleJoin(roomId)
+              }}
+              disabled={joiningId === String(detailRoom?.id) || (detailRoom?.room_members || []).length >= 4}
+              loading={joiningId === String(detailRoom?.id)}
+              className="flex-1 min-w-[120px]"
+            >
+              {joiningId === String(detailRoom?.id) ? '加入中...' : '直接加入'}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={async () => {
+                if (!detailRoom) return
+                const url = `${window.location.origin}/room/${detailRoom.id}`
+                try {
+                  await navigator.clipboard.writeText(url)
+                  showToast({ message: '房间链接已复制', kind: 'success' })
+                } catch {
+                  showToast({ message: '复制失败，请手动复制：' + url, kind: 'error', timeoutMs: 6000 })
+                }
+              }}
+            >
+              复制链接
+            </Button>
+            <Button
+              variant="outline"
+              onClick={async () => {
+                if (!detailRoom) return
+                const next = !qrVisible
+                setQrVisible(next)
+                if (!next) return
+                if (qrDataUrl) return
+                try {
+                  const url = `${window.location.origin}/room/${detailRoom.id}`
+                  const dataUrl = await QRCode.toDataURL(url, { margin: 1, width: 180 })
+                  setQrDataUrl(dataUrl)
+                } catch (e: any) {
+                  showToast({ message: '二维码生成失败: ' + (e?.message || String(e)), kind: 'error' })
+                }
+              }}
+            >
+              {qrVisible ? '隐藏二维码' : '显示二维码'}
+            </Button>
+          </ModalFooter>
 
-              {qrVisible && (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9fafb', borderRadius: '12px', padding: '1.5rem', border: '2px solid #e5e7eb' }}>
-                  {qrDataUrl ? (
-                    <Image
-                      alt="房间二维码"
-                      src={qrDataUrl}
-                      width={180}
-                      height={180}
-                      unoptimized
-                      style={{ borderRadius: '8px' }}
-                    />
-                  ) : (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: '#6b7280' }}>
-                      <Loader2 style={{ width: '16px', height: '16px', animation: 'spin 1s linear infinite' }} />
-                      <span>生成中...</span>
-                    </div>
-                  )}
+          {/* 二维码显示 */}
+          {qrVisible && detailRoom && (
+            <div className="mt-4 p-6 bg-neutral-50 rounded-lg border border-neutral-200 text-center">
+              {qrDataUrl ? (
+                <Image
+                  alt="房间二维码"
+                  src={qrDataUrl}
+                  width={180}
+                  height={180}
+                  unoptimized
+                  className="mx-auto rounded-lg"
+                />
+              ) : (
+                <div className="flex items-center justify-center gap-2 text-neutral-600">
+                  <Spinner size="sm" />
+                  <span>生成中...</span>
                 </div>
               )}
             </div>
-          </div>
-        )}
+          )}
+        </Modal>
       </div>
-
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </SimpleEnvironmentBackground>
   )
 }
